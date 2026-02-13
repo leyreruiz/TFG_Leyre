@@ -1,0 +1,4 @@
+Registro de prueba 1: Inicio del sistema
+Registro de prueba 2: Carga de usuario
+Registro de prueba 3: Error en conexión
+Registro de prueba 4: Cierre de sesión
