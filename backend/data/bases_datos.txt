@@ -1,0 +1,45 @@
+Bases de Datos Relacionales
+
+Una base de datos relacional organiza la información en tablas (relaciones) compuestas por filas (tuplas) y columnas (atributos). Este modelo fue propuesto por Edgar F. Codd en 1970 y es el más utilizado en aplicaciones empresariales.
+
+Conceptos fundamentales
+- Tabla (Relación): estructura que almacena datos sobre una entidad.
+- Fila (Tupla): cada registro individual dentro de una tabla.
+- Columna (Atributo): cada propiedad o campo de una tabla.
+- Clave primaria (Primary Key): columna o conjunto de columnas que identifica unívocamente cada fila.
+- Clave foránea (Foreign Key): columna que referencia la clave primaria de otra tabla, estableciendo relaciones entre tablas.
+
+Normalización
+La normalización es el proceso de organizar las tablas para reducir la redundancia:
+- Primera Forma Normal (1FN): cada celda contiene un único valor atómico.
+- Segunda Forma Normal (2FN): cumple 1FN y todos los atributos no clave dependen completamente de la clave primaria.
+- Tercera Forma Normal (3FN): cumple 2FN y no hay dependencias transitivas entre atributos no clave.
+- Forma Normal de Boyce-Codd (FNBC): versión más estricta de 3FN.
+
+SQL (Structured Query Language)
+SQL es el lenguaje estándar para interactuar con bases de datos relacionales:
+- SELECT: consultar datos. Ejemplo: SELECT nombre, edad FROM estudiantes WHERE edad > 20;
+- INSERT: agregar registros. Ejemplo: INSERT INTO estudiantes (nombre, edad) VALUES ('Ana', 22);
+- UPDATE: modificar registros existentes. Ejemplo: UPDATE estudiantes SET edad = 23 WHERE nombre = 'Ana';
+- DELETE: eliminar registros. Ejemplo: DELETE FROM estudiantes WHERE nombre = 'Ana';
+- JOIN: combinar datos de múltiples tablas. Tipos: INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN.
+
+Transacciones y propiedades ACID
+Una transacción es un conjunto de operaciones que se ejecutan como una unidad:
+- Atomicidad: todas las operaciones se completan o ninguna.
+- Consistencia: la base de datos pasa de un estado válido a otro estado válido.
+- Aislamiento: las transacciones concurrentes no interfieren entre sí.
+- Durabilidad: los cambios confirmados persisten incluso ante fallos del sistema.
+
+Índices
+Los índices son estructuras que aceleran las consultas:
+- Índice B-Tree: estructura de árbol balanceado, ideal para búsquedas por rango y por igualdad.
+- Índice Hash: eficiente para búsquedas por igualdad exacta.
+- Índice compuesto: combina varias columnas para optimizar consultas frecuentes.
+
+Sistemas gestores populares
+- PostgreSQL: open source, robusto, con soporte para tipos avanzados y extensiones.
+- MySQL: ampliamente usado en aplicaciones web, adquirido por Oracle.
+- SQLite: ligero, sin servidor, ideal para aplicaciones embebidas.
+- Oracle Database: solución empresarial con alto rendimiento y escalabilidad.
+- SQL Server: de Microsoft, integrado con el ecosistema .NET.

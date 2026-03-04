@@ -1,0 +1,41 @@
+Redes Neuronales Artificiales
+
+Las redes neuronales artificiales (RNA) son modelos computacionales inspirados en la estructura del cerebro humano. Están formadas por nodos interconectados llamados neuronas artificiales, organizados en capas.
+
+Estructura básica
+Una red neuronal típica tiene tres tipos de capas:
+- Capa de entrada: recibe los datos del problema.
+- Capas ocultas: procesan la información mediante funciones de activación.
+- Capa de salida: produce el resultado final.
+
+Cada conexión entre neuronas tiene un peso asociado que se ajusta durante el entrenamiento. El proceso de entrenamiento busca minimizar una función de pérdida comparando la salida predicha con la esperada.
+
+Funciones de activación
+Las funciones de activación introducen no linealidad en el modelo:
+- Sigmoide: mapea valores al rango (0, 1). Utilizada históricamente en capas ocultas.
+- ReLU (Rectified Linear Unit): devuelve max(0, x). Es la más popular actualmente por su eficiencia computacional.
+- Tanh: mapea valores al rango (-1, 1). Similar a la sigmoide pero centrada en cero.
+- Softmax: utilizada en la capa de salida para problemas de clasificación multiclase.
+
+Tipos de redes neuronales
+- Perceptrón multicapa (MLP): la forma más simple, con capas completamente conectadas.
+- Redes convolucionales (CNN): especializadas en procesamiento de imágenes. Usan filtros que detectan patrones locales.
+- Redes recurrentes (RNN): diseñadas para datos secuenciales como texto o series temporales. Tienen conexiones que forman ciclos.
+- Transformers: arquitectura moderna basada en mecanismos de atención. Base de modelos como GPT y BERT.
+
+Entrenamiento
+El entrenamiento de redes neuronales se realiza mediante:
+1. Forward pass: los datos pasan por la red y se calcula la predicción.
+2. Cálculo del error: se compara la predicción con el valor real usando la función de pérdida.
+3. Backpropagation: se calculan los gradientes del error respecto a cada peso.
+4. Actualización de pesos: se ajustan los pesos usando un optimizador (SGD, Adam, etc.).
+
+Este proceso se repite durante múltiples épocas hasta que el modelo converge.
+
+Problemas comunes
+- Overfitting: el modelo memoriza los datos de entrenamiento y no generaliza bien. Se mitiga con regularización, dropout o más datos.
+- Underfitting: el modelo es demasiado simple para capturar los patrones. Se soluciona aumentando la complejidad del modelo.
+- Vanishing gradients: los gradientes se hacen muy pequeños en redes profundas, dificultando el entrenamiento de las primeras capas.
+
+Aplicaciones
+Las redes neuronales se usan en reconocimiento de imágenes, procesamiento de lenguaje natural, conducción autónoma, diagnóstico médico, generación de contenido y muchas otras áreas.
