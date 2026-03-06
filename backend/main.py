@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from backend.orchestrator import Orchestrator
 from backend.agents.summary_agent import SummaryAgent
 from backend.rag.retriever import ChromaDbRetriever
-from backend.rag.rag import ingestar_archivo_txt
+from backend.ingest_topics import ingestar_archivo_txt
 
 
 def build_orchestrator():
