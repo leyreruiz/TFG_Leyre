@@ -1,6 +1,6 @@
 """Orchestrator: clasifica la intención del estudiante y enruta al agente adecuado."""
 
-from backend.app.models.schemas import StudentRequest
+from backend.models.schemas import StudentRequest
 
 
 class Orchestrator:

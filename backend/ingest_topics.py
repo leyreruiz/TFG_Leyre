@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.app.agents.rag import ingestar_archivo_txt
+from backend.rag.rag import ingestar_archivo_txt
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")

@@ -1,8 +1,8 @@
 """Summary Agent: genera resúmenes estructurados usando RAG + LLM."""
 
-from backend.app.agents.base_agent import BaseAgent
-from backend.app.models.schemas import StudentRequest
-from backend.app.clients.llm_client import chat_with_model
+from backend.agents.base_agent import BaseAgent
+from backend.models.schemas import StudentRequest
+from backend.clients.llm_client import chat_with_model
 
 
 class SummaryAgent(BaseAgent):

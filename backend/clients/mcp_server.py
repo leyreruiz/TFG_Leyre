@@ -1,5 +1,5 @@
 from fastmcp import FastMCP
-from backend.app.clients.bbdd_client import buscar_similares
+from backend.clients.bbdd_client import buscar_similares
 
 # Creación del servidor MCP llamado "Conocimiento_TFG"
 mcp = FastMCP("Conocimiento_TFG")

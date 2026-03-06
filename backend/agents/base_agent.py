@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from backend.app.models.schemas import StudentRequest
+from backend.models.schemas import StudentRequest
 
 
 class BaseAgent(ABC):

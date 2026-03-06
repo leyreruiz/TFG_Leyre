@@ -1,5 +1,5 @@
 import ollama
-from backend.app.mcp_server import consultar_documentos_locales
+from backend.mcp_server import consultar_documentos_locales
 
 MODELO = "llama3.2"
 

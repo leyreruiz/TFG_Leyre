@@ -4,7 +4,7 @@ Ofrece una interfaz simple `.search(query, k)` que devuelve
 una lista de strings (documentos relevantes).
 """
 
-from backend.app.clients.bbdd_client import (
+from backend.clients.bbdd_client import (
     obtener_cliente,
     preparar_coleccion,
     buscar_similares,

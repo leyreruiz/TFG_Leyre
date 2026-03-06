@@ -12,8 +12,8 @@ import sys
 print("[DEBUG rag.py] Iniciando imports...")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 print("[DEBUG rag.py] Intentando import con sys.path modificado...")
-from backend.app.clients.bbdd_client import guardar_texto_chroma, buscar_similares
-from backend.app.clients.llm_client import chat_with_model
+from backend.clients.bbdd_client import guardar_texto_chroma, buscar_similares
+from backend.clients.llm_client import chat_with_model
 print("[DEBUG rag.py] ✓ Imports con sys.path successful")
 
 print("[DEBUG rag.py] Configurando modelo...")
