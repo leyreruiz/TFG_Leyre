@@ -1,9 +1,15 @@
 """CLI principal del backend.
 
 Uso:
-  python -m backend.main "Tu pregunta aquí"
-  python -m backend.main --ingest ruta/archivo.txt
-  python -m backend.main                            (modo interactivo)
+  python -m backend.main "Tu pregunta aquí"          (resumen - búsqueda por RAG)
+  python -m backend.main "examen redes_neuronales"  (examen del archivo especificado)
+  python -m backend.main --ingest ruta/archivo.txt  (ingestar archivo en ChromaDB)
+  python -m backend.main                             (modo interactivo)
+
+Ejemplos de ExamAgent:
+  - "examen redes_neuronales"
+  - "exam bases_datos.txt"
+  - "test sistemas_operativos"
 """
 
 import sys
@@ -23,7 +29,7 @@ def build_orchestrator():
     """Construye el orquestador con todos los agentes disponibles."""
     retriever = ChromaDbRetriever()
     summary_agent = SummaryAgent(retriever)
-    exam_agent = ExamAgent(retriever)
+    exam_agent = ExamAgent()  # ExamAgent funciona con archivos especificados, no con RAG
 
     orchestrator = Orchestrator(
         agents=[summary_agent, exam_agent]

@@ -1,71 +1,143 @@
-"""Exam Agent: genera preguntas de examen tipo test usando RAG + LLM."""
+"""Exam Agent: genera preguntas de examen tipo test basadas en un archivo específico."""
 
-import json
+import os
 import re
 
 from backend.agents.base_agent import BaseAgent
-from backend.models.schemas import StudentRequest, ExamQuestion
+from backend.models.schemas import StudentRequest
 from backend.clients.llm_client import chat_with_model
 
 
 class ExamAgent(BaseAgent):
-    """Genera preguntas de examen tipo test basadas en documentos recuperados."""
+    """Genera preguntas de examen tipo test basadas en un archivo específico."""
 
-    def __init__(self, retriever, llm_model="llama3.2", num_questions=3):
-        self.retriever = retriever
+    def __init__(self, llm_model="llama3.2", num_questions=3, data_dir="backend/data"):
         self.llm_model = llm_model
         self.num_questions = num_questions
+        self.data_dir = data_dir
 
     def can_handle(self, intent: str) -> bool:
         return intent == "exam"
 
     def handle(self, request: StudentRequest) -> dict:
-        # Para exámenes usamos menos documentos pero más focalizados
-        docs = self.retriever.search(request.message, k=3)
-        context = "\n\n".join(docs) if docs else "(No se encontraron documentos relevantes)"
-
-        if not docs:
+        """Genera un examen basado en el archivo especificado.
+        
+        Args:
+            request.message: Mensaje con palabras clave + nombre del archivo
+                           Ej: "examen redes_neuronales" o "test bases_datos.txt"
+        
+        Returns:
+            dict con content (texto raw) y questions (parseadas)
+        """
+        # Extraer el nombre del archivo del mensaje, ignorando palabras clave
+        filename = self._extract_filename(request.message)
+        
+        if not filename:
             return {
                 "agent": "exam",
-                "error": "No se encontraron documentos para generar el examen.",
+                "error": f"No se especificó archivo. Uso: 'examen redes_neuronales' o 'exam bases_datos'. Disponibles: {self._list_available_files()}",
             }
-
-        raw_answer = self._generate_questions(context, request.message)
-
+        
+        # Asegurar que tiene extensión .txt
+        if not filename.endswith(".txt"):
+            filename = filename + ".txt"
+        
+        # Construir la ruta del archivo
+        filepath = os.path.join(self.data_dir, filename)
+        
+        # Verificar que el archivo existe
+        if not os.path.exists(filepath):
+            return {
+                "agent": "exam",
+                "error": f"Archivo no encontrado: {filename}. Disponibles: {self._list_available_files()}",
+            }
+        
+        # Leer el contenido del archivo
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            return {
+                "agent": "exam",
+                "error": f"Error leyendo archivo: {e}",
+            }
+        
+        if not content.strip():
+            return {
+                "agent": "exam",
+                "error": f"El archivo {filename} está vacío.",
+            }
+        
+        # Generar preguntas basadas en el contenido completo
+        raw_answer = self._generate_questions(content, filename)
+        
         if raw_answer is None:
             return {
                 "agent": "exam",
                 "error": "No se pudo generar el examen.",
             }
-
-        # Intentamos parsear las preguntas a formato estructurado
+        
+        # Parsear las preguntas a formato estructurado
         questions = self._parse_questions(raw_answer)
-
+        
         return {
             "agent": "exam",
             "content": raw_answer,
             "questions": questions,
             "num_questions": len(questions),
+            "source_file": filename,
         }
 
-    def _generate_questions(self, context: str, topic: str) -> str | None:
-        """Llama al LLM para generar preguntas tipo test."""
+    def _extract_filename(self, message: str) -> str | None:
+        """Extrae el nombre del archivo del mensaje, ignorando palabras clave.
+        
+        Ejemplos:
+          "examen redes_neuronales" → "redes_neuronales"
+          "exam bases_datos.txt" → "bases_datos.txt"
+          "test sistemas_operativos" → "sistemas_operativos"
+          "pregunta tipo redes_neuronales" → "redes_neuronales"
+        """
+        # Palabras clave a ignorar
+        keywords = ["examen", "exam", "test", "pregunta tipo", "pregunta", "tipo"]
+        
+        # Convertir a minúsculas para comparación
+        message_lower = message.lower().strip()
+        
+        # Remover cada palabra clave del inicio del mensaje
+        for kw in keywords:
+            if message_lower.startswith(kw):
+                # Remover la palabra clave y los espacios
+                message = message[len(kw):].strip()
+                message_lower = message.lower().strip()
+        
+        # El resto debería ser el nombre del archivo
+        if message:
+            return message
+        return None
+
+    def _list_available_files(self) -> str:
+        """Lista los archivos disponibles en el directorio de datos."""
+        try:
+            files = [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
+            return ", ".join(files)
+        except:
+            return "No se pudieron listar los archivos"
+
+    def _generate_questions(self, content: str, filename: str) -> str | None:
+        """Llama al LLM para generar preguntas tipo test basadas en el contenido del archivo."""
 
         sistema = (
             "Eres un profesor universitario experto en crear exámenes. "
             "Tu tarea es generar preguntas de tipo test (opción múltiple) "
-            "basándote ÚNICAMENTE en el contexto proporcionado. "
+            "basándote ÚNICAMENTE en el contenido proporcionado. "
             "Cada pregunta debe tener exactamente 4 opciones (a, b, c, d) "
             "y solo una respuesta correcta."
         )
 
-        prompt_usuario = f"""Contexto de documentos:
+        prompt_usuario = f"""Contenido del archivo '{filename}':
 ---
-{context}
+{content}
 ---
-
-Tema solicitado por el estudiante:
-{topic}
 
 Genera exactamente {self.num_questions} preguntas de examen tipo test.
 
@@ -80,7 +152,7 @@ RESPUESTA: [letra correcta]
 EXPLICACIÓN: [breve explicación de por qué es correcta]
 
 Asegúrate de que:
-- Las preguntas cubran diferentes aspectos del tema
+- Las preguntas cubran diferentes aspectos del contenido
 - Las opciones incorrectas sean plausibles pero claramente distinguibles
 - Las explicaciones sean concisas y útiles para el aprendizaje"""
 
