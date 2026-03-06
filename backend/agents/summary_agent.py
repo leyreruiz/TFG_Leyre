@@ -15,15 +15,20 @@ class SummaryAgent(BaseAgent):
         return intent == "summary"
 
     def handle(self, request: StudentRequest) -> dict:
-        # Buscar documentos relevantes
+        # Para resúmenes usamos más documentos para tener contexto amplio
         docs = self.retriever.search(request.message, k=5)
         context = "\n\n".join(docs) if docs else "(No se encontraron documentos relevantes)"
 
         sistema = (
-            "Eres un tutor universitario experto. "
-            "Tu tarea es construir un resumen estructurado y claro "
-            "basándote únicamente en el contexto proporcionado. "
-            "Si la información no está en el contexto, indícalo."
+            "Eres un tutor universitario experto y pedagógico. "
+            "Tu objetivo es ayudar al estudiante a entender el tema en profundidad.\n\n"
+            "Reglas:\n"
+            "1. Basa tu respuesta ÚNICAMENTE en el contexto proporcionado.\n"
+            "2. Estructura el resumen con secciones claras usando encabezados.\n"
+            "3. Incluye los conceptos clave y sus definiciones.\n"
+            "4. Si es relevante, menciona relaciones entre conceptos.\n"
+            "5. Si la información no está en el contexto, dilo explícitamente.\n"
+            "6. Usa un tono claro y accesible para un estudiante universitario."
         )
 
         prompt_usuario = f"""Contexto de documentos:
@@ -34,7 +39,8 @@ class SummaryAgent(BaseAgent):
 Pregunta del estudiante:
 {request.message}
 
-Por favor, genera un resumen estructurado y claro basándote en el contexto anterior."""
+Genera un resumen estructurado y claro basándote en el contexto anterior.
+Usa encabezados, listas y definiciones cuando sea apropiado."""
 
         answer = chat_with_model(
             messages=[

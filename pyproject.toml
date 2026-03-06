@@ -13,5 +13,6 @@ dependencies = [
     "chromadb",
     "pydantic",
     "mcp",
-    "fastmcp"
+    "fastmcp",
+    "pytest",
 ]

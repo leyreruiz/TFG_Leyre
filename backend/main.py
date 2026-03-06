@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from backend.orchestrator import Orchestrator
 from backend.agents.summary_agent import SummaryAgent
+from backend.agents.exam_agent import ExamAgent
 from backend.rag.retriever import ChromaDbRetriever
 from backend.ingest_topics import ingestar_archivo_txt
 
@@ -22,9 +23,10 @@ def build_orchestrator():
     """Construye el orquestador con todos los agentes disponibles."""
     retriever = ChromaDbRetriever()
     summary_agent = SummaryAgent(retriever)
+    exam_agent = ExamAgent(retriever)
 
     orchestrator = Orchestrator(
-        agents=[summary_agent]
+        agents=[summary_agent, exam_agent]
     )
     return orchestrator
 
@@ -46,12 +48,7 @@ def main():
         question = " ".join(sys.argv[1:])
         orchestrator = build_orchestrator()
         result = orchestrator.route(question)
-
-        print("\n=== RESPUESTA ===\n")
-        if "content" in result:
-            print(result["content"])
-        else:
-            print(result.get("error", "Error desconocido"))
+        _print_result(result)
         return
 
     # Modo interactivo
@@ -74,11 +71,28 @@ def main():
             break
 
         result = orchestrator.route(question)
+        _print_result(result)
 
-        if "content" in result:
-            print(f"\nAsistente: {result['content']}\n")
-        else:
-            print(f"\nError: {result.get('error', 'Error desconocido')}\n")
+
+def _print_result(result: dict):
+    """Formatea y muestra el resultado del agente."""
+    agent = result.get("agent", "unknown")
+
+    print(f"\n=== RESPUESTA ({agent}) ===\n")
+
+    if "error" in result:
+        print(f"Error: {result['error']}\n")
+        return
+
+    if "content" in result:
+        print(result["content"])
+
+    # Si es examen, mostrar resumen de preguntas parseadas
+    if agent == "exam" and result.get("questions"):
+        n = result.get("num_questions", 0)
+        print(f"\n--- {n} pregunta(s) generada(s) correctamente ---")
+
+    print()
 
 
 if __name__ == "__main__":
