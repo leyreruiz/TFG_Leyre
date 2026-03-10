@@ -14,9 +14,35 @@ class SummaryAgent(BaseAgent):
     def can_handle(self, intent: str) -> bool:
         return intent == "summary"
 
+    def _extract_search_query(self, message: str) -> str:
+        """Strip summary-intent keywords so only the topic term reaches ChromaDB.
+
+        Examples:
+          "hazme un resumen de relu"     → "relu"
+          "resume redes neuronales"      → "redes neuronales"
+          "summary backpropagation"      → "backpropagation"
+          "explícame los transformers"   → "los transformers"
+        """
+        keywords = [
+            "hazme un resumen de", "hazme un resumen sobre",
+            "resumen de", "resumen sobre", "resume", "resumen",
+            "summary of", "summary about", "summary",
+            "explícame", "explicame", "explain",
+            "qué es", "que es", "what is",
+        ]
+        msg = message.strip()
+        msg_lower = msg.lower()
+        for kw in keywords:
+            if msg_lower.startswith(kw):
+                msg = msg[len(kw):].strip()
+                msg_lower = msg.lower()
+        return msg if msg else message
+
     def handle(self, request: StudentRequest) -> dict:
+        # Strip intent words so ChromaDB gets a clean topic query
+        search_query = self._extract_search_query(request.message)
         # For summaries, use more documents to have broad context
-        docs = self.retriever.search(request.message, k=5)
+        docs = self.retriever.search(search_query, k=5)
         context = "\n\n".join(docs) if docs else "(No relevant documents found)"
 
         sistema = (

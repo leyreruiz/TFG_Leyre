@@ -1,6 +1,8 @@
 """Script to ingest all test topic files into ChromaDB.
 
-Usage: python -m backend.ingest_topics
+Usage:
+  python -m backend.ingest_topics           # ingest (keeps existing data)
+  python -m backend.ingest_topics --clean   # wipe collection first, then ingest
 """
 
 import os
@@ -8,7 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.clients.bbdd_client import save_text_chroma
+from backend.clients.bbdd_client import save_text_chroma, delete_collection
 
 
 def _divide_in_chunks(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
@@ -93,4 +95,7 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--clean" in sys.argv:
+        print("Wiping existing collection...")
+        delete_collection()
     main()

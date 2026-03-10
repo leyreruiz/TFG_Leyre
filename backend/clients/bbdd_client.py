@@ -37,6 +37,18 @@ def prepare_collection(client):
     return coleccion
 
 
+def delete_collection():
+    """Delete and recreate the collection, wiping all stored documents."""
+    client = obtain_client()
+    if not client:
+        return
+    try:
+        client.delete_collection(name=COLLECTION_NAME)
+        print(f"Collection '{COLLECTION_NAME}' deleted.")
+    except Exception as e:
+        print(f"Could not delete collection (may not exist): {e}")
+
+
 def save_text_chroma(texto, id=None, metadata=None):
     """Generate embedding locally and save the text in the Chroma collection."""
     client = obtain_client()
