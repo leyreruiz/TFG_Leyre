@@ -1,12 +1,12 @@
-"""CLI principal del backend.
+"""Main CLI entry point for the backend.
 
-Uso:
-  python -m backend.main "Tu pregunta aquí"          (resumen - búsqueda por RAG)
-  python -m backend.main "examen redes_neuronales"  (examen del archivo especificado)
-  python -m backend.main --ingest ruta/archivo.txt  (ingestar archivo en ChromaDB)
-  python -m backend.main                             (modo interactivo)
+Usage:
+  python -m backend.main "Your question here"         (summary - RAG search)
+  python -m backend.main "examen redes_neuronales"   (exam for a specific file)
+  python -m backend.main --ingest path/to/file.txt   (ingest a file into ChromaDB)
+  python -m backend.main                              (interactive mode)
 
-Ejemplos de ExamAgent:
+ExamAgent examples:
   - "examen redes_neuronales"
   - "exam bases_datos.txt"
   - "test sistemas_operativos"
@@ -15,7 +15,7 @@ Ejemplos de ExamAgent:
 import sys
 import os
 
-# Asegurar que el directorio raíz del proyecto está en el path
+# Ensure the project root directory is in the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from backend.orchestrator import Orchestrator
@@ -26,10 +26,10 @@ from backend.ingest_topics import ingestar_archivo_txt
 
 
 def build_orchestrator():
-    """Construye el orquestador con todos los agentes disponibles."""
+    """Build the orchestrator with all available agents."""
     retriever = ChromaDbRetriever()
     summary_agent = SummaryAgent(retriever)
-    exam_agent = ExamAgent()  # ExamAgent funciona con archivos especificados, no con RAG
+    exam_agent = ExamAgent()  # ExamAgent works with specific files, not RAG
 
     orchestrator = Orchestrator(
         agents=[summary_agent, exam_agent]
@@ -38,18 +38,18 @@ def build_orchestrator():
 
 
 def main():
-    # Modo ingesta: --ingest <archivo>
+    # Ingest mode: --ingest <file>
     if len(sys.argv) >= 3 and sys.argv[1] == "--ingest":
         ruta = sys.argv[2]
-        print(f"\n=== INGESTA ===\nArchivo: {ruta}\n")
+        print(f"\n=== INGEST ===\nFile: {ruta}\n")
         ids = ingestar_archivo_txt(ruta)
         if ids:
-            print(f"\nIngesta completada: {len(ids)} chunks guardados.")
+            print(f"\nIngest complete: {len(ids)} chunks saved.")
         else:
-            print("\nError durante la ingesta.")
+            print("\nError during ingest.")
         return
 
-    # Modo pregunta directa: python -m backend.main "pregunta"
+    # Direct question mode: python -m backend.main "question"
     if len(sys.argv) >= 2:
         question = " ".join(sys.argv[1:])
         orchestrator = build_orchestrator()
@@ -57,23 +57,23 @@ def main():
         _print_result(result)
         return
 
-    # Modo interactivo
-    print("=== Asistente Universitario ===")
-    print("Escribe tu pregunta (o 'salir' para terminar)\n")
+    # Interactive mode
+    print("=== University Assistant ===")
+    print("Type your question (or 'quit' to exit)\n")
 
     orchestrator = build_orchestrator()
 
     while True:
         try:
-            question = input("Tú: ").strip()
+            question = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\n¡Hasta luego!")
+            print("\nGoodbye!")
             break
 
         if not question:
             continue
         if question.lower() in ("salir", "exit", "quit"):
-            print("¡Hasta luego!")
+            print("Goodbye!")
             break
 
         result = orchestrator.route(question)
@@ -81,10 +81,10 @@ def main():
 
 
 def _print_result(result: dict):
-    """Formatea y muestra el resultado del agente."""
+    """Format and display the agent result."""
     agent = result.get("agent", "unknown")
 
-    print(f"\n=== RESPUESTA ({agent}) ===\n")
+    print(f"\n=== RESPONSE ({agent}) ===\n")
 
     if "error" in result:
         print(f"Error: {result['error']}\n")
@@ -93,10 +93,10 @@ def _print_result(result: dict):
     if "content" in result:
         print(result["content"])
 
-    # Si es examen, mostrar resumen de preguntas parseadas
+    # For exams, show a summary of parsed questions
     if agent == "exam" and result.get("questions"):
         n = result.get("num_questions", 0)
-        print(f"\n--- {n} pregunta(s) generada(s) correctamente ---")
+        print(f"\n--- {n} question(s) generated successfully ---")
 
     print()
 

@@ -1,7 +1,7 @@
 import ollama
 from backend.mcp_server import consultar_documentos_locales
 
-MODELO = "llama3.2"
+MODELO = "llama-3.3-70b-versatile"
 
 def agente_mcp_chat(pregunta_usuario):
     print(f"\n--- Nueva consulta: {pregunta_usuario} ---")

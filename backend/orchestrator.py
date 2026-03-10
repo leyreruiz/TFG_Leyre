@@ -1,4 +1,4 @@
-"""Orchestrator: clasifica la intención del estudiante y enruta al agente adecuado."""
+"""Orchestrator: classifies the student's intent and routes to the appropriate agent."""
 
 from backend.models.schemas import StudentRequest
 
@@ -9,9 +9,9 @@ class Orchestrator:
         self.agents = agents
 
     def detect_intent(self, message: str) -> str:
-        """Clasifica la intención del mensaje del estudiante.
+        """Classify the student's message intent.
 
-        Por ahora usa reglas simples basadas en palabras clave.
+        Currently uses simple keyword-based rules.
         """
         message_lower = message.lower()
 
@@ -19,7 +19,7 @@ class Orchestrator:
             return "exam"
 
         #if any(kw in message_lower for kw in ("plan", "planifica", "calendario", "horario")):
-            #return "study_plan"
+            #return "study_plan"  # future: study planner intent
 
         if any(kw in message_lower for kw in ("resumen", "resume", "summary")):
             return "summary"
@@ -27,21 +27,21 @@ class Orchestrator:
         return "summary"
 
     def route(self, message: str) -> dict:
-        """Enruta el mensaje al agente correspondiente.
+        """Route the message to the appropriate agent.
 
-        1. Crea un StudentRequest
-        2. Detecta la intención
-        3. Busca un agente que pueda manejarla
-        4. Devuelve la respuesta del agente
+        1. Create a StudentRequest
+        2. Detect the intent
+        3. Find an agent that can handle it
+        4. Return the agent's response
         """
         request = StudentRequest(message=message)
         request.intent = self.detect_intent(message)
 
-        print(f"[Orchestrator] Intención detectada: {request.intent}")
+        print(f"[Orchestrator] Detected intent: {request.intent}")
 
         for agent in self.agents:
             if agent.can_handle(request.intent):
-                print(f"[Orchestrator] Enrutando a: {agent.__class__.__name__}")
+                print(f"[Orchestrator] Routing to: {agent.__class__.__name__}")
                 return agent.handle(request)
 
-        return {"error": f"No hay agente disponible para la intención '{request.intent}'"}
+        return {"error": f"No agent available for intent '{request.intent}'"}

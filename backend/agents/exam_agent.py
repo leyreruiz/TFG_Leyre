@@ -1,4 +1,4 @@
-"""Exam Agent: genera preguntas de examen tipo test basadas en un archivo específico."""
+"""Exam Agent: generates multiple-choice exam questions based on a specific file."""
 
 import os
 import re
@@ -9,9 +9,9 @@ from backend.clients.llm_client import chat_with_model
 
 
 class ExamAgent(BaseAgent):
-    """Genera preguntas de examen tipo test basadas en un archivo específico."""
+    """Generates multiple-choice exam questions based on a specific file."""
 
-    def __init__(self, llm_model="llama3.2", num_questions=3, data_dir="backend/data"):
+    def __init__(self, llm_model="llama-3.3-70b-versatile", num_questions=3, data_dir="backend/data"):
         self.llm_model = llm_model
         self.num_questions = num_questions
         self.data_dir = data_dir
@@ -20,64 +20,64 @@ class ExamAgent(BaseAgent):
         return intent == "exam"
 
     def handle(self, request: StudentRequest) -> dict:
-        """Genera un examen basado en el archivo especificado.
+        """Generate an exam based on the specified file.
         
         Args:
-            request.message: Mensaje con palabras clave + nombre del archivo
-                           Ej: "examen redes_neuronales" o "test bases_datos.txt"
+            request.message: Message with keywords + filename
+                           e.g. "examen redes_neuronales" or "test bases_datos.txt"
         
         Returns:
-            dict con content (texto raw) y questions (parseadas)
+            dict with content (raw text) and questions (parsed)
         """
-        # Extraer el nombre del archivo del mensaje, ignorando palabras clave
+        # Extract the filename from the message, ignoring keywords
         filename = self._extract_filename(request.message)
         
         if not filename:
             return {
                 "agent": "exam",
-                "error": f"No se especificó archivo. Uso: 'examen redes_neuronales' o 'exam bases_datos'. Disponibles: {self._list_available_files()}",
+                "error": f"No file specified. Usage: 'examen redes_neuronales' or 'exam bases_datos'. Available: {self._list_available_files()}",
             }
         
-        # Asegurar que tiene extensión .txt
+        # Ensure .txt extension
         if not filename.endswith(".txt"):
             filename = filename + ".txt"
         
-        # Construir la ruta del archivo
+        # Build the file path
         filepath = os.path.join(self.data_dir, filename)
         
-        # Verificar que el archivo existe
+        # Check that the file exists
         if not os.path.exists(filepath):
             return {
                 "agent": "exam",
-                "error": f"Archivo no encontrado: {filename}. Disponibles: {self._list_available_files()}",
+                "error": f"File not found: {filename}. Available: {self._list_available_files()}",
             }
         
-        # Leer el contenido del archivo
+        # Read the file contents
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
             return {
                 "agent": "exam",
-                "error": f"Error leyendo archivo: {e}",
+                "error": f"Error reading file: {e}",
             }
         
         if not content.strip():
             return {
                 "agent": "exam",
-                "error": f"El archivo {filename} está vacío.",
+                "error": f"File {filename} is empty.",
             }
         
-        # Generar preguntas basadas en el contenido completo
+        # Generate questions based on the full file content
         raw_answer = self._generate_questions(content, filename)
         
         if raw_answer is None:
             return {
                 "agent": "exam",
-                "error": "No se pudo generar el examen.",
+                "error": "Could not generate the exam.",
             }
         
-        # Parsear las preguntas a formato estructurado
+        # Parse questions into structured format
         questions = self._parse_questions(raw_answer)
         
         return {
@@ -89,42 +89,42 @@ class ExamAgent(BaseAgent):
         }
 
     def _extract_filename(self, message: str) -> str | None:
-        """Extrae el nombre del archivo del mensaje, ignorando palabras clave.
+        """Extract the filename from the message, ignoring keywords.
         
-        Ejemplos:
+        Examples:
           "examen redes_neuronales" → "redes_neuronales"
-          "exam bases_datos.txt" → "bases_datos.txt"
+          "exam bases_datos.txt"    → "bases_datos.txt"
           "test sistemas_operativos" → "sistemas_operativos"
           "pregunta tipo redes_neuronales" → "redes_neuronales"
         """
-        # Palabras clave a ignorar
+        # Keywords to strip
         keywords = ["examen", "exam", "test", "pregunta tipo", "pregunta", "tipo"]
         
-        # Convertir a minúsculas para comparación
+        # Lowercase for matching
         message_lower = message.lower().strip()
         
-        # Remover cada palabra clave del inicio del mensaje
+        # Remove the keyword from the start of the message
         for kw in keywords:
             if message_lower.startswith(kw):
-                # Remover la palabra clave y los espacios
+                # Strip the keyword and surrounding whitespace
                 message = message[len(kw):].strip()
                 message_lower = message.lower().strip()
         
-        # El resto debería ser el nombre del archivo
+        # The remainder should be the filename
         if message:
             return message
         return None
 
     def _list_available_files(self) -> str:
-        """Lista los archivos disponibles en el directorio de datos."""
+        """List available files in the data directory."""
         try:
             files = [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
             return ", ".join(files)
         except:
-            return "No se pudieron listar los archivos"
+            return "Could not list available files"
 
     def _generate_questions(self, content: str, filename: str) -> str | None:
-        """Llama al LLM para generar preguntas tipo test basadas en el contenido del archivo."""
+        """Call the LLM to generate multiple-choice questions based on the file content."""
 
         sistema = (
             "Eres un profesor universitario experto en crear exámenes. "
@@ -162,26 +162,26 @@ Asegúrate de que:
                 {"role": "user", "content": prompt_usuario},
             ],
             model=self.llm_model,
-            temperature=0.5,  # Menos creatividad para exámenes más precisos
+            temperature=0.5,  # Lower creativity for more precise exams
         )
 
     def _parse_questions(self, raw_text: str) -> list[dict]:
-        """Intenta parsear la respuesta del LLM a una lista estructurada.
+        """Attempt to parse the LLM response into a structured list.
 
-        Usa regex para extraer cada pregunta con sus opciones y respuesta.
-        Si falla el parseo, devuelve lista vacía (el texto raw sigue disponible).
+        Uses regex to extract each question with its options and answer.
+        Returns an empty list if parsing fails (raw text is still available).
         """
         questions = []
 
-        # Patrón para encontrar cada bloque de pregunta
+        # Pattern to match each question block
         pattern = (
-            r"PREGUNTA\s*\d+\s*:\s*(.+?)\n"  # pregunta
-            r"\s*a\)\s*(.+?)\n"                # opción a
-            r"\s*b\)\s*(.+?)\n"                # opción b
-            r"\s*c\)\s*(.+?)\n"                # opción c
-            r"\s*d\)\s*(.+?)\n"                # opción d
-            r"\s*RESPUESTA\s*:\s*([abcd])\s*\n?"   # respuesta correcta
-            r"\s*EXPLICACI[ÓO]N\s*:\s*(.+?)(?=\n\s*PREGUNTA|\Z)"  # explicación
+            r"PREGUNTA\s*\d+\s*:\s*(.+?)\n"  # question text
+            r"\s*a\)\s*(.+?)\n"                # option a
+            r"\s*b\)\s*(.+?)\n"                # option b
+            r"\s*c\)\s*(.+?)\n"                # option c
+            r"\s*d\)\s*(.+?)\n"                # option d
+            r"\s*RESPUESTA\s*:\s*([abcd])\s*\n?"   # correct answer
+            r"\s*EXPLICACI[\xd3O]N\s*:\s*(.+?)(?=\n\s*PREGUNTA|\Z)"  # explanation
         )
 
         matches = re.findall(pattern, raw_text, re.DOTALL | re.IGNORECASE)

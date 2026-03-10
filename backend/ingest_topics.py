@@ -1,6 +1,6 @@
-"""Script para ingestar todos los archivos de prueba en ChromaDB.
+"""Script to ingest all test topic files into ChromaDB.
 
-Uso: python -m backend.ingest_topics
+Usage: python -m backend.ingest_topics
 """
 
 import os
@@ -12,7 +12,7 @@ from backend.clients.bbdd_client import guardar_texto_chroma
 
 
 def _dividir_en_chunks(texto: str, tamaño_chunk: int = 500, solapamiento: int = 50) -> list[str]:
-    """Divide un texto en chunks con solapamiento."""
+    """Split a text into overlapping chunks."""
     chunks = []
     inicio = 0
     while inicio < len(texto):
@@ -27,30 +27,30 @@ def _dividir_en_chunks(texto: str, tamaño_chunk: int = 500, solapamiento: int =
 
 
 def ingestar_archivo_txt(ruta_archivo: str, metadata: dict | None = None) -> list[str]:
-    """Lee un archivo .txt y lo ingesta en ChromaDB por chunks.
+    """Read a .txt file and ingest it into ChromaDB in chunks.
 
     Args:
-        ruta_archivo: ruta al archivo .txt
-        metadata: dict opcional con metadatos adicionales
+        ruta_archivo: path to the .txt file
+        metadata: optional dict with additional metadata
 
     Returns:
-        Lista de IDs guardados, o [] en caso de error.
+        List of saved IDs, or [] on error.
     """
     if not os.path.exists(ruta_archivo):
-        print(f"Error: archivo no encontrado: {ruta_archivo}")
+        print(f"Error: file not found: {ruta_archivo}")
         return []
 
     try:
         with open(ruta_archivo, "r", encoding="utf-8") as f:
             texto = f.read()
     except Exception as e:
-        print(f"Error leyendo archivo: {e}")
+        print(f"Error reading file: {e}")
         return []
 
-    print(f"Leyendo {ruta_archivo} ({len(texto)} caracteres)...")
+    print(f"Reading {ruta_archivo} ({len(texto)} characters)...")
 
     chunks = _dividir_en_chunks(texto)
-    print(f"Dividido en {len(chunks)} chunks")
+    print(f"Split into {len(chunks)} chunks")
 
     ids_guardados = []
     nombre_archivo = os.path.basename(ruta_archivo)
@@ -61,9 +61,9 @@ def ingestar_archivo_txt(ruta_archivo: str, metadata: dict | None = None) -> lis
         doc_id = guardar_texto_chroma(chunk, metadata=meta)
         if doc_id:
             ids_guardados.append(doc_id)
-            print(f"  Chunk {i + 1}/{len(chunks)} guardado")
+            print(f"  Chunk {i + 1}/{len(chunks)} saved")
 
-    print(f"Ingesta completada: {len(ids_guardados)} chunks guardados")
+    print(f"Ingest complete: {len(ids_guardados)} chunks saved")
     return ids_guardados
 
 
@@ -77,19 +77,19 @@ TOPICS = [
 
 
 def main():
-    print("=== Ingesta de temas de prueba ===\n")
+    print("=== Topic ingest ===\n")
 
     for filename, metadata in TOPICS:
         ruta = os.path.join(DATA_DIR, filename)
         if not os.path.exists(ruta):
-            print(f"⚠ No encontrado: {ruta}")
+            print(f"⚠ Not found: {ruta}")
             continue
 
-        print(f"\n--- Ingiriendo: {filename} ---")
+        print(f"\n--- Ingesting: {filename} ---")
         ids = ingestar_archivo_txt(ruta, metadata=metadata)
-        print(f"  → {len(ids)} chunks guardados.\n")
+        print(f"  → {len(ids)} chunks saved.\n")
 
-    print("\n=== Ingesta finalizada ===")
+    print("\n=== Ingest complete ===")
 
 
 if __name__ == "__main__":

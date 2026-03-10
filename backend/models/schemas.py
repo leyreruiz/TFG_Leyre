@@ -8,8 +8,8 @@ class StudentRequest(BaseModel):
 
 
 class ExamQuestion(BaseModel):
-    """Una pregunta de examen tipo test."""
+    """A multiple-choice exam question."""
     question: str
-    options: list[str]         # 4 opciones (a, b, c, d)
-    correct_answer: str        # letra correcta: "a", "b", "c" o "d"
-    explanation: str           # breve explicación de por qué es correcta
+    options: list[str]         # 4 options (a, b, c, d)
+    correct_answer: str        # correct letter: "a", "b", "c" or "d"
+    explanation: str           # brief explanation of why the answer is correct

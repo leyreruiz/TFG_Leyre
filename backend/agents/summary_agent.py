@@ -1,4 +1,4 @@
-"""Summary Agent: genera resúmenes estructurados usando RAG + LLM."""
+"""Summary Agent: generates structured summaries using RAG + LLM."""
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
@@ -7,7 +7,7 @@ from backend.clients.llm_client import chat_with_model
 
 class SummaryAgent(BaseAgent):
 
-    def __init__(self, retriever, llm_model="llama3.2"):
+    def __init__(self, retriever, llm_model="llama-3.3-70b-versatile"):
         self.retriever = retriever
         self.llm_model = llm_model
 
@@ -15,9 +15,9 @@ class SummaryAgent(BaseAgent):
         return intent == "summary"
 
     def handle(self, request: StudentRequest) -> dict:
-        # Para resúmenes usamos más documentos para tener contexto amplio
+        # For summaries, use more documents to have broad context
         docs = self.retriever.search(request.message, k=5)
-        context = "\n\n".join(docs) if docs else "(No se encontraron documentos relevantes)"
+        context = "\n\n".join(docs) if docs else "(No relevant documents found)"
 
         sistema = (
             "Eres un tutor universitario experto y pedagógico. "
@@ -59,5 +59,5 @@ Usa encabezados, listas y definiciones cuando sea apropiado."""
         else:
             return {
                 "agent": "summary",
-                "error": "No se pudo generar la respuesta del modelo.",
+                "error": "Could not generate a response from the model.",
             }

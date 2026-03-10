@@ -1,70 +1,73 @@
 """
-Script para chatear con un LLM open source via Ollama.
+Script to chat with an LLM via Groq.
 """
 import sys
-print("[llm_client] Importando ollama...")
-import ollama
-print("[llm_client] Ollama importado correctamente")
+print("[llm_client] Importing groq...")
+from groq import Groq
+print("[llm_client] Groq imported successfully")
 
-MODEL = "llama3.2"   # cambia por cualquier modelo instalado con `ollama pull <modelo>`
-print("[llm_client] Importación completada")
+MODEL = "llama-3.3-70b-versatile"
+client = Groq(api_key="")  # pega tu key aquí
+print("[llm_client] Import complete")
 
 
 def chat_with_model(messages, model=MODEL, temperature=0.7):
-    """Consulta el modelo Ollama con un historial de mensajes.
+    """Query the Groq model with a message history.
     
     Args:
-        messages: lista de dicts {"role": "user"|"assistant", "content": "..."}
-        model: modelo a usar (default: llama3.2)
-        temperature: creatividad (0-1)
+        messages: list of dicts {"role": "user"|"assistant", "content": "..."}
+        model: model to use (default: llama-3.3-70b-versatile)
+        temperature: creativity (0-1)
     
     Returns:
-        string con la respuesta del modelo o None en error
+        string with the model response, or None on error
     """
     try:
-        print(f"[DEBUG] Conectando con Ollama modelo={model}...")
-        response = ollama.chat(
+        print(f"[DEBUG] Connecting to Groq model={model}...")
+        response = client.chat.completions.create(
             model=model,
             messages=messages,
-            stream=False,
-            options={"temperature": temperature}
+            temperature=temperature,
         )
-        print(f"[DEBUG] Respuesta recibida de Ollama")
-        return response.message.content
+        print(f"[DEBUG] Response received from Groq")
+        return response.choices[0].message.content
     except Exception as e:
-        print(f"Error consultando {model}: {e}")
+        print(f"Error querying {model}: {e}")
         return None
 
 
 def main():
     if len(sys.argv) > 1:
         prompt = " ".join(sys.argv[1:])
-        response = ollama.chat(model=MODEL, messages=[{"role": "user", "content": prompt}])
-        print(response.message.content)
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        print(response.choices[0].message.content)
         return
 
-    print(f"Chat con {MODEL} (escribe 'salir' para terminar)\n")
+    print(f"Chat with {MODEL} (type 'quit' to exit)\n")
     history = []
 
     while True:
         try:
-            prompt = input("Tú: ").strip()
+            prompt = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\nHasta luego!")
+            print("\nGoodbye!")
             break
 
         if not prompt:
             continue
         if prompt.lower() in ("salir", "exit", "quit"):
-            print("Hasta luego!")
+            print("Goodbye!")
             break
 
         history.append({"role": "user", "content": prompt})
-        response = ollama.chat(model=MODEL, messages=history)
-        answer = response.message.content
+        response = client.chat.completions.create(model=MODEL, messages=history)
+        answer = response.choices[0].message.content
         history.append({"role": "assistant", "content": answer})
 
-        print(f"\nModelo: {answer}\n")
+        print(f"\nModel: {answer}\n")
 
 
 if __name__ == "__main__":

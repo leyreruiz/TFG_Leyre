@@ -1,44 +1,44 @@
 import chromadb
 import os
 
-# CONFIGURACIÓN
-DB_PATH = "./chroma_db"  # Carpeta donde se guardarán los datos físicamente
+# CONFIGURATION
+DB_PATH = "./chroma_db"  # Folder where data will be stored on disk
 COLLECTION_NAME = "tabla_nueva"
 
 import uuid
 
-print("[bbdd_client] Importación completada")
+print("[bbdd_client] Import complete")
 
 def obtener_cliente():
-    """Establece la conexión con la base de datos persistente."""
+    """Establish a connection to the persistent ChromaDB database."""
     try:
-        # Crea el cliente que guarda los datos en el disco local
+        # Creates a client that persists data to local disk
         client = chromadb.PersistentClient(path=DB_PATH)
         return client
     except Exception as e:
-        print(f" Error conectando a ChromaDB: {e}")
+        print(f" Error connecting to ChromaDB: {e}")
         return None
 
 def preparar_coleccion(client):
     """
-    Crea la colección (equivalente a la tabla) si no existe.
-    Configura el modelo de embeddings automáticamente.
+    Create the collection (equivalent to a table) if it does not exist.
+    Configures the embeddings model automatically.
     """
-    print("[DEBUG] Preparando colección de ChromaDB...")
-    print("[DEBUG] Usando embeddings por defecto de ChromaDB (sin descargar modelos)...")
+    print("[DEBUG] Preparing ChromaDB collection...")
+    print("[DEBUG] Using ChromaDB default embeddings (no model download required)...")
     
-    # Usa los embeddings por defecto de ChromaDB sin descargar nada
-    # Esto evita bloqueos al descargar modelos grandes
+    # Use ChromaDB's default embeddings without downloading anything
+    # This avoids blocking on large model downloads
     coleccion = client.get_or_create_collection(
         name=COLLECTION_NAME,
-        # Sin especificar embedding_function, usa embeddings por defecto
+        # Without specifying embedding_function, uses default embeddings
     )
-    print(f"✓ Colección '{COLLECTION_NAME}' verificada o creada en {DB_PATH}.")
+    print(f"✓ Collection '{COLLECTION_NAME}' verified or created at {DB_PATH}.")
     return coleccion
 
 
 def guardar_texto_chroma(texto, id=None, metadata=None):
-    """Genera embedding localmente y guarda el texto en la colección de Chroma."""
+    """Generate embedding locally and save the text in the Chroma collection."""
     client = obtener_cliente()
     if not client:
         return None
@@ -52,20 +52,20 @@ def guardar_texto_chroma(texto, id=None, metadata=None):
             "ids": [id],
             "documents": [texto],
         }
-        # Solo incluir metadatos si se ha pasado un dict no vacío
+        # Only include metadata if a non-empty dict was provided
         if isinstance(metadata, dict) and len(metadata) > 0:
             add_kwargs["metadatas"] = [metadata]
 
         coleccion.add(**add_kwargs)
-        print(f"Documento guardado en Chroma con id={id}")
+        print(f"Document saved in Chroma with id={id}")
         return id
     except Exception as e:
-        print(f"Error guardando en Chroma: {e}")
+        print(f"Error saving to Chroma: {e}")
         return None
 
 
 def buscar_similares(texto, n=3):
-    """Genera embedding del texto y consulta la colección en Chroma por similitud."""
+    """Generate an embedding for the text and query the Chroma collection by similarity."""
     client = obtener_cliente()
     if not client:
         return None
@@ -79,18 +79,18 @@ def buscar_similares(texto, n=3):
         )
         return resultados
     except Exception as e:
-        print(f"Error consultando Chroma: {e}")
+        print(f"Error querying Chroma: {e}")
         return None
 
 if __name__ == "__main__":
-    # Prueba de inicialización
+    # Initialization test
     cliente = obtener_cliente()
     if cliente:
         mi_coleccion = preparar_coleccion(cliente)
-        # Inserción de ejemplo y consulta rápida
-        ejemplo = "Este es un texto de prueba para almacenar en ChromaDB."
+        # Sample insert and quick query
+        ejemplo = "This is a test text to store in ChromaDB."
         doc_id = guardar_texto_chroma(ejemplo)
         if doc_id:
-            print("Realizando búsqueda de prueba...")
-            res = buscar_similares("texto de prueba")
+            print("Running test search...")
+            res = buscar_similares("test text")
             print(res)

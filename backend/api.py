@@ -1,4 +1,4 @@
-"""API FastAPI: expone el orquestador como servicio HTTP para el frontend."""
+"""FastAPI: exposes the orchestrator as an HTTP service for the frontend."""
 
 import os
 import sys
@@ -15,9 +15,9 @@ from backend.agents.summary_agent import SummaryAgent
 from backend.agents.exam_agent import ExamAgent
 from backend.rag.retriever import ChromaDbRetriever
 
-app = FastAPI(title="Asistente Universitario API")
+app = FastAPI(title="University Assistant API")
 
-# CORS para que el frontend pueda llamar a la API
+# CORS so the frontend can call the API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Construir el orquestador una sola vez al arrancar
+# Build the orchestrator once at startup
 retriever = ChromaDbRetriever()
 orchestrator = Orchestrator(
     agents=[
@@ -41,14 +41,14 @@ class ChatRequest(BaseModel):
 
 @app.post("/chat")
 def chat(request: ChatRequest):
-    """Recibe un mensaje y devuelve la respuesta del agente correspondiente."""
+    """Receive a message and return the response from the appropriate agent."""
     result = orchestrator.route(request.message)
     return result
 
 
 @app.get("/topics")
 def list_topics():
-    """Lista los archivos disponibles para generar exámenes."""
+    """List available files for generating exams."""
     data_dir = "backend/data"
     try:
         files = [f.replace(".txt", "") for f in os.listdir(data_dir) if f.endswith(".txt")]
@@ -64,5 +64,5 @@ def health():
 
 @app.get("/")
 def serve_frontend():
-    """Sirve el frontend directamente desde la API."""
+    """Serve the frontend directly from the API."""
     return FileResponse("frontend/index.html")
