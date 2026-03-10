@@ -30,7 +30,7 @@ retriever = ChromaDbRetriever()
 orchestrator = Orchestrator(
     agents=[
         SummaryAgent(retriever),
-        ExamAgent(),
+        ExamAgent(retriever),
     ]
 )
 

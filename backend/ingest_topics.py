@@ -8,57 +8,57 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.clients.bbdd_client import guardar_texto_chroma
+from backend.clients.bbdd_client import save_text_chroma
 
 
-def _dividir_en_chunks(texto: str, tamaño_chunk: int = 500, solapamiento: int = 50) -> list[str]:
+def _divide_in_chunks(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
     """Split a text into overlapping chunks."""
     chunks = []
-    inicio = 0
-    while inicio < len(texto):
-        fin = min(inicio + tamaño_chunk, len(texto))
-        chunk = texto[inicio:fin].strip()
+    start = 0
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        chunk = text[start:end].strip()
         if chunk:
             chunks.append(chunk)
-        if fin == len(texto):
+        if end == len(text):
             break
-        inicio = fin - solapamiento
+        start = end - overlap
     return chunks
 
 
-def ingestar_archivo_txt(ruta_archivo: str, metadata: dict | None = None) -> list[str]:
+def ingest_file_txt(file_path: str, metadata: dict | None = None) -> list[str]:
     """Read a .txt file and ingest it into ChromaDB in chunks.
 
     Args:
-        ruta_archivo: path to the .txt file
+        file_path: path to the .txt file
         metadata: optional dict with additional metadata
 
     Returns:
         List of saved IDs, or [] on error.
     """
-    if not os.path.exists(ruta_archivo):
-        print(f"Error: file not found: {ruta_archivo}")
+    if not os.path.exists(file_path):
+        print(f"Error: file not found: {file_path}")
         return []
 
     try:
-        with open(ruta_archivo, "r", encoding="utf-8") as f:
-            texto = f.read()
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
     except Exception as e:
         print(f"Error reading file: {e}")
         return []
 
-    print(f"Reading {ruta_archivo} ({len(texto)} characters)...")
+    print(f"Reading {file_path} ({len(text)} characters)...")
 
-    chunks = _dividir_en_chunks(texto)
+    chunks = _divide_in_chunks(text)
     print(f"Split into {len(chunks)} chunks")
 
     ids_guardados = []
-    nombre_archivo = os.path.basename(ruta_archivo)
+    nombre_archivo = os.path.basename(file_path)
 
     for i, chunk in enumerate(chunks):
         meta = dict(metadata or {})
-        meta.update({"chunk": i, "fuente": nombre_archivo})
-        doc_id = guardar_texto_chroma(chunk, metadata=meta)
+        meta.update({"chunk": i, "source": nombre_archivo})
+        doc_id = save_text_chroma(chunk, metadata=meta)
         if doc_id:
             ids_guardados.append(doc_id)
             print(f"  Chunk {i + 1}/{len(chunks)} saved")
@@ -86,7 +86,7 @@ def main():
             continue
 
         print(f"\n--- Ingesting: {filename} ---")
-        ids = ingestar_archivo_txt(ruta, metadata=metadata)
+        ids = ingest_file_txt(ruta, metadata=metadata)
         print(f"  → {len(ids)} chunks saved.\n")
 
     print("\n=== Ingest complete ===")

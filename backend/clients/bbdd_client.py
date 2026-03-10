@@ -9,7 +9,7 @@ import uuid
 
 print("[bbdd_client] Import complete")
 
-def obtener_cliente():
+def obtain_client():
     """Establish a connection to the persistent ChromaDB database."""
     try:
         # Creates a client that persists data to local disk
@@ -19,7 +19,7 @@ def obtener_cliente():
         print(f" Error connecting to ChromaDB: {e}")
         return None
 
-def preparar_coleccion(client):
+def prepare_collection(client):
     """
     Create the collection (equivalent to a table) if it does not exist.
     Configures the embeddings model automatically.
@@ -37,13 +37,13 @@ def preparar_coleccion(client):
     return coleccion
 
 
-def guardar_texto_chroma(texto, id=None, metadata=None):
+def save_text_chroma(texto, id=None, metadata=None):
     """Generate embedding locally and save the text in the Chroma collection."""
-    client = obtener_cliente()
+    client = obtain_client()
     if not client:
         return None
 
-    coleccion = preparar_coleccion(client)
+    coleccion = prepare_collection(client)
     if id is None:
         id = str(uuid.uuid4())
 
@@ -64,13 +64,13 @@ def guardar_texto_chroma(texto, id=None, metadata=None):
         return None
 
 
-def buscar_similares(texto, n=3):
+def search_similars(texto, n=3):
     """Generate an embedding for the text and query the Chroma collection by similarity."""
-    client = obtener_cliente()
+    client = obtain_client()
     if not client:
         return None
 
-    coleccion = preparar_coleccion(client)
+    coleccion = prepare_collection(client)
     try:
         resultados = coleccion.query(
             query_texts=[texto],
@@ -82,15 +82,45 @@ def buscar_similares(texto, n=3):
         print(f"Error querying Chroma: {e}")
         return None
 
+
+def search_by_source(source: str) -> list[str]:
+    """Retrieve all chunks from ChromaDB that belong to a specific source file.
+
+    Args:
+        source: filename as stored in metadata (e.g. 'redes_neuronales.txt')
+
+    Returns:
+        List of chunk strings ordered by chunk index, or [] on error.
+    """
+    client = obtain_client()
+    if not client:
+        return []
+
+    coleccion = prepare_collection(client)
+    try:
+        results = coleccion.get(
+            where={"source": source},
+            include=["metadatas", "documents"],
+        )
+        if not results or not results.get("documents"):
+            return []
+        # Sort chunks by their index so context is ordered
+        pares = list(zip(results["metadatas"], results["documents"]))
+        pares.sort(key=lambda p: p[0].get("chunk", 0))
+        return [doc for _, doc in pares]
+    except Exception as e:
+        print(f"Error retrieving documents by source: {e}")
+        return []
+
 if __name__ == "__main__":
     # Initialization test
-    cliente = obtener_cliente()
+    cliente = obtain_client()
     if cliente:
-        mi_coleccion = preparar_coleccion(cliente)
+        mi_coleccion = prepare_collection(cliente)
         # Sample insert and quick query
         ejemplo = "This is a test text to store in ChromaDB."
-        doc_id = guardar_texto_chroma(ejemplo)
+        doc_id = save_text_chroma(ejemplo)
         if doc_id:
             print("Running test search...")
-            res = buscar_similares("test text")
+            res = search_similars("test text")
             print(res)

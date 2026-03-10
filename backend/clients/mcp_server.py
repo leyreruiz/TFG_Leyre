@@ -1,5 +1,5 @@
 from fastmcp import FastMCP
-from backend.clients.bbdd_client import buscar_similares
+from backend.clients.bbdd_client import search_similars
 
 # Creación del servidor MCP llamado "Conocimiento_TFG"
 mcp = FastMCP("Conocimiento_TFG")
@@ -13,7 +13,7 @@ def consultar_base_conocimiento(pregunta: str) -> str:
     print(f"[Servidor MCP] Procesando consulta: {pregunta}")
     
     # Se utiliza la función de búsqueda de ChromaDB ya existente
-    resultados = buscar_similares(pregunta, n=3)
+    resultados = search_similars(pregunta, n=3)
     
     if not resultados or not resultados.get("documents"):
         return "No se ha encontrado información relevante en los documentos locales."

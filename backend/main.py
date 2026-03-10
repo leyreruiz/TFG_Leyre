@@ -22,14 +22,14 @@ from backend.orchestrator import Orchestrator
 from backend.agents.summary_agent import SummaryAgent
 from backend.agents.exam_agent import ExamAgent
 from backend.rag.retriever import ChromaDbRetriever
-from backend.ingest_topics import ingestar_archivo_txt
+from backend.ingest_topics import ingest_file_txt
 
 
 def build_orchestrator():
     """Build the orchestrator with all available agents."""
     retriever = ChromaDbRetriever()
     summary_agent = SummaryAgent(retriever)
-    exam_agent = ExamAgent()  # ExamAgent works with specific files, not RAG
+    exam_agent = ExamAgent(retriever)  # Uses ChromaDB: file mode or semantic mode
 
     orchestrator = Orchestrator(
         agents=[summary_agent, exam_agent]
@@ -42,7 +42,7 @@ def main():
     if len(sys.argv) >= 3 and sys.argv[1] == "--ingest":
         ruta = sys.argv[2]
         print(f"\n=== INGEST ===\nFile: {ruta}\n")
-        ids = ingestar_archivo_txt(ruta)
+        ids = ingest_file_txt(ruta)
         if ids:
             print(f"\nIngest complete: {len(ids)} chunks saved.")
         else:

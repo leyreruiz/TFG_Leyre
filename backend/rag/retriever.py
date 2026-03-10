@@ -5,9 +5,10 @@ a list of strings (relevant documents).
 """
 
 from backend.clients.bbdd_client import (
-    obtener_cliente,
-    preparar_coleccion,
-    buscar_similares,
+    obtain_client,
+    prepare_collection,
+    search_similars,
+    search_by_source,
 )
 
 
@@ -21,13 +22,22 @@ class ChromaDbRetriever:
             List of strings with the document contents.
             Empty list if no results or on error.
         """
-        resultados = buscar_similares(query, n=k)
+        results = search_similars(query, n=k)
 
-        if not resultados or not resultados.get("documents"):
+        if not results or not results.get("documents"):
             return []
 
-        # resultados["documents"] is [[doc1, doc2, ...]]
-        return resultados["documents"][0]
+        # results["documents"] is [[doc1, doc2, ...]]
+        return results["documents"][0]
+
+    def search_by_source(self, fuente: str) -> list[str]:
+        """Retrieve all chunks for a specific source file, ordered by chunk index.
+
+        Returns:
+            List of strings with the full document contents.
+            Empty list if no results or on error.
+        """
+        return search_by_source(fuente)
 
 
 class DummyRetriever:

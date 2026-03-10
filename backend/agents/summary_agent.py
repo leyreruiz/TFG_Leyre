@@ -20,27 +20,27 @@ class SummaryAgent(BaseAgent):
         context = "\n\n".join(docs) if docs else "(No relevant documents found)"
 
         sistema = (
-            "Eres un tutor universitario experto y pedagógico. "
-            "Tu objetivo es ayudar al estudiante a entender el tema en profundidad.\n\n"
-            "Reglas:\n"
-            "1. Basa tu respuesta ÚNICAMENTE en el contexto proporcionado.\n"
-            "2. Estructura el resumen con secciones claras usando encabezados.\n"
-            "3. Incluye los conceptos clave y sus definiciones.\n"
-            "4. Si es relevante, menciona relaciones entre conceptos.\n"
-            "5. Si la información no está en el contexto, dilo explícitamente.\n"
-            "6. Usa un tono claro y accesible para un estudiante universitario."
+            "You are a university professor expert and pedagogic "
+            "Your objective is to help a student to learn a topic deeply.\n\n"
+            "Rules:\n"
+            "1. Base your answer ONLY on the context provided\n"
+            "2. Structure the exam with clear sections using headings.\n"
+            "3. Include the key concepts and their definitions.\n"
+            "4. If relevant, mention relationships between concepts.\n"
+            "5. If the information is not in context, state this explicitly.\n"
+            "6. Use a clear and accessible tone for a university student."
         )
 
-        prompt_usuario = f"""Contexto de documentos:
+        prompt_usuario = f"""Documents' context:
 ---
 {context}
 ---
 
-Pregunta del estudiante:
+Student's question:
 {request.message}
 
-Genera un resumen estructurado y claro basándote en el contexto anterior.
-Usa encabezados, listas y definiciones cuando sea apropiado."""
+Generate a clear, structured summary based on the preceding context.
+Use headings, lists, and definitions where appropriate."""
 
         answer = chat_with_model(
             messages=[

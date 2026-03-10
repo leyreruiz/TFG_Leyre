@@ -1,4 +1,9 @@
-"""Exam Agent: generates multiple-choice exam questions based on a specific file."""
+"""Exam Agent: generates multiple-choice exam questions.
+
+Two retrieval modes selected automatically:
+  - File mode:     query matches a known .txt file  → all chunks of that file (ChromaDB)
+  - Semantic mode: query is a topic/concept         → similarity search across all sources
+"""
 
 import os
 import re
@@ -9,9 +14,10 @@ from backend.clients.llm_client import chat_with_model
 
 
 class ExamAgent(BaseAgent):
-    """Generates multiple-choice exam questions based on a specific file."""
+    """Generates multiple-choice exam questions using ChromaDB as the only data source."""
 
-    def __init__(self, llm_model="llama-3.3-70b-versatile", num_questions=3, data_dir="backend/data"):
+    def __init__(self, retriever, llm_model="llama-3.3-70b-versatile", num_questions=3, data_dir="backend/data"):
+        self.retriever = retriever
         self.llm_model = llm_model
         self.num_questions = num_questions
         self.data_dir = data_dir
@@ -20,141 +26,132 @@ class ExamAgent(BaseAgent):
         return intent == "exam"
 
     def handle(self, request: StudentRequest) -> dict:
-        """Generate an exam based on the specified file.
-        
-        Args:
-            request.message: Message with keywords + filename
-                           e.g. "examen redes_neuronales" or "test bases_datos.txt"
-        
+        """Generate an exam choosing the retrieval mode automatically.
+
+        - If the term extracted from the message matches a known .txt file,
+          ALL chunks of that file are retrieved from ChromaDB (file mode).
+        - Otherwise, a semantic similarity search is performed across all
+          ingested sources (semantic mode), useful for cross-topic queries.
+
         Returns:
-            dict with content (raw text) and questions (parsed)
+            dict with content (raw text), questions (parsed), mode and source info.
         """
-        # Extract the filename from the message, ignoring keywords
-        filename = self._extract_filename(request.message)
-        
-        if not filename:
+        term = self._extract_term(request.message)
+
+        if not term:
             return {
                 "agent": "exam",
-                "error": f"No file specified. Usage: 'examen redes_neuronales' or 'exam bases_datos'. Available: {self._list_available_files()}",
+                "error": (
+                    "No file or topic specified in the message. "
+                    "Examples: 'exam redes_neuronales', 'exam aprendizaje supervisado'."
+                ),
             }
+
+        # Detect retrieval mode
+        candidate_file = term if term.endswith(".txt") else term + ".txt"
+        known_files = self._list_known_files()
         
-        # Ensure .txt extension
-        if not filename.endswith(".txt"):
-            filename = filename + ".txt"
-        
-        # Build the file path
-        filepath = os.path.join(self.data_dir, filename)
-        
-        # Check that the file exists
-        if not os.path.exists(filepath):
+        if candidate_file in known_files:
+            # FILE MODE: retrieve all chunks of that specific file
+            print(f"[ExamAgent] Mode: file ({candidate_file})")
+            docs = self.retriever.search_by_source(candidate_file)
+            mode = "file"
+            source_info = candidate_file
+        else:
+            # SEMANTIC MODE: similarity search across all sources
+            print(f"[ExamAgent] Mode: semantic (query: {term})")
+            docs = self.retriever.search(term, k=10)
+            mode = "semantic"
+            source_info = term
+
+        if not docs:
             return {
                 "agent": "exam",
-                "error": f"File not found: {filename}. Available: {self._list_available_files()}",
+                "error": (
+                    f"No information was found about '{term}' "
+                    f"Available files: {', '.join(known_files)}"
+                ),
             }
-        
-        # Read the file contents
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                content = f.read()
-        except Exception as e:
-            return {
-                "agent": "exam",
-                "error": f"Error reading file: {e}",
-            }
-        
-        if not content.strip():
-            return {
-                "agent": "exam",
-                "error": f"File {filename} is empty.",
-            }
-        
-        # Generate questions based on the full file content
-        raw_answer = self._generate_questions(content, filename)
-        
+
+        context = "\n\n".join(docs)
+
+        # Generate questions based on the retrieved context
+        raw_answer = self._generate_questions(context, source_info)
+
         if raw_answer is None:
             return {
                 "agent": "exam",
-                "error": "Could not generate the exam.",
+                "error": "No information was found about '{term}' "
+                         f"Available files: {', '.join(known_files)}"
             }
-        
-        # Parse questions into structured format
+
         questions = self._parse_questions(raw_answer)
-        
+
         return {
             "agent": "exam",
             "content": raw_answer,
             "questions": questions,
             "num_questions": len(questions),
-            "source_file": filename,
+            "retrieval_mode": mode,
+            "source": source_info,
         }
 
-    def _extract_filename(self, message: str) -> str | None:
-        """Extract the filename from the message, ignoring keywords.
-        
+    def _extract_term(self, message: str) -> str | None:
+        """Extract the topic/filename term from the message, stripping exam keywords.
+
         Examples:
-          "examen redes_neuronales" → "redes_neuronales"
-          "exam bases_datos.txt"    → "bases_datos.txt"
-          "test sistemas_operativos" → "sistemas_operativos"
-          "pregunta tipo redes_neuronales" → "redes_neuronales"
+          "examen redes_neuronales"        → "redes_neuronales"
+          "exam bases_datos.txt"           → "bases_datos.txt"
+          "examen aprendizaje supervisado" → "aprendizaje supervisado"
+          "test backpropagation"           → "backpropagation"
         """
-        # Keywords to strip
         keywords = ["examen", "exam", "test", "pregunta tipo", "pregunta", "tipo"]
-        
-        # Lowercase for matching
         message_lower = message.lower().strip()
-        
-        # Remove the keyword from the start of the message
         for kw in keywords:
             if message_lower.startswith(kw):
-                # Strip the keyword and surrounding whitespace
                 message = message[len(kw):].strip()
                 message_lower = message.lower().strip()
-        
-        # The remainder should be the filename
-        if message:
-            return message
-        return None
+        return message if message else None
 
-    def _list_available_files(self) -> str:
-        """List available files in the data directory."""
+    def _list_known_files(self) -> list[str]:
+        """Return the list of .txt filenames available in the data directory."""
         try:
-            files = [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
-            return ", ".join(files)
-        except:
-            return "Could not list available files"
+            return [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
+        except Exception:
+            return []
 
     def _generate_questions(self, content: str, filename: str) -> str | None:
         """Call the LLM to generate multiple-choice questions based on the file content."""
 
         sistema = (
-            "Eres un profesor universitario experto en crear exámenes. "
-            "Tu tarea es generar preguntas de tipo test (opción múltiple) "
-            "basándote ÚNICAMENTE en el contenido proporcionado. "
-            "Cada pregunta debe tener exactamente 4 opciones (a, b, c, d) "
-            "y solo una respuesta correcta."
+            "You are a univeristy professor expert in creating exams. "
+            "Your task is to generate multiple-choice questions (multiple options) "
+            "based ONLY on the provided content. "
+            "Each question must have exactly 4 options (a, b, c, d) "
+            "and only one correct answer."
         )
 
-        prompt_usuario = f"""Contenido del archivo '{filename}':
+        prompt_usuario = f"""File content '{filename}':
 ---
 {content}
 ---
 
-Genera exactamente {self.num_questions} preguntas de examen tipo test.
+Generate exactly {self.num_questions} multiple-choice questions.
 
-Para CADA pregunta usa este formato exacto:
+For each question, use this exact format:
 
-PREGUNTA 1: [texto de la pregunta]
-a) [opción a]
-b) [opción b]
-c) [opción c]
-d) [opción d]
-RESPUESTA: [letra correcta]
-EXPLICACIÓN: [breve explicación de por qué es correcta]
+QUESTION 1: [question text]
+a) [option a]
+b) [option b]
+c) [option c]
+d) [option d]
+RESPONSE: [correct letter]
+EXPLANATION: [brief explanation of why it's correct]
 
-Asegúrate de que:
-- Las preguntas cubran diferentes aspectos del contenido
-- Las opciones incorrectas sean plausibles pero claramente distinguibles
-- Las explicaciones sean concisas y útiles para el aprendizaje"""
+Make sure:
+- The questions cover different aspects of the content
+- The incorrect options are plausible but clearly distinguishable
+- The explanations are concise and useful for learning"""
 
         return chat_with_model(
             messages=[
@@ -175,13 +172,13 @@ Asegúrate de que:
 
         # Pattern to match each question block
         pattern = (
-            r"PREGUNTA\s*\d+\s*:\s*(.+?)\n"  # question text
+            r"QUESTION\s*\d+\s*:\s*(.+?)\n"  # question text
             r"\s*a\)\s*(.+?)\n"                # option a
             r"\s*b\)\s*(.+?)\n"                # option b
             r"\s*c\)\s*(.+?)\n"                # option c
             r"\s*d\)\s*(.+?)\n"                # option d
-            r"\s*RESPUESTA\s*:\s*([abcd])\s*\n?"   # correct answer
-            r"\s*EXPLICACI[\xd3O]N\s*:\s*(.+?)(?=\n\s*PREGUNTA|\Z)"  # explanation
+            r"\s*RESPONSE\s*:\s*([abcd])\s*\n?"   # correct answer
+            r"\s*EXPLANATION\s*:\s*(.+?)(?=\n\s*QUESTION|\Z)"  # explanation
         )
 
         matches = re.findall(pattern, raw_text, re.DOTALL | re.IGNORECASE)
