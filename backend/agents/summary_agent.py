@@ -7,7 +7,7 @@ from backend.clients.llm_client import chat_with_model
 
 class SummaryAgent(BaseAgent):
 
-    def __init__(self, retriever, llm_model="llama-3.3-70b-versatile"):
+    def __init__(self, retriever, llm_model="llama-3.1-8b-instant"):
         self.retriever = retriever
         self.llm_model = llm_model
 
@@ -16,12 +16,6 @@ class SummaryAgent(BaseAgent):
 
     def _extract_search_query(self, message: str) -> str:
         """Strip summary-intent keywords so only the topic term reaches ChromaDB.
-
-        Examples:
-          "hazme un resumen de relu"     → "relu"
-          "resume redes neuronales"      → "redes neuronales"
-          "summary backpropagation"      → "backpropagation"
-          "explícame los transformers"   → "los transformers"
         """
         keywords = [
             "hazme un resumen de", "hazme un resumen sobre",
@@ -45,7 +39,7 @@ class SummaryAgent(BaseAgent):
         docs = self.retriever.search(search_query, k=5)
         context = "\n\n".join(docs) if docs else "(No relevant documents found)"
 
-        sistema = (
+        system = (
             "You are a university professor expert and pedagogic "
             "Your objective is to help a student to learn a topic deeply.\n\n"
             "Rules:\n"
@@ -57,7 +51,7 @@ class SummaryAgent(BaseAgent):
             "6. Use a clear and accessible tone for a university student."
         )
 
-        prompt_usuario = f"""Documents' context:
+        user_prompt = f"""Documents' context:
 ---
 {context}
 ---
@@ -66,12 +60,18 @@ Student's question:
 {request.message}
 
 Generate a clear, structured summary based on the preceding context.
-Use headings, lists, and definitions where appropriate."""
+Use headings, lists, and definitions where appropriate.
+
+Format the response using Markdown with the following rules:
+1. Use `#` for main headings and `##` for subheadings.
+2. Use `**bold**` for key terms and `*italic*` for emphasis.
+3. Use bullet points for lists.
+4. Ensure the content is visually appealing and easy to read."""
 
         answer = chat_with_model(
             messages=[
-                {"role": "system", "content": sistema},
-                {"role": "user", "content": prompt_usuario},
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_prompt},
             ],
             model=self.llm_model,
             temperature=0.7,

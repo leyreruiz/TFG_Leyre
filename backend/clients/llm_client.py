@@ -6,8 +6,8 @@ print("[llm_client] Importing groq...")
 from groq import Groq
 print("[llm_client] Groq imported successfully")
 
-MODEL = "llama-3.3-70b-versatile"
-client = Groq(api_key="")  # pega tu key aquí
+MODEL = "llama-3.1-8b-instant"
+client = Groq(api_key="")
 print("[llm_client] Import complete")
 
 
@@ -16,7 +16,7 @@ def chat_with_model(messages, model=MODEL, temperature=0.7):
     
     Args:
         messages: list of dicts {"role": "user"|"assistant", "content": "..."}
-        model: model to use (default: llama-3.3-70b-versatile)
+        model: model to use (default: llama-3.1-8b-instant)
         temperature: creativity (0-1)
     
     Returns:
@@ -34,41 +34,3 @@ def chat_with_model(messages, model=MODEL, temperature=0.7):
     except Exception as e:
         print(f"Error querying {model}: {e}")
         return None
-
-
-def main():
-    if len(sys.argv) > 1:
-        prompt = " ".join(sys.argv[1:])
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        print(response.choices[0].message.content)
-        return
-
-    print(f"Chat with {MODEL} (type 'quit' to exit)\n")
-    history = []
-
-    while True:
-        try:
-            prompt = input("You: ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print("\nGoodbye!")
-            break
-
-        if not prompt:
-            continue
-        if prompt.lower() in ("salir", "exit", "quit"):
-            print("Goodbye!")
-            break
-
-        history.append({"role": "user", "content": prompt})
-        response = client.chat.completions.create(model=MODEL, messages=history)
-        answer = response.choices[0].message.content
-        history.append({"role": "assistant", "content": answer})
-
-        print(f"\nModel: {answer}\n")
-
-
-if __name__ == "__main__":
-    main()

@@ -29,7 +29,7 @@ def build_orchestrator():
     """Build the orchestrator with all available agents."""
     retriever = ChromaDbRetriever()
     summary_agent = SummaryAgent(retriever)
-    exam_agent = ExamAgent(retriever)  # Uses ChromaDB: file mode or semantic mode
+    exam_agent = ExamAgent(retriever) 
 
     orchestrator = Orchestrator(
         agents=[summary_agent, exam_agent]

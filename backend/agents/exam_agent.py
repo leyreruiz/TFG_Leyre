@@ -12,11 +12,12 @@ from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
 from backend.clients.llm_client import chat_with_model
 
+SUMMARY_MARKER = "using the following summary context:"
 
 class ExamAgent(BaseAgent):
     """Generates multiple-choice exam questions using ChromaDB as the only data source."""
 
-    def __init__(self, retriever, llm_model="llama-3.3-70b-versatile", num_questions=3, data_dir="backend/data"):
+    def __init__(self, retriever, llm_model="llama-3.1-8b-instant", num_questions=3, data_dir="backend/data"):
         self.retriever = retriever
         self.llm_model = llm_model
         self.num_questions = num_questions
@@ -25,55 +26,72 @@ class ExamAgent(BaseAgent):
     def can_handle(self, intent: str) -> bool:
         return intent == "exam"
 
+
+    #mejorar esta funcion y optimizar
     def handle(self, request: StudentRequest) -> dict:
         """Generate an exam choosing the retrieval mode automatically.
 
-        - If the term extracted from the message matches a known .txt file,
-          ALL chunks of that file are retrieved from ChromaDB (file mode).
+        - If the message contains "using the following summary context:" the exam is generated directly
+          from the provided summary (pipeline mode), skipping RAG retrieval.
         - Otherwise, a semantic similarity search is performed across all
           ingested sources (semantic mode), useful for cross-topic queries.
 
         Returns:
             dict with content (raw text), questions (parsed), mode and source info.
         """
-        term = self._extract_term(request.message)
 
-        if not term:
-            return {
-                "agent": "exam",
-                "error": (
-                    "No file or topic specified in the message. "
-                    "Examples: 'exam redes_neuronales', 'exam aprendizaje supervisado'."
-                ),
-            }
-
-        # Detect retrieval mode
-        candidate_file = term if term.endswith(".txt") else term + ".txt"
-        known_files = self._list_known_files()
-        
-        if candidate_file in known_files:
-            # FILE MODE: retrieve all chunks of that specific file
-            print(f"[ExamAgent] Mode: file ({candidate_file})")
-            docs = self.retriever.search_by_source(candidate_file)
-            mode = "file"
-            source_info = candidate_file
-        else:
-            # SEMANTIC MODE: similarity search across all sources
-            print(f"[ExamAgent] Mode: semantic (query: {term})")
-            docs = self.retriever.search(term, k=10)
-            mode = "semantic"
+        # PIPELINE MODE: summary was provided, skip RAG
+        if SUMMARY_MARKER in request.message:
+            header, _, summary_text = request.message.partition(SUMMARY_MARKER)
+            term = self._extract_term(header.strip()) or header.strip()
+            context = summary_text.strip()
+            mode = "summary"
             source_info = term
+            print(f"[ExamAgent] Mode: summary (section: {term})")
 
-        if not docs:
-            return {
-                "agent": "exam",
-                "error": (
-                    f"No information was found about '{term}' "
-                    f"Available files: {', '.join(known_files)}"
-                ),
-            }
+            if not context:
+                return {
+                    "agent": "exam",
+                    "error": f"Summary context is empty for '{term}'.",
+                }
 
-        context = "\n\n".join(docs)
+        # RAG MODE: search ChromaDB    
+        else:
+            term = self._extract_term(request.message)
+
+            if not term:
+                return {
+                    "agent": "exam",
+                    "error": (
+                        "No file or topic specified in the message. "
+                        "Examples: 'exam redes_neuronales', 'exam aprendizaje supervisado'."
+                    ),
+                }
+
+            candidate_file = term if term.endswith(".txt") else term + ".txt"
+            known_files = self._list_known_files()
+
+            if candidate_file in known_files:
+                print(f"[ExamAgent] Mode: file ({candidate_file})")
+                docs = self.retriever.search_by_source(candidate_file)
+                mode = "file"
+                source_info = candidate_file
+            else:
+                print(f"[ExamAgent] Mode: semantic (query: {term})")
+                docs = self.retriever.search(term, k=10)
+                mode = "semantic"
+                source_info = term
+
+            if not docs:
+                return {
+                    "agent": "exam",
+                    "error": (
+                        f"No information was found about '{term}'. "
+                        f"Available files: {', '.join(known_files)}"
+                    ),
+                }
+
+            context = "\n\n".join(docs)
 
         # Generate questions based on the retrieved context
         raw_answer = self._generate_questions(context, source_info)
@@ -98,14 +116,8 @@ class ExamAgent(BaseAgent):
 
     def _extract_term(self, message: str) -> str | None:
         """Extract the topic/filename term from the message, stripping exam keywords.
-
-        Examples:
-          "examen redes_neuronales"        → "redes_neuronales"
-          "exam bases_datos.txt"           → "bases_datos.txt"
-          "examen aprendizaje supervisado" → "aprendizaje supervisado"
-          "test backpropagation"           → "backpropagation"
         """
-        keywords = ["examen", "exam", "test", "pregunta tipo", "pregunta", "tipo"]
+        keywords = ["examen", "exam", "test", "pregunta"]
         message_lower = message.lower().strip()
         for kw in keywords:
             if message_lower.startswith(kw):
@@ -125,10 +137,8 @@ class ExamAgent(BaseAgent):
 
         sistema = (
             "You are a univeristy professor expert in creating exams. "
-            "Your task is to generate multiple-choice questions (multiple options) "
-            "based ONLY on the provided content. "
-            "Each question must have exactly 4 options (a, b, c, d) "
-            "and only one correct answer."
+            "Your task is to generate multiple-choice questions (multiple options) based ONLY on the provided content. "
+            "Each question must have exactly 4 options (a, b, c, d) and ONLY ONE correct answer."
         )
 
         prompt_usuario = f"""File content '{filename}':
@@ -165,36 +175,54 @@ Make sure:
     def _parse_questions(self, raw_text: str) -> list[dict]:
         """Attempt to parse the LLM response into a structured list.
 
-        Uses regex to extract each question with its options and answer.
+        Uses resilient block parsing to extract each question with its options and answer.
         Returns an empty list if parsing fails (raw text is still available).
         """
         questions = []
 
-        # Pattern to match each question block
-        pattern = (
-            r"QUESTION\s*\d+\s*:\s*(.+?)\n"  # question text
-            r"\s*a\)\s*(.+?)\n"                # option a
-            r"\s*b\)\s*(.+?)\n"                # option b
-            r"\s*c\)\s*(.+?)\n"                # option c
-            r"\s*d\)\s*(.+?)\n"                # option d
-            r"\s*RESPONSE\s*:\s*([abcd])\s*\n?"   # correct answer
-            r"\s*EXPLANATION\s*:\s*(.+?)(?=\n\s*QUESTION|\Z)"  # explanation
-        )
+        # Split per QUESTION block to avoid brittle cross-question regex assumptions.
+        blocks = re.split(r"(?=\bQUESTION\s*\d+\s*:)", raw_text, flags=re.IGNORECASE)
 
-        matches = re.findall(pattern, raw_text, re.DOTALL | re.IGNORECASE)
+        for block in blocks:
+            if not re.search(r"\bQUESTION\s*\d+\s*:", block, flags=re.IGNORECASE):
+                continue
 
-        for match in matches:
-            q_text, opt_a, opt_b, opt_c, opt_d, correct, explanation = match
+            q_match = re.search(
+                r"QUESTION\s*\d+\s*:\s*(.*?)\s*(?=\n\s*[aA][\)\.]\s)",
+                block,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            if not q_match:
+                continue
+
+            # Accept both "a)" and "a." (same for b/c/d), with optional spaces.
+            option_pattern = r"\n\s*([a-dA-D])[\)\.]\s*(.*?)(?=\n\s*[a-dA-D][\)\.]\s|\n\s*RESPONSE\s*:|$)"
+            option_matches = re.findall(option_pattern, block, flags=re.IGNORECASE | re.DOTALL)
+            options_map = {letter.lower(): text.strip() for letter, text in option_matches}
+
+            if not all(k in options_map for k in ("a", "b", "c", "d")):
+                continue
+
+            response_match = re.search(r"RESPONSE\s*:\s*([a-dA-D])", block, flags=re.IGNORECASE)
+            explanation_match = re.search(
+                r"EXPLANATION\s*:\s*(.*)",
+                block,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+
+            if not response_match:
+                continue
+
             questions.append({
-                "question": q_text.strip(),
+                "question": q_match.group(1).strip(),
                 "options": [
-                    opt_a.strip(),
-                    opt_b.strip(),
-                    opt_c.strip(),
-                    opt_d.strip(),
+                    options_map["a"],
+                    options_map["b"],
+                    options_map["c"],
+                    options_map["d"],
                 ],
-                "correct_answer": correct.strip().lower(),
-                "explanation": explanation.strip(),
+                "correct_answer": response_match.group(1).strip().lower(),
+                "explanation": explanation_match.group(1).strip() if explanation_match else "",
             })
 
         return questions

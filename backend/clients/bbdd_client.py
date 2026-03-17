@@ -22,19 +22,15 @@ def obtain_client():
 def prepare_collection(client):
     """
     Create the collection (equivalent to a table) if it does not exist.
-    Configures the embeddings model automatically.
     """
     print("[DEBUG] Preparing ChromaDB collection...")
-    print("[DEBUG] Using ChromaDB default embeddings (no model download required)...")
-    
-    # Use ChromaDB's default embeddings without downloading anything
-    # This avoids blocking on large model downloads
-    coleccion = client.get_or_create_collection(
+    print("[DEBUG] Using ChromaDB default embeddings...")
+
+    collection = client.get_or_create_collection(
         name=COLLECTION_NAME,
-        # Without specifying embedding_function, uses default embeddings
     )
     print(f"✓ Collection '{COLLECTION_NAME}' verified or created at {DB_PATH}.")
-    return coleccion
+    return collection
 
 
 def delete_collection():
@@ -55,7 +51,7 @@ def save_text_chroma(texto, id=None, metadata=None):
     if not client:
         return None
 
-    coleccion = prepare_collection(client)
+    collection = prepare_collection(client)
     if id is None:
         id = str(uuid.uuid4())
 
@@ -68,7 +64,7 @@ def save_text_chroma(texto, id=None, metadata=None):
         if isinstance(metadata, dict) and len(metadata) > 0:
             add_kwargs["metadatas"] = [metadata]
 
-        coleccion.add(**add_kwargs)
+        collection.add(**add_kwargs)
         print(f"Document saved in Chroma with id={id}")
         return id
     except Exception as e:
@@ -82,9 +78,9 @@ def search_similars(texto, n=3):
     if not client:
         return None
 
-    coleccion = prepare_collection(client)
+    collection = prepare_collection(client)
     try:
-        resultados = coleccion.query(
+        resultados = collection.query(
             query_texts=[texto],
             n_results=n,
             include=["metadatas", "documents", "distances"]
@@ -108,9 +104,9 @@ def search_by_source(source: str) -> list[str]:
     if not client:
         return []
 
-    coleccion = prepare_collection(client)
+    collection = prepare_collection(client)
     try:
-        results = coleccion.get(
+        results = collection.get(
             where={"source": source},
             include=["metadatas", "documents"],
         )
@@ -128,7 +124,7 @@ if __name__ == "__main__":
     # Initialization test
     cliente = obtain_client()
     if cliente:
-        mi_coleccion = prepare_collection(cliente)
+        mi_collection = prepare_collection(cliente)
         # Sample insert and quick query
         ejemplo = "This is a test text to store in ChromaDB."
         doc_id = save_text_chroma(ejemplo)

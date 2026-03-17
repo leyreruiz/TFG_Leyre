@@ -72,9 +72,8 @@ def ingest_file_txt(file_path: str, metadata: dict | None = None) -> list[str]:
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 TOPICS = [
-    ("redes_neuronales.txt", {"tema": "redes_neuronales", "asignatura": "IA"}),
-    ("bases_datos.txt", {"tema": "bases_datos", "asignatura": "BBDD"}),
-    ("sistemas_operativos.txt", {"tema": "sistemas_operativos", "asignatura": "SO"}),
+    ("neural_networks.txt", {"topic": "neural_networks", "course": "IA"}),
+    ("data_bases.txt", {"topic": "data_bases", "course": "BBDD"}),
 ]
 
 

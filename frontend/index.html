@@ -1,32 +1,36 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asistente Universitario</title>
+  <title>University Assistant</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; overflow: hidden; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #f0f2f5;
-      height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: stretch;
     }
 
+    /* ─── ROOT: fixed viewport column ─── */
     #app {
       display: flex;
       flex-direction: column;
       width: 100%;
-      max-width: 800px;
+      max-width: 900px;
+      height: 100vh;          /* exactly the viewport */
+      overflow: hidden;       /* children must not leak */
       background: white;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
 
-    /* Header */
+    /* ─── HEADER – never scrolls ─── */
     header {
+      flex: 0 0 auto;
       background: #1a73e8;
       color: white;
       padding: 16px 24px;
@@ -36,345 +40,639 @@
     }
     header h1 { font-size: 1.1rem; font-weight: 600; }
     header .subtitle { font-size: 0.8rem; opacity: 0.8; margin-top: 2px; }
-    .status-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: #4caf50;
-      flex-shrink: 0;
-    }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #4caf50; flex-shrink: 0; }
     .status-dot.offline { background: #f44336; }
-
-    /* Hints bar */
-    .hints {
-      background: #e8f0fe;
-      padding: 8px 24px;
-      font-size: 0.78rem;
-      color: #1a73e8;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      border-bottom: 1px solid #d0d7f0;
+    .header-back {
+      margin-left: auto;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 6px 16px;
+      border-radius: 20px; font-size: 0.8rem;
+      cursor: pointer; font-weight: 600;
     }
-    .hints span::before { content: "💡 "; }
+    .header-back:hover { background: rgba(255,255,255,0.3); }
 
-    /* Messages */
-    .messages {
-      flex: 1;
+    /* ─── SCREENS that fill remainder ─── */
+    .welcome-screen,
+    .loading-screen,
+    .error-screen {
+      flex: 1 1 0;            /* grow + shrink, basis 0 */
+      min-height: 0;
       overflow-y: auto;
-      padding: 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-    }
-
-    .welcome {
-      text-align: center;
-      color: #888;
-      padding: 40px 20px;
-    }
-    .welcome h2 { color: #1a73e8; margin-bottom: 8px; font-size: 1.2rem; }
-    .welcome p { font-size: 0.9rem; line-height: 1.6; }
-
-    .msg { display: flex; flex-direction: column; max-width: 85%; }
-    .msg.user { align-self: flex-end; align-items: flex-end; }
-    .msg.bot  { align-self: flex-start; align-items: flex-start; }
-
-    .bubble {
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 0.92rem;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .msg.user .bubble {
-      background: #1a73e8;
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .msg.bot .bubble {
-      background: #f1f3f4;
-      color: #202124;
-      border-bottom-left-radius: 4px;
-      white-space: pre-wrap;
-    }
-    .msg.bot .bubble.error {
-      background: #fce8e6;
-      color: #c62828;
-    }
-
-    .agent-badge {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      margin-bottom: 4px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .badge-summary { background: #e8f5e9; color: #2e7d32; }
-    .badge-exam    { background: #fff3e0; color: #e65100; }
-
-    /* Exam cards */
-    .exam-questions { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
-    .q-card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 0.88rem;
-    }
-    .q-card .q-text { font-weight: 600; margin-bottom: 10px; color: #202124; }
-    .q-card .q-num { color: #1a73e8; margin-right: 6px; }
-    .option {
-      display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 6px;
-      margin: 3px 0;
-      cursor: default;
-    }
-    .option.correct { background: #e8f5e9; color: #2e7d32; font-weight: 600; }
-    .option.correct::after { content: " ✓"; }
-    .option-letter {
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      background: #e8eaed;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 700;
-      flex-shrink: 0;
-    }
-    .option.correct .option-letter { background: #4caf50; color: white; }
-    .explanation {
-      margin-top: 10px;
-      padding: 8px 10px;
-      background: #e8f0fe;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      color: #1a56b0;
-    }
-    .explanation::before { content: "📖 "; }
-
-    /* Typing indicator */
-    .typing { display: flex; gap: 4px; align-items: center; padding: 12px 16px; }
-    .typing span {
-      width: 8px; height: 8px;
-      background: #aaa;
-      border-radius: 50%;
-      animation: bounce 1.2s infinite;
-    }
-    .typing span:nth-child(2) { animation-delay: 0.2s; }
-    .typing span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-6px); }
+      justify-content: center;
+      padding: 40px 24px;
+      gap: 32px;
     }
 
-    /* Input area */
-    .input-area {
+    .welcome-icon { font-size: 4rem; }
+    .welcome-title { font-size: 1.8rem; font-weight: 700; color: #1a73e8; text-align: center; }
+    .welcome-subtitle { font-size: 1rem; color: #666; text-align: center; max-width: 400px; line-height: 1.6; }
+    .api-error { color: #c62828; background: #fce8e6; padding: 12px 20px; border-radius: 10px; font-size: 0.9rem; text-align: center; }
+
+    .topic-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; }
+    .topic-card {
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 24px; background: #f8f9ff;
+      border: 2px solid #e0e4f0; border-radius: 14px;
+      cursor: pointer; transition: all 0.2s;
+      font-size: 1rem; font-weight: 600; color: #333;
+    }
+    .topic-card:hover { border-color: #1a73e8; background: #e8f0fe; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,115,232,0.15); }
+    .topic-card .topic-icon { font-size: 1.6rem; width: 48px; height: 48px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08); flex-shrink: 0; }
+    .topic-card .topic-name { flex: 1; }
+    .topic-card .topic-arrow { color: #aaa; font-size: 1.2rem; transition: color 0.2s; }
+    .topic-card:hover .topic-arrow { color: #1a73e8; }
+
+    .loading-spinner { width: 48px; height: 48px; border: 4px solid #e0e0e0; border-top-color: #1a73e8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 1.05rem; color: #1a73e8; font-weight: 600; text-align: center; }
+
+    /* ─── SESSION WRAPPER ───
+       Direct child of #app. Takes all remaining height.
+       Contains nav + a single scrollable area + action bar.  */
+    .session-wrapper {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Nav bar – never scrolls */
+    .session-nav {
+      flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+      padding: 12px 24px;
+      background: #f8f9ff;
+      border-bottom: 1px solid #e0e4f0;
+    }
+    .nav-step { display: flex; align-items: center; gap: 8px; padding: 8px 18px; font-size: 0.82rem; font-weight: 600; color: #aaa; border-radius: 20px; cursor: default; transition: all 0.2s; }
+    .nav-step.active    { background: #1a73e8; color: white; }
+    .nav-step.completed { color: #2e7d32; cursor: pointer; }
+    .nav-step.completed:hover { background: #e8f5e9; }
+    .nav-connector { width: 32px; height: 2px; background: #ddd; flex-shrink: 0; }
+    .nav-connector.done { background: #2e7d32; }
+
+    /* ── THE SCROLLABLE AREA ──
+       This single div fills everything between nav and action-bar.
+       overflow-y: auto does the scrolling.  */
+    .scroll-area {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow-y: scroll;
+      padding: 24px;
+    }
+    .scroll-area > * { margin-bottom: 20px; }
+    .scroll-area > *:last-child { margin-bottom: 0; }
+
+    /* Action bar – never scrolls */
+    .action-bar {
+      flex: 0 0 auto;
       padding: 16px 24px;
       border-top: 1px solid #e0e0e0;
-      display: flex;
-      gap: 10px;
+      display: flex; justify-content: center; gap: 12px;
       background: white;
     }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px 16px;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 24px;
-      font-size: 0.92rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type="text"]:focus { border-color: #1a73e8; }
-    input[type="text"]:disabled { background: #f5f5f5; }
 
-    button {
-      padding: 10px 20px;
-      background: #1a73e8;
-      color: white;
-      border: none;
-      border-radius: 24px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
+    /* ─── CONTENT CARDS ─── */
+    .structure-card { background: #f8f9ff; border: 1px solid #e0e4f0; border-radius: 14px; padding: 24px; }
+    .structure-card-title { font-weight: 700; font-size: 1.1rem; color: #1a73e8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+
+    .section-card { background: white; border: 1px solid #e0e4f0; border-radius: 14px; overflow: hidden; }
+    .section-card-header { background: #1a73e8; color: white; padding: 14px 20px; font-weight: 700; font-size: 0.95rem; }
+    /* markdown body */
+    .section-card-body { padding: 20px; line-height: 1.7; font-size: 0.92rem; color: #333; }
+    .section-card-body h1,.section-card-body h2 { font-size: 1.1rem; font-weight: 700; color: #1a73e8; margin: 16px 0 8px; border-bottom: 1px solid #e0e4f0; padding-bottom: 6px; }
+    .section-card-body h3,.section-card-body h4 { font-size: 0.97rem; font-weight: 700; color: #333; margin: 14px 0 6px; }
+    .section-card-body p { margin-bottom: 10px; }
+    .section-card-body ul,.section-card-body ol { padding-left: 22px; margin-bottom: 10px; }
+    .section-card-body li { margin-bottom: 4px; }
+    .section-card-body code { background: #f0f4ff; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.87rem; }
+    .section-card-body pre { background: #f0f4ff; padding: 14px; border-radius: 8px; overflow-x: auto; margin-bottom: 10px; }
+    .section-card-body pre code { background: none; padding: 0; }
+    .section-card-body table { border-collapse: collapse; width: 100%; margin-bottom: 10px; font-size: 0.88rem; }
+    .section-card-body th,.section-card-body td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    .section-card-body th { background: #e8f0fe; font-weight: 700; }
+    .section-card-body strong { font-weight: 700; }
+    .section-card-body em { font-style: italic; }
+    .section-card-body hr { border: none; border-top: 1px solid #e0e4f0; margin: 16px 0; }
+
+    /* ─── EXAM ─── */
+    .exam-header { text-align: center; padding: 8px 0 16px; }
+    .exam-header h2 { font-size: 1.3rem; color: #e65100; margin-bottom: 6px; }
+    .exam-header p  { font-size: 0.9rem; color: #888; }
+
+    .q-card { background: white; border: 2px solid #e0e4f0; border-radius: 14px; padding: 20px; transition: border-color 0.3s; }
+    .q-card.answered-correct { border-color: #4caf50; }
+    .q-card.answered-wrong   { border-color: #f44336; }
+    .q-text { font-weight: 600; margin-bottom: 14px; color: #202124; font-size: 0.95rem; line-height: 1.5; }
+    .q-num  { color: #1a73e8; margin-right: 8px; }
+
+    .option { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; margin: 6px 0; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; font-size: 0.9rem; }
+    .option:hover:not(.disabled) { background: #e8f0fe; border-color: #1a73e8; }
+    .option.disabled { cursor: default; }
+    .option.correct-reveal { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; font-weight: 600; }
+    .option.wrong-reveal   { background: #fce8e6; border-color: #f44336; color: #c62828; }
+    .option-letter { width: 28px; height: 28px; border-radius: 50%; background: #e8eaed; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; transition: all 0.2s; }
+    .option.correct-reveal .option-letter { background: #4caf50; color: white; }
+    .option.wrong-reveal   .option-letter { background: #f44336; color: white; }
+    .option-feedback { margin-left: auto; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+    .explanation { margin-top: 12px; padding: 12px 16px; background: #e8f0fe; border-radius: 10px; font-size: 0.85rem; color: #1a56b0; line-height: 1.5; }
+    .explanation::before { content: "📖 "; }
+
+    /* ─── SCORE ─── */
+    .score-card { background: linear-gradient(135deg, #1a73e8, #4285f4); color: white; border-radius: 14px; padding: 24px; text-align: center; }
+    .score-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .score-big     { font-size: 2.5rem; font-weight: 800; margin: 8px 0; }
+    .score-detail  { font-size: 0.9rem; opacity: 0.9; }
+
+    /* ─── BUTTONS ─── */
+    .btn { padding: 12px 28px; border: none; border-radius: 24px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #1a73e8; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #1558b0; }
+    .btn-exam    { background: #ff9800; color: white; }
+    .btn-exam:hover:not(:disabled)    { background: #e68900; }
+
+    .error-banner { background: #fce8e6; color: #c62828; padding: 16px 24px; text-align: center; border-radius: 10px; font-size: 0.9rem; }
+
+    /* ─── FILE UPLOAD SECTION ─── */
+    .upload-section { 
+      width: 100%; 
+      max-width: 420px; 
+      background: #e8f0fe; 
+      border: 2px dashed #1a73e8; 
+      border-radius: 14px; 
+      padding: 24px; 
+      text-align: center;
+      transition: all 0.2s;
     }
-    button:hover:not(:disabled) { background: #1558b0; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
+    .upload-section:hover { background: #d4e3fc; border-color: #0d47a1; }
+    .upload-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .upload-title { font-weight: 700; color: #1a73e8; margin-bottom: 6px; font-size: 1.05rem; }
+    .upload-subtitle { font-size: 0.85rem; color: #666; margin-bottom: 16px; }
+    .upload-input { display: none; }
+    .upload-btn { 
+      background: #1a73e8; 
+      color: white; 
+      padding: 10px 20px; 
+      border-radius: 20px; 
+      border: none; 
+      cursor: pointer; 
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .upload-btn:hover { background: #1558b0; }
+    .upload-status { 
+      margin-top: 12px; 
+      font-size: 0.85rem; 
+      color: #555;
+      font-weight: 500;
+    }
+    .upload-status.loading { color: #1a73e8; }
+    .upload-status.error { color: #c62828; }
+    .upload-status.success { color: #2e7d32; }
   </style>
 </head>
 <body>
 <div id="app">
+
+  <!-- HEADER -->
   <header>
     <div :class="['status-dot', apiOk ? '' : 'offline']"></div>
     <div>
-      <h1>Asistente Universitario</h1>
-      <div class="subtitle">{{ apiOk ? 'Conectado' : 'Sin conexión con la API' }}</div>
+      <h1>University Assistant</h1>
+      <div class="subtitle">{{ apiOk ? 'Connected' : 'API not reachable' }}</div>
     </div>
+    <button v-if="screen !== 'welcome'" class="header-back" @click="resetSession">← New class</button>
   </header>
 
-  <div class="hints">
-    <span>Resumen: "resume redes neuronales"</span>
-    <span>Examen: "examen redes_neuronales"</span>
-    <span>Temas: bases_datos · redes_neuronales · sistemas_operativos</span>
+  <!-- WELCOME -->
+  <div v-if="screen === 'welcome'" class="welcome-screen">
+    <div class="welcome-icon">📚</div>
+    <h1 class="welcome-title">Prepare a class</h1>
+    <p class="welcome-subtitle">Select a topic to start your session. A structure, summaries and an interactive exam will be generated.</p>
+    <div v-if="!apiOk" class="api-error">⚠️ Cannot connect to the API. Make sure the server is running.</div>
+    <div class="topic-grid" v-if="apiOk">
+      <div class="topic-card" v-for="t in topics" :key="t" @click="startSession(t)">
+        <div class="topic-icon">{{ topicIcon(t) }}</div>
+        <div class="topic-name">{{ formatTopicName(t) }}</div>
+        <div class="topic-arrow">→</div>
+      </div>
+    </div>
+    <div v-if="apiOk" class="upload-section">
+      <div class="upload-icon">📤</div>
+      <div class="upload-title">Upload your own topic</div>
+      <div class="upload-subtitle">Select a .txt file to ingest and process</div>
+      <input 
+        type="file" 
+        accept=".txt" 
+        ref="fileInput" 
+        class="upload-input"
+        @change="onFileSelected"
+      />
+      <button class="upload-btn" @click="selectFile">Choose file</button>
+      <div :class="['upload-status', uploadStatusClass]" v-if="uploadStatus">
+        {{ uploadStatus }}
+      </div>
+    </div>
   </div>
 
-  <div class="messages" ref="messagesEl">
-    <div class="welcome" v-if="messages.length === 0">
-      <h2>¿En qué puedo ayudarte?</h2>
-      <p>Puedo generar <strong>resúmenes</strong> de cualquier tema o crear un <strong>examen tipo test</strong> a partir de los archivos disponibles.</p>
+  <!-- LOADING -->
+  <div v-if="screen === 'loading'" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Preparing the class… this may take a few seconds</div>
+  </div>
+
+  <!-- ERROR -->
+  <div v-if="screen === 'error'" class="error-screen">
+    <div class="error-banner">{{ errorMsg }}</div>
+    <button class="btn btn-primary" @click="resetSession">Back to home</button>
+  </div>
+
+  <!-- SESSION
+       Layout: session-wrapper (flex col, overflow hidden)
+                 session-nav   (fixed height)
+                 scroll-area   (flex:1, overflow-y:auto)  ← SCROLLS
+                 action-bar    (fixed height)
+  -->
+  <div v-if="screen === 'session'" class="session-wrapper">
+
+    <!-- Progress nav -->
+    <div class="session-nav">
+      <div :class="['nav-step', phase === 'structure' ? 'active' : 'completed']">📋 Structure</div>
+      <template v-for="(sec, si) in sessionData.sections" :key="'nav-' + si">
+        <div :class="['nav-connector', si < currentSection || (si === currentSection && phase !== 'structure') ? 'done' : '']"></div>
+        <div
+          :class="['nav-step', navStepClass(si)]"
+          :title="canNavigateToSection(si) ? 'Go to this section' : ''"
+          @click="onNavStepClick(si)"
+        >
+          {{ si + 1 }}
+        </div>
+      </template>
+      <div :class="['nav-connector', phase === 'done' ? 'done' : '']"></div>
+      <div :class="['nav-step', phase === 'done' ? 'active' : '']">🏁</div>
     </div>
 
-    <template v-for="msg in messages" :key="msg.id">
-      <!-- Mensaje del usuario -->
-      <div class="msg user" v-if="msg.role === 'user'">
-        <div class="bubble">{{ msg.text }}</div>
-      </div>
+    <!-- ═══ SINGLE SCROLL AREA — all phase content goes here ═══ -->
+    <div class="scroll-area">
 
-      <!-- Mensaje del bot -->
-      <div class="msg bot" v-else>
-        <div v-if="msg.agent" :class="['agent-badge', msg.agent === 'exam' ? 'badge-exam' : 'badge-summary']">
-          {{ msg.agent === 'exam' ? '📝 Examen' : '📚 Resumen' }}
-          <span v-if="msg.agent === 'exam' && msg.sourceFile"> · {{ msg.sourceFile }}</span>
+      <!-- STRUCTURE -->
+      <template v-if="phase === 'structure'">
+        <div class="structure-card">
+          <div class="structure-card-title">📋 Class structure</div>
+          <div class="section-card-body" style="padding: 0;" v-html="renderMarkdown(sessionData.structure)"></div>
+        </div>
+      </template>
+
+      <!-- SUMMARY -->
+      <template v-if="phase === 'summary'">
+        <div class="section-card">
+          <div class="section-card-header">
+            Section {{ currentSection + 1 }} of {{ sessionData.sections.length }}: {{ currentSectionData.title }}
+          </div>
+          <div class="section-card-body" v-html="renderMarkdown(currentSectionData.summary)"></div>
+        </div>
+      </template>
+
+      <!-- EXAM -->
+      <template v-if="phase === 'exam'">
+        <div class="exam-header">
+          <h2>📝 Exam — Section {{ currentSection + 1 }}</h2>
+          <p>{{ currentSectionData.title }}</p>
         </div>
 
-        <div v-if="msg.error" class="bubble error">{{ msg.text }}</div>
+        <div
+          v-for="(q, qi) in currentSectionData.questions"
+          :key="qi"
+          :class="['q-card', questionState(currentSection, qi)]"
+        >
+          <div class="q-text"><span class="q-num">{{ qi + 1 }}.</span>{{ q.question }}</div>
+          <div
+            v-for="(opt, oi) in q.options" :key="oi"
+            :class="['option', optionClass(currentSection, qi, oi)]"
+            @click="selectAnswer(currentSection, qi, oi)"
+          >
+            <div class="option-letter">{{ letters[oi] }}</div>
+            <span>{{ opt }}</span>
+            <span class="option-feedback" v-if="isRevealed(currentSection, qi) && letters[oi] === q.correct_answer">✓</span>
+            <span class="option-feedback" v-if="isRevealed(currentSection, qi) && answers[answerKey(currentSection, qi)] === oi && letters[oi] !== q.correct_answer">✗</span>
+          </div>
+          <div class="explanation" v-if="isRevealed(currentSection, qi) && q.explanation">{{ q.explanation }}</div>
+        </div>
 
-        <!-- Respuesta de resumen: texto plano -->
-        <div v-else-if="msg.agent === 'summary'" class="bubble">{{ msg.text }}</div>
+        <div class="score-card" v-if="sectionAllAnswered">
+          <h3>Result — Section {{ currentSection + 1 }}</h3>
+          <div class="score-big">{{ sectionCorrectCount }} / {{ sectionTotalQuestions }}</div>
+          <div class="score-detail">{{ sectionCorrectCount === sectionTotalQuestions ? 'Perfect! 🎉' : sectionCorrectCount >= sectionTotalQuestions / 2 ? 'Good job! 💪' : 'Keep practising 📖' }}</div>
+        </div>
+      </template>
 
-        <!-- Respuesta de examen: tarjetas de preguntas -->
-        <div v-else-if="msg.agent === 'exam' && msg.questions && msg.questions.length > 0">
-          <div class="exam-questions">
-            <div class="q-card" v-for="(q, i) in msg.questions" :key="i">
-              <div class="q-text">
-                <span class="q-num">{{ i + 1 }}.</span>{{ q.question }}
-              </div>
-              <div
-                v-for="(opt, j) in q.options"
-                :key="j"
-                :class="['option', letters[j] === q.correct_answer ? 'correct' : '']"
-              >
-                <div class="option-letter">{{ letters[j] }}</div>
-                {{ opt }}
-              </div>
-              <div class="explanation" v-if="q.explanation">{{ q.explanation }}</div>
-            </div>
+      <!-- FINAL RESULTS -->
+      <template v-if="phase === 'done'">
+        <div class="score-card" style="background: linear-gradient(135deg, #1a73e8, #0d47a1);">
+          <h3>Final result</h3>
+          <div class="score-big">{{ totalCorrectCount }} / {{ totalQuestions }}</div>
+          <div class="score-detail">{{ totalCorrectCount === totalQuestions ? 'Perfect! 🎉' : totalCorrectCount >= totalQuestions / 2 ? 'Good job! 💪' : 'Keep practising 📖' }}</div>
+        </div>
+        <div v-for="(sec, si) in sessionData.sections" :key="'result-' + si" class="structure-card" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: #333;">{{ si + 1 }}. {{ sec.title }}</span>
+            <span :style="{ fontWeight: 700, color: sectionScore(si).correct === sectionScore(si).total ? '#2e7d32' : '#e65100' }">
+              {{ sectionScore(si).correct }} / {{ sectionScore(si).total }}
+            </span>
           </div>
         </div>
+      </template>
 
-        <!-- Fallback: texto raw si no se parsearon preguntas -->
-        <div v-else class="bubble">{{ msg.text }}</div>
-      </div>
-    </template>
+    </div><!-- end .scroll-area -->
 
-    <!-- Typing indicator -->
-    <div class="msg bot" v-if="loading">
-      <div class="bubble" style="padding: 8px 16px;">
-        <div class="typing">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
+    <!-- ACTION BAR — outside scroll-area so it sticks to the bottom -->
+    <div class="action-bar">
+      <button v-if="phase === 'structure'" class="btn btn-primary" @click="goToSection(0)">Start →</button>
+      <button v-if="phase === 'summary'" class="btn btn-exam" @click="phase = 'exam'; scrollToTop()">Take section exam →</button>
+      <template v-if="phase === 'exam' && sectionAllAnswered">
+        <button v-if="currentSection < sessionData.sections.length - 1" class="btn btn-primary" @click="goToSection(currentSection + 1)">Continue to section {{ currentSection + 2 }} →</button>
+        <button v-else class="btn btn-primary" @click="phase = 'done'; scrollToTop()">See final results →</button>
+      </template>
+      <button v-if="phase === 'done'" class="btn btn-primary" @click="resetSession">New class</button>
     </div>
-  </div>
 
-  <div class="input-area">
-    <input
-      type="text"
-      v-model="input"
-      placeholder="Escribe tu pregunta..."
-      :disabled="loading"
-      @keyup.enter="send"
-      ref="inputEl"
-    />
-    <button @click="send" :disabled="loading || !input.trim()">Enviar</button>
-  </div>
+  </div><!-- end .session-wrapper -->
+
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script type="module">
-  import { createApp, ref, nextTick, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+  import { createApp, ref, reactive, computed, onMounted } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
   const API_URL = 'http://localhost:8000'
 
   createApp({
     setup() {
-      const messages = ref([])
-      const input = ref('')
-      const loading = ref(false)
-      const apiOk = ref(false)
-      const messagesEl = ref(null)
-      const inputEl = ref(null)
-      const letters = ['a', 'b', 'c', 'd']
-      let idCounter = 0
+      const screen         = ref('welcome')
+      const phase          = ref('structure')
+      const currentSection = ref(0)
+      const apiOk          = ref(false)
+      const topics         = ref([])
+      const errorMsg       = ref('')
+      const letters        = ['a', 'b', 'c', 'd']
+      const fileInput      = ref(null)
+      const uploadStatus   = ref('')
+      const uploadStatusClass = ref('')
+
+      const sessionData = reactive({ structure: '', sections: [] })
+      const answers     = reactive({})
+      const revealed    = reactive({})
+
+      // Markdown renderer
+      function renderMarkdown(text) {
+        if (!text) return ''
+        return marked.parse(text)
+      }
+
+      const topicIcons = { data_bases: '🗄️', neural_networks: '🧠' }
+      function topicIcon(t)       { return topicIcons[t] || '📄' }
+      function formatTopicName(t) { return t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) }
+
+      function answerKey(si, qi) { return `${si}-${qi}` }
+
+      function selectAnswer(si, qi, oi) {
+        const key = answerKey(si, qi)
+        if (revealed[key]) return
+        answers[key]  = oi
+        revealed[key] = true
+      }
+
+      function isRevealed(si, qi) { return !!revealed[answerKey(si, qi)] }
+
+      function optionClass(si, qi, oi) {
+        const key = answerKey(si, qi)
+        if (!revealed[key]) return ''
+        const q = sessionData.sections[si].questions[qi]
+        const isCorrect   = letters[oi] === q.correct_answer
+        const wasSelected = answers[key] === oi
+        let cls = 'disabled '
+        if (isCorrect)        cls += 'correct-reveal'
+        else if (wasSelected) cls += 'wrong-reveal'
+        return cls
+      }
+
+      function questionState(si, qi) {
+        const key = answerKey(si, qi)
+        if (!revealed[key]) return ''
+        const q = sessionData.sections[si].questions[qi]
+        return letters[answers[key]] === q.correct_answer ? 'answered-correct' : 'answered-wrong'
+      }
+
+      const currentSectionData = computed(() =>
+        sessionData.sections[currentSection.value] || { title: '', summary: '', questions: [] }
+      )
+
+      const sectionTotalQuestions = computed(() =>
+        (currentSectionData.value.questions || []).length
+      )
+
+      const sectionCorrectCount = computed(() => {
+        const si = currentSection.value
+        let count = 0
+        ;(currentSectionData.value.questions || []).forEach((q, qi) => {
+          const key = answerKey(si, qi)
+          if (revealed[key] && letters[answers[key]] === q.correct_answer) count++
+        })
+        return count
+      })
+
+      const sectionAllAnswered = computed(() => {
+        if (sectionTotalQuestions.value === 0) return false
+        const si = currentSection.value
+        let answered = 0
+        ;(currentSectionData.value.questions || []).forEach((q, qi) => {
+          if (revealed[answerKey(si, qi)]) answered++
+        })
+        return answered === sectionTotalQuestions.value
+      })
+
+      const totalQuestions = computed(() =>
+        sessionData.sections.reduce((sum, sec) => sum + (sec.questions || []).length, 0)
+      )
+
+      const totalCorrectCount = computed(() => {
+        let count = 0
+        sessionData.sections.forEach((sec, si) => {
+          ;(sec.questions || []).forEach((q, qi) => {
+            const key = answerKey(si, qi)
+            if (revealed[key] && letters[answers[key]] === q.correct_answer) count++
+          })
+        })
+        return count
+      })
+
+      function sectionScore(si) {
+        const qs = sessionData.sections[si].questions || []
+        let correct = 0
+        qs.forEach((q, qi) => {
+          const key = answerKey(si, qi)
+          if (revealed[key] && letters[answers[key]] === q.correct_answer) correct++
+        })
+        return { correct, total: qs.length }
+      }
+
+      function scrollToTop() {
+        const el = document.querySelector('.scroll-area')
+        if (el) el.scrollTop = 0
+      }
+
+      function goToSection(idx) {
+        currentSection.value = idx
+        phase.value = 'summary'
+        scrollToTop()
+      }
+
+      function canNavigateToSection(si) {
+        if (phase.value === 'structure') return false
+        return si < currentSection.value
+      }
+
+      function onNavStepClick(si) {
+        if (!canNavigateToSection(si)) return
+        goToSection(si)
+      }
+
+      function navStepClass(si) {
+        if (phase.value === 'structure')      return ''
+        if (si < currentSection.value)        return 'completed'
+        if (si === currentSection.value)      return 'active'
+        return ''
+      }
 
       async function checkApi() {
-        try {
-          const r = await fetch(`${API_URL}/health`)
-          apiOk.value = r.ok
-        } catch {
-          apiOk.value = false
-        }
+        try { const r = await fetch(`${API_URL}/health`); apiOk.value = r.ok }
+        catch { apiOk.value = false }
       }
 
-      async function send() {
-        const text = input.value.trim()
-        if (!text || loading.value) return
-
-        messages.value.push({ id: idCounter++, role: 'user', text })
-        input.value = ''
-        loading.value = true
-        await scrollBottom()
-
+      async function loadTopics() {
         try {
-          const res = await fetch(`${API_URL}/chat`, {
+          const r = await fetch(`${API_URL}/topics`)
+          if (r.ok) { const d = await r.json(); topics.value = d.topics || [] }
+        } catch { /* ignore */ }
+      }
+
+      async function startSession(topic) {
+        sessionData.structure = ''
+        sessionData.sections  = []
+        currentSection.value  = 0
+        Object.keys(answers).forEach(k  => delete answers[k])
+        Object.keys(revealed).forEach(k => delete revealed[k])
+        screen.value = 'loading'
+        try {
+          const res = await fetch(`${API_URL}/prepare`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text }),
+            body: JSON.stringify({ document: topic }),
           })
-
           if (!res.ok) throw new Error(`HTTP ${res.status}`)
           const data = await res.json()
-
-          if (data.error) {
-            messages.value.push({ id: idCounter++, role: 'bot', error: true, text: data.error })
-          } else {
-            messages.value.push({
-              id: idCounter++,
-              role: 'bot',
-              agent: data.agent,
-              text: data.content || '',
-              questions: data.questions || [],
-              sourceFile: data.source_file || null,
-            })
-          }
-        } catch (e) {
-          messages.value.push({
-            id: idCounter++, role: 'bot', error: true,
-            text: 'Error conectando con la API. ¿Está el servidor arrancado?'
-          })
+          if (data.error) { errorMsg.value = data.error; screen.value = 'error'; return }
+          sessionData.structure = data.structure
+          sessionData.sections  = data.sections || []
+          screen.value = 'session'
+          phase.value  = 'structure'
+        } catch {
+          errorMsg.value = 'Error connecting to the API. Is the server running?'
+          screen.value   = 'error'
         }
-
-        loading.value = false
-        await scrollBottom()
-        inputEl.value?.focus()
       }
 
-      async function scrollBottom() {
-        await nextTick()
-        if (messagesEl.value) {
-          messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+      function selectFile() {
+        fileInput.value?.click()
+      }
+
+      async function onFileSelected(event) {
+        const files = event.target.files
+        if (!files || files.length === 0) return
+
+        const file = files[0]
+        if (!file.name.endsWith('.txt')) {
+          uploadStatus.value = 'Please select a .txt file'
+          uploadStatusClass.value = 'error'
+          return
         }
+
+        uploadStatus.value = 'Uploading and processing...'
+        uploadStatusClass.value = 'loading'
+        
+        sessionData.structure = ''
+        sessionData.sections  = []
+        currentSection.value  = 0
+        Object.keys(answers).forEach(k  => delete answers[k])
+        Object.keys(revealed).forEach(k => delete revealed[k])
+        screen.value = 'loading'
+
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+
+          const res = await fetch(`${API_URL}/ingest-and-prepare`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          if (data.error) { 
+            errorMsg.value = data.error
+            screen.value = 'error'
+            uploadStatus.value = 'Error processing file'
+            uploadStatusClass.value = 'error'
+            return 
+          }
+          sessionData.structure = data.structure
+          sessionData.sections  = data.sections || []
+          screen.value = 'session'
+          phase.value  = 'structure'
+          uploadStatus.value = 'File processed successfully!'
+          uploadStatusClass.value = 'success'
+        } catch (err) {
+          errorMsg.value = 'Error processing file. Is the server running?'
+          screen.value   = 'error'
+          uploadStatus.value = 'Error uploading file'
+          uploadStatusClass.value = 'error'
+        }
+      }
+
+      function resetSession() {
+        screen.value          = 'welcome'
+        phase.value           = 'structure'
+        currentSection.value  = 0
+        sessionData.structure = ''
+        sessionData.sections  = []
+        Object.keys(answers).forEach(k  => delete answers[k])
+        Object.keys(revealed).forEach(k => delete revealed[k])
       }
 
       onMounted(() => {
         checkApi()
+        loadTopics()
         setInterval(checkApi, 5000)
-        inputEl.value?.focus()
       })
 
-      return { messages, input, loading, apiOk, messagesEl, inputEl, send, letters }
+      return {
+        screen, phase, currentSection, apiOk, topics, errorMsg, letters,
+        sessionData, answers, revealed,
+        fileInput, uploadStatus, uploadStatusClass,
+        renderMarkdown, topicIcon, formatTopicName,
+        answerKey, selectAnswer, isRevealed, optionClass, questionState,
+        currentSectionData, sectionTotalQuestions, sectionCorrectCount, sectionAllAnswered,
+        totalQuestions, totalCorrectCount, sectionScore, goToSection, navStepClass,
+        canNavigateToSection, onNavStepClick,
+        startSession, resetSession, scrollToTop, selectFile, onFileSelected,
+      }
     }
   }).mount('#app')
 </script>
