@@ -305,6 +305,15 @@
     /* ── EXAM ── */
     .q-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; box-shadow: var(--shadow); transition: border-color 0.25s; }
     .q-card + .q-card { margin-top: 10px; }
+    .q-delete-btn {
+      float: right; margin-left: 8px;
+      width: 20px; height: 20px; border-radius: 4px;
+      border: none; background: transparent; color: var(--text-3);
+      font-size: 11px; cursor: pointer; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .q-delete-btn:hover { background: var(--red-bg); color: var(--red); }
     .q-card.answered-correct { border-color: var(--accent-border); }
     .q-card.answered-wrong   { border-color: var(--red-border); }
     .q-text { font-weight: 500; margin-bottom: 13px; color: var(--text); font-size: 0.87rem; line-height: 1.6; }
@@ -612,7 +621,10 @@
             </div>
             <template v-else>
               <div v-for="(q, qi) in currentSec.questions" :key="qi" :class="['q-card', questionState(currentSection, qi)]">
-                <div class="q-text"><span class="q-num">{{ qi + 1 }}.</span> {{ q.question }}</div>
+                <div class="q-text">
+                  <span class="q-num">{{ qi + 1 }}.</span> {{ q.question }}
+                  <button class="q-delete-btn" @click="deleteQuestion(qi)" title="Delete question">✕</button>
+                </div>
                 <div v-for="(opt, oi) in q.options" :key="oi" :class="['option', optionClass(currentSection, qi, oi)]" @click="selectAnswer(currentSection, qi, oi)">
                   <div class="option-letter">{{ letters[oi] }}</div>
                   <span>{{ opt }}</span>
@@ -621,6 +633,14 @@
                 </div>
                 <div class="explanation" v-if="isRevealed(currentSection, qi) && q.explanation">{{ q.explanation }}</div>
               </div>
+
+              <div style="margin-top:12px">
+                <button class="regen-btn" :disabled="isAddingQuestions" @click="addQuestions">
+                  <span :class="isAddingQuestions ? 'spin' : ''">+</span>
+                  {{ isAddingQuestions ? 'Generating…' : 'Add questions' }}
+                </button>
+              </div>
+
               <div class="score-banner" v-if="sectionAllAnswered">
                 <div>
                   <div class="label">Section result</div>
@@ -724,7 +744,7 @@
       const scrollArea = ref(null), panelMessages = ref(null), questionTextarea = ref(null)
       const answers = reactive({}), revealed = reactive({})
       const qaOpen = ref(false), questionInput = ref(''), isThinking = ref(false)
-      const isRegenerating = ref(false), isRegeneratingExam = ref(false)
+      const isRegenerating = ref(false), isRegeneratingExam = ref(false), isAddingQuestions = ref(false)
       const qaMap = reactive({}), sectionPhase = reactive({})
       const currentSectionPhase = computed(() => sectionPhase[currentSection.value] || 'summary')
       const currentQA = computed(() => qaMap[currentSection.value] || [])
@@ -846,6 +866,26 @@
         finally{isRegeneratingExam.value=false}
       }
 
+      async function addQuestions() {
+        if(isAddingQuestions.value) return; isAddingQuestions.value=true
+        const si=currentSection.value; const sec=sections[si]
+        try{
+          const res=await fetch(`${API_URL}/add-questions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:currentTopic.value,section_title:sec.title,section_summary:sec.summary,existing_questions:sec.questions,num_questions:2})})
+          if(!res.ok) throw new Error(); const data=await res.json(); if(data.error) throw new Error(data.error)
+          if(data.questions) sec.questions.push(...data.questions)
+        }catch(err){errorMsg.value=err?.message||'Could not add questions.';screen.value='error'}
+        finally{isAddingQuestions.value=false}
+      }
+
+      async function deleteQuestion(qi) {
+        const si=currentSection.value; const sec=sections[si]
+        sec.questions.splice(qi,1)
+        // Remove answers/revealed for this section since indices shifted
+        clearSectionAnswers(si)
+        // Persist updated list
+        await fetch(`${API_URL}/update-questions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:currentTopic.value,section_title:sec.title,questions:sec.questions})})
+      }
+
       async function submitQuestion() {
         const q=questionInput.value.trim(); if(!q||isThinking.value) return
         questionInput.value=''; nextTick(()=>{if(questionTextarea.value)questionTextarea.value.style.height='auto'})
@@ -898,12 +938,12 @@
         screen,currentView,errorMsg,structure,sections,streamDone,streamingSection,
         currentSection,currentSec,currentTopic,apiOk,topics,letters,
         fileInput,uploadStatus,uploadStatusClass,scrollArea,panelMessages,questionTextarea,
-        qaOpen,questionInput,isThinking,isRegenerating,isRegeneratingExam,currentQA,qaCount,
+        qaOpen,questionInput,isThinking,isRegenerating,isRegeneratingExam,isAddingQuestions,currentQA,qaCount,
         answers,revealed,renderMarkdown,topicIcon,formatTopicName,
         akey,selectAnswer,isRevealed,optionClass,questionState,
         sectionTotal,sectionCorrect,sectionAllAnswered,totalQuestions,totalCorrect,secScore,sectionIsDone,
         navSidebarClass,scrollToTop,autoResize,sectionPhase,currentSectionPhase,progressPct,
-        goToSection,goToResults,regenerateSummary,regenerateExam,submitQuestion,
+        goToSection,goToResults,regenerateSummary,regenerateExam,addQuestions,deleteQuestion,submitQuestion,
         startSession,resetSession,onFileSelected,deleteTopic,
       }
     }

@@ -116,6 +116,52 @@ class ExamAgent(BaseAgent):
             "source": source_info,
         }
 
+    def add_questions(self, summary: str, section_title: str, existing_questions: list, num_new: int = 3) -> list[dict]:
+        """Generate additional questions that don't repeat the existing ones."""
+        existing_texts = "\n".join(f"- {q['question']}" for q in existing_questions)
+        raw = self._generate_additional_questions(summary, section_title, existing_texts, num_new)
+        if not raw:
+            return []
+        return self._parse_questions(raw)
+
+    def _generate_additional_questions(self, summary: str, section_title: str, existing_texts: str, num_new: int) -> str | None:
+        """Call the LLM to generate new questions, explicitly avoiding the existing ones."""
+        sistema = (
+            "You are a university professor expert in creating exams. "
+            "Your task is to generate multiple-choice questions based ONLY on the provided content. "
+            "Each question must have exactly 4 options (a, b, c, d) and ONLY ONE correct answer."
+        )
+
+        prompt = f"""Section: '{section_title}'
+Content summary:
+---
+{summary}
+---
+
+The following questions already exist — do NOT repeat them or ask about the same concepts:
+{existing_texts}
+
+Generate exactly {num_new} NEW multiple-choice questions about DIFFERENT aspects of the content.
+
+For each question, use this exact format:
+
+QUESTION 1: [question text]
+a) [option a]
+b) [option b]
+c) [option c]
+d) [option d]
+RESPONSE: [correct letter]
+EXPLANATION: [brief explanation of why it's correct]"""
+
+        return chat_with_model(
+            messages=[
+                {"role": "system", "content": sistema},
+                {"role": "user", "content": prompt},
+            ],
+            model=self.llm_model,
+            temperature=0.7,  # slightly higher for variety
+        )
+
     def _list_known_files(self) -> list[str]:
         """Return the list of .txt filenames available in the data directory."""
         try:

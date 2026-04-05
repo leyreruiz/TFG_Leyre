@@ -2,7 +2,6 @@
 
 import logging
 import os, sys, json
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -10,13 +9,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
-from pydantic import BaseModel
 
 from backend.agents.structurer_agent import StructurerAgent
 from backend.agents.summary_agent import SummaryAgent
 from backend.agents.exam_agent import ExamAgent
 from backend.agents.explainer_agent import ExplainerAgent
-from backend.models.schemas import StudentRequest
+from backend.models.schemas import (
+    StudentRequest,
+    StartRequest,
+    RegenerateSummaryRequest,
+    RegenerateExamRequest,
+    AskRequest,
+    AddQuestionsRequest,
+    UpdateQuestionsRequest,
+)
 from backend.rag.retriever import ChromaDbRetriever
 from backend.ingest_topics import ingest_file
 from backend.class_storage import (
@@ -46,6 +52,35 @@ def _sse(data: dict) -> str:
 def _parse_sections(structure: str) -> list[str]:
     matches = re.findall(r"###\s*(?:\d+\.\s*)?(.+)", structure)
     return [m.strip() for m in matches if m.strip()]
+
+
+def _extract_section_outline(structure: str, section_title: str) -> str:
+    """Return the block of the index that belongs to a specific section.
+
+    Example — given this structure:
+        ### 1. Intro
+        - What is X
+        - History
+        ### 2. Methods
+        - Algorithm A
+
+    Calling with section_title="Intro" returns:
+        ### 1. Intro
+        - What is X
+        - History
+    """
+    lines = structure.split("\n")
+    in_section = False
+    section_lines = []
+    for line in lines:
+        is_section_header = re.match(r"###\s*(?:\d+\.\s*)?" + re.escape(section_title), line, re.IGNORECASE)
+        if is_section_header:
+            in_section = True
+        elif in_section and re.match(r"###", line):
+            break  # reached the next section
+        if in_section:
+            section_lines.append(line)
+    return "\n".join(section_lines).strip()
 
 
 def _run_pipeline(document: str):
@@ -79,9 +114,9 @@ def _run_pipeline(document: str):
     # 2. For each section: summary then exam
     total = len(sections)
     for idx, section in enumerate(sections):
-        # Summary
-        req    = StudentRequest(message=f"resume {section}", intent="summary")
-        result = _summary.handle(req)
+        # Summary — pass the section's outline so the summary follows the index structure
+        section_outline = _extract_section_outline(structure, section)
+        result = _summary.summarize(section_title=section, section_outline=section_outline)
         summary = result.get("content", result.get("error", ""))
         update_section_summary(document, section, summary)
         yield _sse({
@@ -145,26 +180,6 @@ def _run_saved_pipeline(class_data: dict):
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
-
-class StartRequest(BaseModel):
-    document: str
-
-class RegenerateSummaryRequest(BaseModel):
-    topic: Optional[str] = None
-    section_title: str
-
-
-class RegenerateExamRequest(BaseModel):
-    topic: Optional[str] = None
-    section_title: str
-    section_summary: Optional[str] = None
-
-class AskRequest(BaseModel):
-    question:        str
-    section_title:   str
-    section_summary: str
-    conversation_id: Optional[str] = None
-
 
 @app.post("/start")
 def start(request: StartRequest):
@@ -250,6 +265,35 @@ def regenerate_exam(request: RegenerateExamRequest):
         return {"error": "Could not persist regenerated exam for this topic/section"}
 
     return {"questions": questions}
+
+
+@app.post("/add-questions")
+def add_questions(request: AddQuestionsRequest):
+    new_questions = _exam.add_questions(
+        summary=request.section_summary,
+        section_title=request.section_title,
+        existing_questions=request.existing_questions,
+        num_new=request.num_questions,
+    )
+    if not new_questions:
+        return {"error": "Could not generate additional questions"}
+
+    # Append to stored questions
+    class_obj = get_class(request.topic)
+    if class_obj:
+        stored = class_obj.get("sections_data", {}).get(request.section_title, {}).get("questions", [])
+        update_section_questions(request.topic, request.section_title, stored + new_questions)
+
+    return {"questions": new_questions}
+
+
+@app.post("/update-questions")
+def update_questions(request: UpdateQuestionsRequest):
+    """Persist the current questions array (used after deleting a question)."""
+    updated = update_section_questions(request.topic, request.section_title, request.questions)
+    if not updated:
+        return {"error": "Could not update questions"}
+    return {"ok": True}
 
 
 @app.post("/ask")
