@@ -1,36 +1,39 @@
 """
 Script to chat with an LLM via Groq.
 """
-import sys
-print("[llm_client] Importing groq...")
+import logging
+import os
 from groq import Groq
-print("[llm_client] Groq imported successfully")
+from dotenv import load_dotenv
+
+load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 MODEL = "llama-3.1-8b-instant"
-client = Groq(api_key="")
-print("[llm_client] Import complete")
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def chat_with_model(messages, model=MODEL, temperature=0.7):
     """Query the Groq model with a message history.
-    
+
     Args:
         messages: list of dicts {"role": "user"|"assistant", "content": "..."}
         model: model to use (default: llama-3.1-8b-instant)
         temperature: creativity (0-1)
-    
+
     Returns:
         string with the model response, or None on error
     """
     try:
-        print(f"[DEBUG] Connecting to Groq model={model}...")
+        logger.debug("Connecting to Groq model=%s", model)
         response = client.chat.completions.create(
             model=model,
             messages=messages,
             temperature=temperature,
         )
-        print(f"[DEBUG] Response received from Groq")
+        logger.debug("Response received from Groq")
         return response.choices[0].message.content
     except Exception as e:
-        print(f"Error querying {model}: {e}")
+        logger.error("Error querying %s: %s", model, e)
         return None

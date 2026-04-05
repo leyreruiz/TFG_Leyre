@@ -5,12 +5,16 @@ Two retrieval modes selected automatically:
   - Semantic mode: query is a topic/concept         → similarity search across all sources
 """
 
+import logging
 import os
 import re
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
 from backend.clients.llm_client import chat_with_model
+from backend.utils import extract_search_term
+
+logger = logging.getLogger(__name__)
 
 SUMMARY_MARKER = "using the following summary context:"
 
@@ -27,7 +31,6 @@ class ExamAgent(BaseAgent):
         return intent == "exam"
 
 
-    #mejorar esta funcion y optimizar
     def handle(self, request: StudentRequest) -> dict:
         """Generate an exam choosing the retrieval mode automatically.
 
@@ -43,11 +46,11 @@ class ExamAgent(BaseAgent):
         # PIPELINE MODE: summary was provided, skip RAG
         if SUMMARY_MARKER in request.message:
             header, _, summary_text = request.message.partition(SUMMARY_MARKER)
-            term = self._extract_term(header.strip()) or header.strip()
+            term = extract_search_term(header.strip(), intent="exam") or header.strip()
             context = summary_text.strip()
             mode = "summary"
             source_info = term
-            print(f"[ExamAgent] Mode: summary (section: {term})")
+            logger.debug("Mode: summary (section: %s)", term)
 
             if not context:
                 return {
@@ -55,9 +58,9 @@ class ExamAgent(BaseAgent):
                     "error": f"Summary context is empty for '{term}'.",
                 }
 
-        # RAG MODE: search ChromaDB    
+        # RAG MODE: search ChromaDB
         else:
-            term = self._extract_term(request.message)
+            term = extract_search_term(request.message, intent="exam")
 
             if not term:
                 return {
@@ -72,12 +75,12 @@ class ExamAgent(BaseAgent):
             known_files = self._list_known_files()
 
             if candidate_file in known_files:
-                print(f"[ExamAgent] Mode: file ({candidate_file})")
+                logger.debug("Mode: file (%s)", candidate_file)
                 docs = self.retriever.search_by_source(candidate_file)
                 mode = "file"
                 source_info = candidate_file
             else:
-                print(f"[ExamAgent] Mode: semantic (query: {term})")
+                logger.debug("Mode: semantic (query: %s)", term)
                 docs = self.retriever.search(term, k=10)
                 mode = "semantic"
                 source_info = term
@@ -99,8 +102,7 @@ class ExamAgent(BaseAgent):
         if raw_answer is None:
             return {
                 "agent": "exam",
-                "error": "No information was found about '{term}' "
-                         f"Available files: {', '.join(known_files)}"
+                "error": f"Could not generate questions for '{source_info}'.",
             }
 
         questions = self._parse_questions(raw_answer)
@@ -114,17 +116,6 @@ class ExamAgent(BaseAgent):
             "source": source_info,
         }
 
-    def _extract_term(self, message: str) -> str | None:
-        """Extract the topic/filename term from the message, stripping exam keywords.
-        """
-        keywords = ["examen", "exam", "test", "pregunta"]
-        message_lower = message.lower().strip()
-        for kw in keywords:
-            if message_lower.startswith(kw):
-                message = message[len(kw):].strip()
-                message_lower = message.lower().strip()
-        return message if message else None
-
     def _list_known_files(self) -> list[str]:
         """Return the list of .txt filenames available in the data directory."""
         try:
@@ -136,7 +127,7 @@ class ExamAgent(BaseAgent):
         """Call the LLM to generate multiple-choice questions based on the file content."""
 
         sistema = (
-            "You are a univeristy professor expert in creating exams. "
+            "You are a university professor expert in creating exams. "
             "Your task is to generate multiple-choice questions (multiple options) based ONLY on the provided content. "
             "Each question must have exactly 4 options (a, b, c, d) and ONLY ONE correct answer."
         )

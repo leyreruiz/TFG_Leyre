@@ -3,6 +3,7 @@
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
 from backend.clients.llm_client import chat_with_model
+from backend.utils import extract_search_term
 
 
 class SummaryAgent(BaseAgent):
@@ -14,59 +15,46 @@ class SummaryAgent(BaseAgent):
     def can_handle(self, intent: str) -> bool:
         return intent == "summary"
 
-    def _extract_search_query(self, message: str) -> str:
-        """Strip summary-intent keywords so only the topic term reaches ChromaDB.
-        """
-        keywords = [
-            "hazme un resumen de", "hazme un resumen sobre",
-            "resumen de", "resumen sobre", "resume", "resumen",
-            "summary of", "summary about", "summary",
-            "explícame", "explicame", "explain",
-            "qué es", "que es", "what is",
-        ]
-        msg = message.strip()
-        msg_lower = msg.lower()
-        for kw in keywords:
-            if msg_lower.startswith(kw):
-                msg = msg[len(kw):].strip()
-                msg_lower = msg.lower()
-        return msg if msg else message
-
     def handle(self, request: StudentRequest) -> dict:
         # Strip intent words so ChromaDB gets a clean topic query
-        search_query = self._extract_search_query(request.message)
+        search_query = extract_search_term(request.message, intent="summary") or request.message
         # For summaries, use more documents to have broad context
         docs = self.retriever.search(search_query, k=5)
         context = "\n\n".join(docs) if docs else "(No relevant documents found)"
 
         system = (
-            "You are a university professor expert and pedagogic "
-            "Your objective is to help a student to learn a topic deeply.\n\n"
+            "You are a university professor who excels at explaining complex topics "
+            "in a clear, engaging, and pedagogical way.\n\n"
+            "Your goal is to help a student truly understand a topic — not just memorize it.\n\n"
             "Rules:\n"
-            "1. Base your answer ONLY on the context provided\n"
-            "2. Structure the exam with clear sections using headings.\n"
-            "3. Include the key concepts and their definitions.\n"
-            "4. If relevant, mention relationships between concepts.\n"
-            "5. If the information is not in context, state this explicitly.\n"
-            "6. Use a clear and accessible tone for a university student."
+            "1. Base your answer ONLY on the context provided.\n"
+            "2. Alternate between prose and lists naturally: explain the 'why' and context in paragraphs, "
+            "then use bullet points or numbered lists to summarize, enumerate steps, or highlight key terms.\n"
+            "3. Never write more than 3–4 consecutive bullet points without a short explanatory paragraph before or after.\n"
+            "4. Never write more than 3–4 consecutive paragraphs without breaking with a list, heading, or visual element.\n"
+            "5. Define key concepts inline within prose the first time they appear.\n"
+            "6. Use analogies or simple examples to make abstract ideas concrete.\n"
+            "7. If the information is not in context, say so explicitly.\n"
+            "8. Keep the tone approachable and direct — like a good teacher, not a textbook."
         )
 
         user_prompt = f"""Documents' context:
----
-{context}
----
+        ---
+        {context}
+        ---
 
-Student's question:
-{request.message}
+        Student's question:
+        {request.message}
 
-Generate a clear, structured summary based on the preceding context.
-Use headings, lists, and definitions where appropriate.
+        Write a summary based on the context above that mixes prose and lists naturally.
 
-Format the response using Markdown with the following rules:
-1. Use `#` for main headings and `##` for subheadings.
-2. Use `**bold**` for key terms and `*italic*` for emphasis.
-3. Use bullet points for lists.
-4. Ensure the content is visually appealing and easy to read."""
+        Formatting guidelines:
+        - Use `#` for the main title and `##` for sections.
+        - Introduce each section with 1–2 sentences of context or explanation (prose).
+        - Follow with a bullet list or numbered list to highlight key points, steps, or terms.
+        - Add a closing sentence or short paragraph after lists when the idea needs connecting to the bigger picture.
+        - Bold (**bold**) key terms the first time they appear.
+        - End with a "## Key Takeaway" section: 2–3 sentences summarizing the core idea."""
 
         answer = chat_with_model(
             messages=[

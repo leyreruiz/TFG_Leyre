@@ -9,6 +9,7 @@ import os
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
 from backend.clients.llm_client import chat_with_model
+from backend.utils import extract_search_term
 
 
 class StructurerAgent(BaseAgent):
@@ -23,7 +24,7 @@ class StructurerAgent(BaseAgent):
         return intent == "structure"
 
     def handle(self, request: StudentRequest) -> dict:
-        term = self._extract_term(request.message)
+        term = extract_search_term(request.message, intent="structure")
 
         if not term:
             return {
@@ -63,16 +64,6 @@ class StructurerAgent(BaseAgent):
             "source": source,
         }
 
-    def _extract_term(self, message: str) -> str | None:
-        keywords = ["estructura", "structure", "preparar", "clase", "prepare"]
-        msg = message.strip()
-        msg_lower = msg.lower()
-        for kw in keywords:
-            if msg_lower.startswith(kw):
-                msg = msg[len(kw):].strip()
-                msg_lower = msg.lower()
-        return msg if msg else None
-
     def _list_known_files(self) -> list[str]:
         try:
             return [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
@@ -81,44 +72,33 @@ class StructurerAgent(BaseAgent):
 
     def _generate_structure(self, content: str, source: str) -> str | None:
         system = (
-            "You are a university professor expert in preparing classes. "
-            "Your task is to analyze the provided content and generate a structured "
-            "class outline with sections, subsections, and key concepts for each part. "
-            "The structure should serve as a guide for delivering a comprehensive class on the topic. "
-            "IMPORTANT: Only generate the main structure. Do not include any additional outlines, "
-            "schedules, or supplementary information."
+            "You are a university professor creating a class outline. "
+            "Generate a clean, high-level structure that serves as a table of contents — "
+            "section titles and brief topic names only. "
+            "No explanations, no definitions, no details. Those come later when each section is taught."
         )
 
-        prompt = f"""Content of the document '{source}':
----
-{content}
----
+        prompt = f"""Document: '{source}'
+    ---
+    {content}
+    ---
 
-Generate ONLY a class structure based on the previous content with this format:
+    Generate a high-level class outline using this format:
 
-## Class Title
+    ## [Class Title]
 
-### 1. Main Section Title
-- Key Concept 1
-- Key Concept 2
-- Key Concept 3
+    ### 1. [Section Title]
+    - [Topic name, no explanation]
+    - [Topic name, no explanation]
 
-### 2. Next Section Title
-- Key Concept 4
-- Key Concept 5
+    ### 2. [Section Title]
+    - [Topic name, no explanation]
 
-### 3. Another Section
-- Key Concept 6
-- Key Concept 7
-
-Continue until you have covered all the main topics in the content.
-
-IMPORTANT INSTRUCTIONS:
-- Each section must start with "### " followed by a number and title
-- Use bullet points for key concepts under each section
-- Do NOT include timing information
-- Do NOT include reading assignments
-- Stop after the last main section - do not add any additional content"""
+    RULES:
+    - Topic names should be short: 2-5 words max
+    - No definitions, no descriptions, no "how" or "why" phrases
+    - This is a table of contents, not a lesson plan
+    - Cover all main topics in the document"""
 
         return chat_with_model(
             messages=[

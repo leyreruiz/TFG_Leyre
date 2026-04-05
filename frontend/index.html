@@ -5,355 +5,613 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>University Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; }
+    html, body { height: 100%; overflow: hidden; background: #f5f4f0; }
 
     :root {
-      --ink:         #0f1923;
-      --ink-soft:    #4a5568;
-      --ink-muted:   #8896a7;
-      --blue:        #2563eb;
-      --blue-dark:   #1d4ed8;
-      --blue-light:  #eff6ff;
-      --blue-mid:    #dbeafe;
-      --amber:       #d97706;
-      --amber-light: #fffbeb;
-      --green:       #059669;
-      --green-light: #ecfdf5;
-      --red:         #dc2626;
-      --red-light:   #fef2f2;
-      --surface:     #ffffff;
-      --surface-2:   #f7f8fc;
-      --border:      #e2e8f0;
-      --border-str:  #cbd5e1;
-      --panel-w:     360px;
-      --radius:      12px;
-      --radius-lg:   18px;
-      --font:        'Sora', sans-serif;
-      --font-serif:  'Lora', serif;
-      --shadow-sm:   0 1px 3px rgba(0,0,0,0.07);
-      --shadow-md:   0 4px 16px rgba(0,0,0,0.09);
-      --shadow-lg:   0 12px 40px rgba(0,0,0,0.13);
+      --bg:        #ffffff;
+      --bg-2:      #faf9f7;
+      --bg-3:      #f2f1ed;
+      --bg-4:      #eae9e4;
+      --page:      #f5f4f0;
+      --border:    #e8e7e2;
+      --border-2:  #d8d7d1;
+      --text:      #1a1915;
+      --text-2:    #6b6a64;
+      --text-3:    #a8a7a0;
+      --ink:       #0f0e0c;
+      --accent:    #2d5a3d;
+      --accent-2:  #3d7a54;
+      --accent-bg: #eef4f0;
+      --accent-border: #c8dcd0;
+      --amber:     #8a5c1a;
+      --amber-bg:  #fdf4e7;
+      --amber-border: #e8d0a0;
+      --red:       #8a2a2a;
+      --red-bg:    #fdf0f0;
+      --red-border:#e8c0c0;
+      --blue:      #1a3a6a;
+      --blue-bg:   #eef3fc;
+      --blue-border:#c0d0e8;
+      --sidebar-w: 260px;
+      --r:         8px;
+      --r-lg:      12px;
+      --r-xl:      16px;
+      --font:      'Inter', sans-serif;
+      --serif:     'Inter', sans-serif;
+      --ease:      cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
     }
 
-    body { font-family: var(--font); background: #d8dde8; display: flex; justify-content: center; }
+    body { font-family: var(--font); color: var(--text); display: flex; justify-content: center; }
+    #app { width: 100%; max-width: 1400px; height: 100vh; display: flex; overflow: hidden; }
 
-    #app { position: relative; display: flex; flex-direction: column; width: 100%; max-width: 1100px; height: 100vh; overflow: hidden; background: var(--surface); box-shadow: var(--shadow-lg); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
 
-    /* HEADER */
-    header { flex: 0 0 54px; background: var(--ink); color: white; padding: 0 24px; display: flex; align-items: center; gap: 14px; z-index: 40; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; flex-shrink: 0; box-shadow: 0 0 8px #34d399; transition: all 0.3s; }
-    .status-dot.offline { background: #f87171; box-shadow: 0 0 8px #f87171; }
-    header h1 { font-family: var(--font-serif); font-size: 1.08rem; font-weight: 400; letter-spacing: 0.02em; }
-    header .subtitle { font-size: 0.68rem; opacity: 0.45; margin-top: 1px; font-weight: 300; }
-    .header-back { margin-left: auto; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13); color: rgba(255,255,255,0.75); padding: 5px 14px; border-radius: 20px; font-size: 0.74rem; cursor: pointer; font-weight: 500; font-family: var(--font); transition: all 0.2s; }
-    .header-back:hover { background: rgba(255,255,255,0.15); color: white; }
-
-    /* BODY */
-    .body-area { flex: 1 1 0; min-height: 0; display: flex; position: relative; overflow: hidden; }
-
-    /* MAIN COLUMN */
-    .main-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; transition: margin-right 0.35s cubic-bezier(0.4,0,0.2,1); }
-    .main-col.panel-open { margin-right: var(--panel-w); }
-
-    /* Nav */
-    .session-nav { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; padding: 9px 24px; background: var(--surface-2); border-bottom: 1px solid var(--border); overflow-x: auto; }
-    .nav-step { display: flex; align-items: center; gap: 5px; padding: 5px 11px; font-size: 0.72rem; font-weight: 600; color: var(--ink-muted); border-radius: 20px; cursor: default; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
-    .nav-step.active    { background: var(--blue); color: white; }
-    .nav-step.done      { color: var(--green); cursor: pointer; }
-    .nav-step.done:hover { background: var(--green-light); }
-    .nav-step.loading   { color: var(--amber); }
-    .nav-connector { width: 18px; height: 2px; background: var(--border); flex-shrink: 0; transition: background 0.3s; }
-    .nav-connector.done { background: var(--green); }
-
-    /* Scroll area */
-    .scroll-area { flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 28px 32px; }
-    .scroll-area > * + * { margin-top: 20px; }
-
-    /* Action bar */
-    .action-bar { flex: 0 0 auto; padding: 13px 22px; border-top: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .action-bar-left  { display: flex; align-items: center; gap: 10px; }
-    .action-bar-right { display: flex; align-items: center; gap: 8px; }
-
-    /* Panel toggle */
-    .panel-toggle { display: inline-flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: 20px; border: 1.5px solid #bfdbfe; background: var(--blue-light); color: var(--blue); font-size: 0.79rem; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
-    .panel-toggle:hover { background: var(--blue-mid); }
-    .panel-toggle.active { background: var(--blue); color: white; border-color: var(--blue); }
-    .panel-toggle .badge { width: 17px; height: 17px; border-radius: 50%; background: var(--amber); color: white; font-size: 0.62rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-    .panel-toggle.active .badge { background: rgba(255,255,255,0.22); }
-
-    /* SIDE PANEL */
-    .side-panel { position: absolute; top: 0; right: 0; bottom: 0; width: var(--panel-w); background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 20; box-shadow: -6px 0 28px rgba(0,0,0,0.07); }
-    .side-panel.open { transform: translateX(0); }
-    .panel-header { flex: 0 0 auto; padding: 15px 18px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-    .panel-htext { flex: 1; }
-    .panel-htext .title { font-weight: 600; font-size: 0.86rem; color: var(--ink); }
-    .panel-htext .sub   { font-size: 0.69rem; color: var(--ink-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
-    .panel-close { width: 26px; height: 26px; border-radius: 7px; background: transparent; border: none; color: var(--ink-muted); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .panel-close:hover { background: var(--surface-2); color: var(--ink); }
-    .panel-messages { flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 9px; }
-    .panel-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--ink-muted); padding: 24px; text-align: center; }
-    .panel-empty-icon { font-size: 2rem; opacity: 0.35; }
-    .panel-empty-text { font-size: 0.8rem; line-height: 1.65; }
-    .msg-user      { align-self: flex-end; background: var(--blue); color: white; padding: 8px 12px; border-radius: 13px 13px 3px 13px; max-width: 88%; font-size: 0.83rem; line-height: 1.5; }
-    .msg-assistant { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); padding: 9px 12px; border-radius: 3px 13px 13px 13px; max-width: 96%; font-size: 0.82rem; line-height: 1.6; }
-    .msg-assistant .md { padding: 0; font-size: 0.82rem; }
-    .msg-thinking  { align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 3px 13px 13px 13px; font-size: 0.78rem; color: var(--ink-muted); }
-    .dot-bounce { display: inline-flex; gap: 3px; }
-    .dot-bounce span { width: 5px; height: 5px; background: var(--blue); border-radius: 50%; animation: dbounce 1.1s infinite; }
-    .dot-bounce span:nth-child(2) { animation-delay: 0.18s; }
-    .dot-bounce span:nth-child(3) { animation-delay: 0.36s; }
-    @keyframes dbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
-    .panel-input-area { flex: 0 0 auto; padding: 10px 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-    .panel-input-row { display: flex; gap: 7px; align-items: flex-end; }
-    .panel-input-row textarea { flex: 1; resize: none; border: 1.5px solid var(--border); border-radius: 9px; padding: 8px 11px; font-family: var(--font); font-size: 0.82rem; color: var(--ink); line-height: 1.45; min-height: 38px; max-height: 100px; outline: none; transition: border-color 0.2s; background: var(--surface-2); overflow-y: auto; }
-    .panel-input-row textarea:focus { border-color: var(--blue); background: white; }
-    .panel-input-row textarea::placeholder { color: var(--ink-muted); }
-    .send-btn { width: 38px; height: 38px; background: var(--blue); color: white; border: none; border-radius: 9px; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.18s; }
-    .send-btn:hover:not(:disabled) { background: var(--blue-dark); transform: scale(1.06); }
-    .send-btn:disabled { opacity: 0.32; cursor: not-allowed; }
-    .input-hint { font-size: 0.67rem; color: var(--ink-muted); text-align: center; }
-
-    /* WELCOME / LOADING / ERROR */
-    .full-screen { flex: 1 1 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; gap: 26px; }
-    .welcome-icon     { font-size: 3rem; }
-    .welcome-title    { font-family: var(--font-serif); font-size: 1.9rem; font-weight: 600; color: var(--ink); text-align: center; }
-    .welcome-subtitle { font-size: 0.88rem; color: var(--ink-soft); text-align: center; max-width: 350px; line-height: 1.7; }
-    .api-error        { color: var(--red); background: var(--red-light); padding: 10px 18px; border-radius: 10px; font-size: 0.83rem; text-align: center; border: 1px solid #fecaca; }
-    .topic-grid { display: flex; flex-direction: column; gap: 9px; width: 100%; max-width: 370px; }
-    .topic-card { display: flex; align-items: center; gap: 13px; padding: 15px 17px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; font-weight: 600; color: var(--ink); }
-    .topic-card:hover { border-color: var(--blue); background: var(--blue-light); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    .topic-icon  { font-size: 1.3rem; width: 40px; height: 40px; background: white; border-radius: 9px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); flex-shrink: 0; }
-    .topic-name  { flex: 1; }
-    .topic-arrow { color: var(--ink-muted); font-size: 0.95rem; transition: color 0.2s; }
-    .topic-card:hover .topic-arrow { color: var(--blue); }
-    .topic-delete {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 1px solid #fecaca;
-      background: #fff5f5;
-      color: var(--red);
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
+    /* ════════ WELCOME ════════ */
+    .welcome-screen { flex: 1; display: flex; overflow: hidden; }
+    .welcome-left {
+      width: 420px; flex-shrink: 0;
+      background: var(--ink);
+      display: flex; flex-direction: column;
+      padding: 48px 40px;
+      position: relative; overflow: hidden;
     }
-    .topic-delete:hover { background: var(--red-light); border-color: #fca5a5; }
-    .loading-spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
-    .loading-spinner.sm { width: 18px; height: 18px; border-width: 2px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 0.95rem; color: var(--ink); font-weight: 600; }
-    .loading-sub  { font-size: 0.78rem; color: var(--ink-muted); }
-    .error-banner { background: var(--red-light); color: var(--red); padding: 14px 20px; border-radius: var(--radius); font-size: 0.86rem; border: 1px solid #fecaca; max-width: 400px; text-align: center; }
-    .upload-section { width: 100%; max-width: 370px; background: var(--blue-light); border: 2px dashed #93c5fd; border-radius: var(--radius); padding: 20px; text-align: center; transition: all 0.2s; }
-    .upload-section:hover { background: var(--blue-mid); }
-    .upload-icon { font-size: 1.9rem; margin-bottom: 8px; }
-    .upload-title { font-weight: 700; color: var(--blue); margin-bottom: 4px; font-size: 0.93rem; }
-    .upload-subtitle { font-size: 0.76rem; color: var(--ink-soft); margin-bottom: 12px; }
+    .welcome-left-pattern {
+      position: absolute; inset: 0; opacity: 0.04;
+      background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+      background-size: 24px 24px; pointer-events: none;
+    }
+    .welcome-logo { display: flex; align-items: center; gap: 10px; margin-bottom: auto; }
+    .welcome-logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: white; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font); font-size: 14px; color: var(--ink); font-weight: 700;
+    }
+    .welcome-logo-name { font-size: 0.92rem; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.04em; }
+    .welcome-hero { padding: 40px 0 32px; }
+    .welcome-kicker { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.35); margin-bottom: 16px; }
+    .welcome-title { font-family: var(--font); font-size: 2.2rem; font-weight: 700; color: white; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px; }
+    .welcome-title em { font-style: italic; color: rgba(255,255,255,0.5); }
+    .welcome-desc { font-size: 0.85rem; color: rgba(255,255,255,0.45); line-height: 1.75; }
+    .welcome-stats { display: flex; gap: 24px; margin-top: auto; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .welcome-stat-num { font-family: var(--font); font-size: 1.6rem; font-weight: 700; color: white; display: block; }
+    .welcome-stat-lbl { font-size: 0.68rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .welcome-right { flex: 1; background: var(--page); display: flex; flex-direction: column; overflow: hidden; }
+    .welcome-right-header {
+      padding: 28px 36px 20px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .welcome-right-header h2 { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+    .status-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      background: var(--bg); border: 1px solid var(--border);
+      font-size: 0.68rem; font-weight: 500; color: var(--text-2);
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-2); transition: all 0.3s; }
+    .status-dot.online { background: #3a8a52; box-shadow: 0 0 6px rgba(58,138,82,0.4); }
+
+    .welcome-scroll { flex: 1; overflow-y: auto; padding: 0 36px 36px; display: flex; flex-direction: column; gap: 28px; }
+    .api-error { padding: 12px 16px; border-radius: var(--r); background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); font-size: 0.82rem; }
+
+    .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .section-heading h3 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); }
+
+    .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .class-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 16px;
+      cursor: pointer; transition: all 0.2s var(--ease);
+      display: flex; flex-direction: column; gap: 10px;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .class-card:hover { border-color: var(--border-2); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .class-card-icon { font-size: 22px; }
+    .class-card-name { font-size: 0.87rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .class-card-del {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px; border-radius: 5px;
+      border: none; background: transparent; color: var(--text-3);
+      font-size: 13px; cursor: pointer; opacity: 0;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .class-card:hover .class-card-del { opacity: 1; }
+    .class-card-del:hover { background: var(--red-bg); color: var(--red); }
+    .class-card-arrow {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--text); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; margin-top: auto; align-self: flex-end; transition: background 0.2s;
+    }
+    .class-card:hover .class-card-arrow { background: var(--accent); }
+
+    .upload-zone {
+      background: var(--bg); border: 1.5px dashed var(--border-2);
+      border-radius: var(--r-lg); padding: 24px;
+      text-align: center; cursor: pointer; transition: all 0.2s var(--ease);
+    }
+    .upload-zone:hover { border-color: var(--accent-border); background: var(--accent-bg); }
+    .upload-zone-icon { font-size: 24px; margin-bottom: 8px; }
+    .upload-zone-title { font-size: 0.87rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .upload-zone-sub { font-size: 0.74rem; color: var(--text-2); margin-bottom: 14px; line-height: 1.6; }
     .upload-input { display: none; }
-    .upload-btn { background: var(--blue); color: white; padding: 7px 16px; border-radius: 20px; border: none; cursor: pointer; font-weight: 600; font-size: 0.82rem; font-family: var(--font); transition: background 0.2s; }
-    .upload-btn:hover { background: var(--blue-dark); }
-    .upload-status { margin-top: 8px; font-size: 0.76rem; font-weight: 500; }
+    .btn-upload {
+      display: inline-block; padding: 7px 18px;
+      background: var(--text); color: white;
+      border-radius: 7px; border: none; cursor: pointer;
+      font-weight: 600; font-size: 0.79rem; font-family: var(--font); transition: all 0.2s;
+    }
+    .btn-upload:hover { background: var(--accent); }
+    .upload-status { margin-top: 10px; font-size: 0.74rem; font-weight: 500; }
     .upload-status.loading { color: var(--blue); }
     .upload-status.error   { color: var(--red); }
-    .upload-status.success { color: var(--green); }
+    .upload-status.success { color: var(--accent); }
 
-    /* BUTTONS */
-    .btn { padding: 8px 20px; border: none; border-radius: 20px; font-size: 0.84rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: var(--font); }
-    .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-    .btn:disabled { opacity: 0.32; cursor: not-allowed; transform: none !important; }
-    .btn-primary { background: var(--blue);  color: white; }
-    .btn-primary:hover:not(:disabled) { background: var(--blue-dark); }
-    .btn-amber   { background: var(--amber); color: white; }
-    .btn-amber:hover:not(:disabled)   { background: #b45309; }
-    .btn-ghost   { background: transparent; color: var(--ink-soft); border: 1.5px solid var(--border-str); }
-    .btn-ghost:hover:not(:disabled)   { border-color: var(--ink-muted); color: var(--ink); }
+    /* ════════ LOADING / ERROR ════════ */
+    .centred-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px; background: var(--page);
+    }
+    .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    .spinner.sm { width: 14px; height: 14px; border-width: 1.5px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .centred-title { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+    .centred-sub { font-size: 0.78rem; color: var(--text-2); text-align: center; max-width: 300px; line-height: 1.7; }
+    .error-box { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); padding: 14px 20px; border-radius: var(--r-lg); font-size: 0.84rem; text-align: center; max-width: 380px; line-height: 1.6; }
 
-    /* CONTENT CARDS */
-    .structure-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; }
-    .structure-card-title { font-weight: 700; font-size: 0.97rem; color: var(--blue); margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
+    /* ════════ SESSION LAYOUT ════════ */
+    .session-layout { flex: 1; display: flex; overflow: hidden; background: var(--page); }
 
-    .section-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
-    .section-card-header { background: var(--ink); color: white; padding: 13px 20px; font-weight: 600; font-size: 0.86rem; display: flex; align-items: center; justify-content: space-between; }
-    .regen-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); color: rgba(255,255,255,0.85); padding: 4px 11px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
-    .regen-btn:hover:not(:disabled) { background: rgba(255,255,255,0.22); }
-    .regen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .spin { display: inline-block; animation: spin 0.7s linear infinite; }
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: var(--bg); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .sidebar-top { padding: 18px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .sidebar-logo { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
+    .sidebar-logo-mark {
+      width: 26px; height: 26px; border-radius: 6px;
+      background: var(--ink); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font); font-size: 12px; color: white; font-weight: 700;
+    }
+    .sidebar-logo-name { font-size: 0.85rem; font-weight: 600; color: var(--text); letter-spacing: 0.02em; }
+    .class-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: var(--r);
+      background: var(--bg-2); border: 1px solid var(--border);
+    }
+    .class-pill-icon { font-size: 16px; }
+    .class-pill-info { flex: 1; min-width: 0; }
+    .class-pill-name { font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .class-pill-sub  { font-size: 0.65rem; color: var(--text-3); }
 
-    .md { padding: 20px; line-height: 1.8; font-size: 0.88rem; color: var(--ink); }
-    .md h1,.md h2 { font-family: var(--font-serif); font-size: 1.08rem; font-weight: 600; color: var(--blue); margin: 18px 0 7px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-    .md h3,.md h4 { font-size: 0.9rem; font-weight: 700; color: var(--ink); margin: 13px 0 4px; }
-    .md p   { margin-bottom: 8px; }
-    .md ul,.md ol { padding-left: 19px; margin-bottom: 8px; }
-    .md li  { margin-bottom: 3px; }
-    .md code { background: var(--surface-2); padding: 2px 5px; border-radius: 4px; font-size: 0.8rem; font-family: monospace; border: 1px solid var(--border); }
-    .md pre  { background: var(--ink); color: #e2e8f0; padding: 13px; border-radius: 8px; overflow-x: auto; margin-bottom: 8px; }
+    .sidebar-sections { flex: 1; overflow-y: auto; padding: 14px 10px; }
+    .sidebar-label { font-size: 0.63rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); padding: 0 8px; margin-bottom: 6px; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: var(--r); cursor: pointer;
+      transition: all 0.15s; margin-bottom: 2px;
+    }
+    .sidebar-item:hover:not(.disabled) { background: var(--bg-2); }
+    .sidebar-item.active { background: var(--accent-bg); }
+    .sidebar-item.disabled { cursor: default; opacity: 0.45; }
+    .sidebar-num {
+      width: 22px; height: 22px; border-radius: 5px;
+      background: var(--bg-3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.67rem; font-weight: 700; color: var(--text-2); flex-shrink: 0; transition: all 0.15s;
+    }
+    .sidebar-item.active .sidebar-num { background: var(--accent); border-color: var(--accent); color: white; }
+    .sidebar-item.done .sidebar-num   { border-color: var(--accent-border); color: var(--accent); }
+    .sidebar-item-text { font-size: 0.79rem; color: var(--text-2); line-height: 1.35; flex: 1; min-width: 0; }
+    .sidebar-item.active .sidebar-item-text { color: var(--accent); font-weight: 500; }
+    .sidebar-item.done  .sidebar-item-text  { color: var(--text); }
+    .sidebar-check { font-size: 10px; color: var(--accent); flex-shrink: 0; }
+
+    .sidebar-progress { padding: 12px 10px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
+    .progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .progress-label span { font-size: 0.68rem; color: var(--text-3); }
+    .progress-label strong { font-size: 0.68rem; font-weight: 600; color: var(--text-2); }
+    .progress-track { height: 4px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s var(--ease); }
+
+    .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+    .sidebar-footer-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: var(--r); cursor: pointer;
+      transition: all 0.15s; border: none; background: transparent;
+      font-family: var(--font); font-size: 0.78rem;
+      color: var(--text-2); width: 100%; text-align: left;
+    }
+    .sidebar-footer-btn:hover { background: var(--bg-2); color: var(--text); }
+
+    /* ── CONTENT ── */
+    .content-area { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .content-topbar {
+      height: 52px; flex-shrink: 0;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-2); }
+    .topbar-breadcrumb .sep { color: var(--border-2); }
+    .topbar-breadcrumb .current { color: var(--text); font-weight: 500; }
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+    .content-scroll { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+    /* ── OVERVIEW ── */
+    .overview-header { margin-bottom: 28px; text-align: center; }
+    .overview-kicker { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 6px; }
+    .overview-title { font-family: var(--font); font-size: 1.7rem; font-weight: 700; color: var(--text); margin-bottom: 8px; letter-spacing: -0.02em; }
+    .overview-meta  { font-size: 0.82rem; color: var(--text-2); }
+
+
+    .structure-content {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-xl); padding: 24px 28px; box-shadow: var(--shadow);
+    }
+    .structure-content-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 16px; }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600;
+    }
+    .status-badge.ready   { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+    .status-badge.loading { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--amber-border); }
+    .status-badge.pending { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border); }
+    .status-badge.done    { background: var(--bg-3); color: var(--text-2); border: 1px solid var(--border); }
+
+    /* ── DETAIL ── */
+    .detail-header { flex-shrink: 0; margin-bottom: 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .detail-kicker { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 4px; }
+    .detail-title { font-family: var(--font); font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1.2; letter-spacing: -0.02em; }
+    .detail-header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .tab { padding: 10px 20px; font-size: 0.82rem; font-weight: 500; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+    .tab.disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .summary-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow); }
+    .loading-inline { display: flex; align-items: center; gap: 8px; padding: 20px 22px; font-size: 0.81rem; color: var(--text-2); }
+
+    /* ── MARKDOWN ── */
+    .md { padding: 22px 26px; line-height: 1.85; font-size: 0.87rem; color: var(--text); }
+    .md.compact { padding: 0; }
+    .md h1,.md h2 { font-family: var(--font); font-size: 1.05rem; font-weight: 600; color: var(--text); margin: 20px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .md h3,.md h4 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin: 14px 0 4px; }
+    .md p  { margin-bottom: 10px; }
+    .md ul,.md ol { padding-left: 20px; margin-bottom: 10px; }
+    .md li { margin-bottom: 4px; }
+    .md strong { font-weight: 600; }
+    .md em { font-style: italic; color: var(--text-2); }
+    .md code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 0.79rem; font-family: monospace; border: 1px solid var(--border); }
+    .md pre { background: var(--ink); color: #e8e7e2; padding: 14px; border-radius: 10px; overflow-x: auto; margin-bottom: 10px; }
     .md pre code { background: none; padding: 0; border: none; color: inherit; }
-    .md strong { font-weight: 700; }
-    .md em     { font-style: italic; color: var(--ink-soft); }
-    .md table { border-collapse: collapse; width: 100%; margin-bottom: 8px; font-size: 0.82rem; }
-    .md th,.md td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
-    .md th { background: var(--blue-light); font-weight: 700; }
+    .md table { border-collapse: collapse; width: 100%; margin-bottom: 10px; font-size: 0.82rem; }
+    .md th,.md td { border: 1px solid var(--border); padding: 7px 12px; }
+    .md th { background: var(--bg-2); font-weight: 600; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-2); }
 
-    /* Loading placeholder inside section */
-    .loading-row { display: flex; align-items: center; gap: 10px; padding: 16px 20px; font-size: 0.82rem; color: var(--ink-muted); border-top: 1px solid var(--border); }
-
-    /* EXAM */
-    .exam-header { text-align: center; padding: 0 0 14px; }
-    .exam-header h2 { font-family: var(--font-serif); font-size: 1.35rem; font-weight: 600; color: var(--amber); margin-bottom: 4px; }
-    .exam-header p  { font-size: 0.79rem; color: var(--ink-muted); }
-    .q-card { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 17px; transition: border-color 0.3s; box-shadow: var(--shadow-sm); }
-    .q-card + .q-card { margin-top: 14px; }
-    .q-card.answered-correct { border-color: #6ee7b7; }
-    .q-card.answered-wrong   { border-color: #fca5a5; }
-    .q-text { font-weight: 600; margin-bottom: 11px; color: var(--ink); font-size: 0.88rem; line-height: 1.55; }
-    .q-num  { color: var(--blue); margin-right: 5px; }
-    .option { display: flex; align-items: center; gap: 9px; padding: 7px 11px; border-radius: 8px; margin: 4px 0; cursor: pointer; border: 1.5px solid transparent; transition: all 0.17s; font-size: 0.84rem; }
-    .option:hover:not(.disabled) { background: var(--blue-light); border-color: #bfdbfe; }
+    /* ── EXAM ── */
+    .q-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; box-shadow: var(--shadow); transition: border-color 0.25s; }
+    .q-card + .q-card { margin-top: 10px; }
+    .q-card.answered-correct { border-color: var(--accent-border); }
+    .q-card.answered-wrong   { border-color: var(--red-border); }
+    .q-text { font-weight: 500; margin-bottom: 13px; color: var(--text); font-size: 0.87rem; line-height: 1.6; }
+    .q-num  { color: var(--text-3); margin-right: 5px; }
+    .option { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--r); margin: 4px 0; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; font-size: 0.84rem; color: var(--text-2); }
+    .option:hover:not(.disabled) { background: var(--bg-2); border-color: var(--border); color: var(--text); }
     .option.disabled { cursor: default; }
-    .option.correct-reveal { background: var(--green-light); border-color: #6ee7b7; color: var(--green); font-weight: 600; }
-    .option.wrong-reveal   { background: var(--red-light);   border-color: #fca5a5; color: var(--red); }
-    .option-letter { width: 23px; height: 23px; border-radius: 50%; background: var(--surface-2); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
-    .option.correct-reveal .option-letter { background: var(--green); border-color: var(--green); color: white; }
-    .option.wrong-reveal   .option-letter { background: var(--red);   border-color: var(--red);   color: white; }
-    .option-feedback { margin-left: auto; font-weight: 700; font-size: 0.88rem; flex-shrink: 0; }
-    .explanation { margin-top: 9px; padding: 8px 12px; background: var(--blue-light); border-radius: 7px; font-size: 0.78rem; color: #1e40af; line-height: 1.55; border-left: 3px solid var(--blue); }
-    .score-card { background: var(--ink); color: white; border-radius: var(--radius-lg); padding: 22px; text-align: center; }
-    .score-card h3 { font-size: 0.75rem; margin-bottom: 5px; opacity: 0.5; font-weight: 400; text-transform: uppercase; letter-spacing: 0.09em; }
-    .score-big    { font-family: var(--font-serif); font-size: 2.8rem; font-weight: 600; margin: 3px 0; }
-    .score-detail { font-size: 0.83rem; opacity: 0.65; }
+    .option.correct-reveal { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); font-weight: 500; }
+    .option.wrong-reveal   { background: var(--red-bg); border-color: var(--red-border); color: var(--red); }
+    .option-letter { width: 24px; height: 24px; border-radius: 5px; background: var(--bg-3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.67rem; font-weight: 700; flex-shrink: 0; color: var(--text-2); text-transform: uppercase; }
+    .option.correct-reveal .option-letter { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+    .option.wrong-reveal   .option-letter { background: var(--red-bg); border-color: var(--red-border); color: var(--red); }
+    .option-feedback { margin-left: auto; font-size: 0.9rem; flex-shrink: 0; }
+    .explanation { margin-top: 10px; padding: 10px 14px; background: var(--blue-bg); border-radius: var(--r); font-size: 0.78rem; color: var(--blue); line-height: 1.65; border-left: 2px solid var(--blue-border); }
+
+    .score-banner {
+      background: var(--ink); color: white; border-radius: var(--r-xl); padding: 22px 26px;
+      margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .score-banner .label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4; margin-bottom: 3px; }
+    .score-banner .value { font-family: var(--font); font-size: 2.2rem; font-weight: 700; line-height: 1; }
+    .score-banner .value small { font-family: var(--font); font-size: 1rem; opacity: 0.45; }
+    .score-banner-msg { font-size: 0.87rem; opacity: 0.55; }
+
+    /* ── RESULTS ── */
+    .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .result-row { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+    .result-row-name { font-size: 0.84rem; font-weight: 500; color: var(--text); }
+    .result-row-score { font-family: var(--font); font-size: 1.1rem; font-weight: 600; }
+
+    /* ── BUTTONS ── */
+    .btn { padding: 7px 18px; border: 1px solid transparent; border-radius: 7px; font-size: 0.81rem; font-weight: 600; cursor: pointer; transition: all 0.18s var(--ease); font-family: var(--font); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-primary { background: var(--text); color: white; border-color: var(--text); }
+    .btn-primary:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border-2); }
+    .btn-ghost:hover:not(:disabled) { color: var(--text); background: var(--bg-2); }
+    .btn-outline-green { background: transparent; color: var(--accent); border-color: var(--accent-border); }
+    .btn-outline-green:hover:not(:disabled) { background: var(--accent-bg); }
+
+    .regen-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border-2); background: transparent; color: var(--text-2); font-size: 0.71rem; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+    .regen-btn:hover:not(:disabled) { background: var(--bg-2); color: var(--text); }
+    .regen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .spin { animation: spin 0.7s linear infinite; display: inline-block; }
+
+    /* ── Q&A PANEL ── */
+    .qa-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      height: 44px; padding: 0 18px; border-radius: 22px;
+      background: var(--text); color: white;
+      border: none; cursor: pointer;
+      font-size: 0.84rem; font-weight: 600; font-family: var(--font);
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: var(--shadow-lg); z-index: 99;
+      transition: all 0.2s var(--ease); white-space: nowrap;
+    }
+    .qa-fab:hover { background: var(--accent); }
+    .qa-fab-badge {
+      background: var(--accent-2); color: white;
+      width: 18px; height: 18px; border-radius: 50%;
+      font-size: 0.6rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qa-panel {
+      flex-shrink: 0; width: 0; overflow: hidden;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      transition: width 0.35s var(--ease);
+    }
+    .qa-panel.open { width: 360px; border-left: 1px solid var(--border); }
+    .qa-panel-inner {
+      width: 360px; flex-shrink: 0;
+      display: flex; flex-direction: column; height: 100%;
+    }
+    .qa-drawer-handle { height: 52px; flex-shrink: 0; padding: 0 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .qa-drawer-title { font-size: 0.84rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .qa-close { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-2); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .qa-close:hover { background: var(--bg-2); color: var(--text); }
+    .qa-messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .qa-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 0.8rem; padding: 16px; text-align: center; }
+    .qa-msg-user { align-self: flex-end; background: var(--bg-3); border: 1px solid var(--border); padding: 8px 12px; border-radius: 10px 10px 2px 10px; max-width: 88%; font-size: 0.82rem; color: var(--text); line-height: 1.5; }
+    .qa-msg-ai   { align-self: flex-start; background: var(--bg); border: 1px solid var(--border); padding: 9px 12px; border-radius: 2px 10px 10px 10px; max-width: 96%; font-size: 0.81rem; color: var(--text); line-height: 1.65; }
+    .qa-thinking { align-self: flex-start; display: flex; align-items: center; gap: 7px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px 10px 10px 10px; font-size: 0.76rem; color: var(--text-3); }
+    .dot-bounce { display: inline-flex; gap: 3px; }
+    .dot-bounce span { width: 4px; height: 4px; background: var(--text-3); border-radius: 50%; animation: dbounce 1.1s infinite; }
+    .dot-bounce span:nth-child(2) { animation-delay: 0.18s; }
+    .dot-bounce span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes dbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+    .qa-input-row { flex-shrink: 0; padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 7px; align-items: flex-end; }
+    .qa-input-row textarea { flex: 1; resize: none; border: 1px solid var(--border-2); border-radius: 7px; padding: 8px 11px; font-family: var(--font); font-size: 0.81rem; color: var(--text); line-height: 1.45; min-height: 36px; max-height: 90px; outline: none; transition: border-color 0.2s; background: var(--bg-2); overflow-y: auto; }
+    .qa-input-row textarea:focus { border-color: var(--text); background: var(--bg); }
+    .qa-input-row textarea::placeholder { color: var(--text-3); }
+    .qa-send { width: 36px; height: 36px; background: var(--text); color: white; border: none; border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; font-size: 14px; font-weight: 700; }
+    .qa-send:hover:not(:disabled) { background: var(--accent); }
+    .qa-send:disabled { opacity: 0.3; cursor: not-allowed; }
+    .qa-hint { font-size: 0.63rem; color: var(--text-3); text-align: center; padding: 0 14px 8px; }
   </style>
 </head>
 <body>
 <div id="app">
 
-  <header>
-    <div :class="['status-dot', apiOk ? '' : 'offline']"></div>
-    <div>
-      <h1>University Assistant</h1>
-      <div class="subtitle">{{ apiOk ? 'Connected' : 'API not reachable' }}</div>
-    </div>
-    <button v-if="screen !== 'welcome'" class="header-back" @click="resetSession">← New class</button>
-  </header>
-
   <!-- WELCOME -->
-  <div v-if="screen === 'welcome'" class="full-screen">
-    <div class="welcome-icon">📚</div>
-    <h1 class="welcome-title">Prepare a class</h1>
-    <p class="welcome-subtitle">Select a topic. Structure, summaries and exams appear as they are generated.</p>
-    <div v-if="!apiOk" class="api-error">⚠️ Cannot connect to the API.</div>
-    <div class="topic-grid" v-if="apiOk">
-      <div class="topic-card" v-for="t in topics" :key="t" @click="startSession(t)">
-        <div class="topic-icon">{{ topicIcon(t) }}</div>
-        <div class="topic-name">{{ formatTopicName(t) }}</div>
-        <button class="topic-delete" @click.stop="deleteTopic(t)" title="Delete class">×</button>
-        <div class="topic-arrow">→</div>
+  <div v-if="screen === 'welcome'" class="welcome-screen">
+    <div class="welcome-left">
+      <div class="welcome-left-pattern"></div>
+      <div class="welcome-logo">
+        <div class="welcome-logo-mark">L</div>
+        <span class="welcome-logo-name">University Assistant</span>
+      </div>
+      <div class="welcome-hero">
+        <div class="welcome-kicker">University Assistant</div>
+        <h1 class="welcome-title">Learn<br><em>smarter,</em><br>not harder.</h1>
+        <p class="welcome-desc">Select a class or upload your own material. Summaries, structure, and interactive exams generate automatically.</p>
+      </div>
+      <div class="welcome-stats">
+        <div><span class="welcome-stat-num">{{ topics.length }}</span><span class="welcome-stat-lbl">Classes</span></div>
+        <div><span class="welcome-stat-num">AI</span><span class="welcome-stat-lbl">Powered</span></div>
       </div>
     </div>
-    <div v-if="apiOk" class="upload-section">
-      <div class="upload-icon">📤</div>
-      <div class="upload-title">Upload your own topic</div>
-      <div class="upload-subtitle">Select a .txt, .pdf or .pptx file to ingest and process</div>
-      <input type="file" accept=".txt,.pdf,.pptx" ref="fileInput" class="upload-input" @change="onFileSelected" />
-      <button class="upload-btn" @click="fileInput.click()">Choose file</button>
-      <div :class="['upload-status', uploadStatusClass]" v-if="uploadStatus">{{ uploadStatus }}</div>
+    <div class="welcome-right">
+      <div class="welcome-right-header">
+        <h2>Your classes</h2>
+        <div class="status-chip">
+          <div :class="['status-dot', apiOk ? 'online' : '']"></div>
+          {{ apiOk ? 'API connected' : 'API offline' }}
+        </div>
+      </div>
+      <div class="welcome-scroll">
+        <div v-if="!apiOk" class="api-error">⚠ Cannot connect to the API. Make sure the server is running.</div>
+        <div v-if="apiOk">
+          <div class="section-heading"><h3>Your classes</h3></div>
+          <div v-if="topics.length === 0" style="font-size:0.84rem;color:var(--text-3);padding:4px 0 12px">No classes yet. Upload one below.</div>
+          <div class="class-grid">
+            <div class="class-card" v-for="t in topics" :key="t" @click="startSession(t)">
+              <button class="class-card-del" @click.stop="deleteTopic(t)">✕</button>
+              <div class="class-card-icon">{{ topicIcon(t) }}</div>
+              <div class="class-card-name">{{ formatTopicName(t) }}</div>
+              <div class="class-card-arrow">→</div>
+            </div>
+          </div>
+        </div>
+        <div v-if="apiOk" class="upload-zone" @click="fileInput.click()">
+          <div class="upload-zone-icon">📤</div>
+          <div class="upload-zone-title">Upload your own topic</div>
+          <div class="upload-zone-sub">Supports .txt, .pdf and .pptx files.<br>Your material gets structured automatically.</div>
+          <input type="file" accept=".txt,.pdf,.pptx" ref="fileInput" class="upload-input" @change="onFileSelected" />
+          <button class="btn-upload" @click.stop="fileInput.click()">Choose file</button>
+          <div :class="['upload-status', uploadStatusClass]" v-if="uploadStatus">{{ uploadStatus }}</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- LOADING (waiting for first SSE event) -->
-  <div v-if="screen === 'loading'" class="full-screen">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">Generating class…</div>
-    <div class="loading-sub">Structure, summaries and exams will appear as they load</div>
+  <!-- LOADING -->
+  <div v-if="screen === 'loading'" class="centred-screen">
+    <div class="spinner"></div>
+    <div class="centred-title">Generating your class…</div>
+    <div class="centred-sub">Structure, summaries and exams will appear as they load.</div>
   </div>
 
   <!-- ERROR -->
-  <div v-if="screen === 'error'" class="full-screen">
-    <div class="error-banner">{{ errorMsg }}</div>
+  <div v-if="screen === 'error'" class="centred-screen">
+    <div class="error-box">{{ errorMsg }}</div>
     <button class="btn btn-primary" @click="resetSession">Back to home</button>
   </div>
 
   <!-- SESSION -->
-  <div v-if="screen === 'session'" class="body-area">
+  <div v-if="screen === 'session'" class="session-layout">
 
-    <div :class="['main-col', panelOpen ? 'panel-open' : '']">
-
-      <!-- Nav -->
-      <div class="session-nav">
-        <div
-          :class="['nav-step', currentView === 'structure' ? 'active' : 'done']"
-          @click="currentView = 'structure'; scrollToTop()"
-          style="cursor:pointer"
-        >📋 Structure</div>
-        <template v-for="(sec, si) in sections" :key="'nav-' + si">
-          <div :class="['nav-connector', sec.summaryLoaded ? 'done' : '']"></div>
-          <div
-            :class="['nav-step', navClass(si)]"
-            @click="sec.summaryLoaded && goToSection(si)"
-          >
-            <span v-if="si === streamingSection && !sec.summaryLoaded" class="loading-spinner sm" style="margin-right:2px"></span>
-            {{ si + 1 }}
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-mark">L</div>
+          <span class="sidebar-logo-name">University Assistant</span>
+        </div>
+        <div class="class-pill">
+          <div class="class-pill-icon">{{ topicIcon(currentTopic) }}</div>
+          <div class="class-pill-info">
+            <div class="class-pill-name">{{ formatTopicName(currentTopic) }}</div>
+            <div class="class-pill-sub">{{ sections.length }} sections</div>
           </div>
-        </template>
-        <template v-if="sections.length">
-          <div :class="['nav-connector', streamDone ? 'done' : '']"></div>
-          <div :class="['nav-step', currentView === 'done' ? 'active' : (streamDone ? 'done' : '')]">🏁</div>
-        </template>
+        </div>
       </div>
 
-      <!-- Scroll area -->
-      <div class="scroll-area" ref="scrollArea">
+      <div class="sidebar-sections">
+        <div class="sidebar-label">Overview</div>
+        <div :class="['sidebar-item', currentView === 'structure' ? 'active' : 'done']"
+          @click="currentView = 'structure'; scrollToTop()" style="cursor:pointer">
+          <div class="sidebar-num" style="font-size:10px">≡</div>
+          <span class="sidebar-item-text">Dashboard</span>
+          <span v-if="currentView !== 'structure'" class="sidebar-check">✓</span>
+        </div>
 
-        <!-- STRUCTURE view -->
+        <div class="sidebar-label" style="margin-top:14px">Sections</div>
+        <div v-for="(sec, si) in sections" :key="'s-'+si"
+          :class="['sidebar-item', navSidebarClass(si)]"
+          @click="sec.summaryLoaded && goToSection(si)">
+          <div class="sidebar-num">
+            <span v-if="si === streamingSection && !sec.summaryLoaded" class="spinner sm"></span>
+            <span v-else>{{ si + 1 }}</span>
+          </div>
+          <span class="sidebar-item-text">{{ sec.title }}</span>
+          <span v-if="sectionIsDone(si)" class="sidebar-check">✓</span>
+        </div>
+
+        <div v-if="sections.length"
+          :class="['sidebar-item', currentView === 'done' ? 'active' : (streamDone ? 'done' : 'disabled')]"
+          @click="streamDone && goToResults()">
+          <div class="sidebar-num" style="font-size:10px">★</div>
+          <span class="sidebar-item-text">Results</span>
+        </div>
+      </div>
+
+      <div class="sidebar-progress">
+        <div class="progress-label"><span>Progress</span><strong>{{ progressPct }}%</strong></div>
+        <div class="progress-track"><div class="progress-fill" :style="{width: progressPct + '%'}"></div></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-footer-btn" @click="resetSession">← New class</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area">
+      <div class="content-topbar">
+        <div class="topbar-breadcrumb">
+          <span>{{ formatTopicName(currentTopic) }}</span>
+          <span class="sep">/</span>
+          <span class="current" v-if="currentView === 'structure'">Dashboard</span>
+          <span class="current" v-if="currentView === 'section'">Section {{ currentSection + 1 }} · {{ currentSectionPhase === 'summary' ? 'Summary' : 'Exam' }}</span>
+          <span class="current" v-if="currentView === 'done'">Results</span>
+        </div>
+        <div class="topbar-actions">
+          <div class="status-chip">
+            <div :class="['status-dot', apiOk ? 'online' : '']"></div>
+            {{ apiOk ? 'Connected' : 'Offline' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="content-scroll" ref="scrollArea">
+
+        <!-- DASHBOARD -->
         <template v-if="currentView === 'structure'">
-          <div class="structure-card">
-            <div class="structure-card-title">📋 Class structure</div>
-            <div class="md" style="padding:0" v-html="renderMarkdown(structure)"></div>
+          <div class="overview-header">
+            <div class="overview-kicker">Class overview</div>
+            <h1 class="overview-title">{{ formatTopicName(currentTopic) }}</h1>
+            <div class="overview-meta">{{ sections.length }} sections · Generated automatically</div>
+          </div>
+
+
+          <div class="structure-content">
+            <div class="structure-content-label">Full class structure</div>
+            <div class="md compact" v-html="renderMarkdown(structure)"></div>
+          </div>
+
+          <div style="margin-top:20px;display:flex;justify-content:flex-end">
+            <button class="btn btn-primary" :disabled="!sections[0]?.summaryLoaded" @click="goToSection(0)">
+              Start studying →
+            </button>
           </div>
         </template>
 
-        <!-- SECTION view -->
+        <!-- SECTION DETAIL -->
         <template v-if="currentView === 'section'">
+          <div class="detail-header">
+            <div>
+              <div class="detail-kicker">Section {{ currentSection + 1 }} of {{ sections.length }}</div>
+              <h1 class="detail-title">{{ currentSec.title }}</h1>
+            </div>
+            <div class="detail-header-actions">
+              <button v-if="currentSectionPhase === 'summary'" class="regen-btn" :disabled="isRegenerating || !currentSec.summaryLoaded" @click="regenerateSummary">
+                <span :class="isRegenerating ? 'spin' : ''">↻</span> {{ isRegenerating ? 'Regenerating…' : 'Regenerate' }}
+              </button>
+              <button v-if="currentSectionPhase === 'exam'" class="regen-btn" :disabled="isRegeneratingExam || !currentSec.examLoaded" @click="regenerateExam">
+                <span :class="isRegeneratingExam ? 'spin' : ''">↻</span> {{ isRegeneratingExam ? 'Regenerating…' : 'Regenerate exam' }}
+              </button>
+            </div>
+          </div>
 
-          <!-- SUMMARY phase -->
+          <div class="tabs">
+            <div :class="['tab', currentSectionPhase === 'summary' ? 'active' : '']" @click="sectionPhase[currentSection] = 'summary'; scrollToTop()">Summary</div>
+            <div :class="['tab', currentSectionPhase === 'exam' ? 'active' : '', !currentSec.examLoaded ? 'disabled' : '']"
+              @click="currentSec.examLoaded && (sectionPhase[currentSection] = 'exam') && scrollToTop()">
+              Exam{{ !currentSec.examLoaded ? ' (loading…)' : '' }}
+            </div>
+          </div>
+
           <template v-if="currentSectionPhase === 'summary'">
-            <div class="section-card">
-              <div class="section-card-header">
-                <span>Section {{ currentSection + 1 }} / {{ sections.length }}: {{ currentSec.title }}</span>
-                <button class="regen-btn" :disabled="isRegenerating || !currentSec.summaryLoaded" @click="regenerateSummary">
-                  <span :class="isRegenerating ? 'spin' : ''">↻</span>
-                  {{ isRegenerating ? 'Regenerating…' : 'Regenerate' }}
-                </button>
-              </div>
+            <div class="summary-card">
               <div v-if="currentSec.summaryLoaded" class="md" v-html="renderMarkdown(currentSec.summary)"></div>
-              <div v-else class="loading-row">
-                <div class="loading-spinner sm"></div> Generating summary…
-              </div>
+              <div v-else class="loading-inline"><div class="spinner sm"></div> Generating summary…</div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+              <button v-if="currentSection > 0" class="btn btn-ghost" @click="goToSection(currentSection - 1)">← Prev</button>
+              <button class="btn btn-outline-green" :disabled="!currentSec.examLoaded" @click="sectionPhase[currentSection] = 'exam'; scrollToTop()">Take exam →</button>
             </div>
           </template>
 
-          <!-- EXAM phase -->
           <template v-if="currentSectionPhase === 'exam'">
-            <div class="exam-header">
-              <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-                <button class="regen-btn" :disabled="isRegeneratingExam || !currentSec.examLoaded" @click="regenerateExam">
-                  <span :class="isRegeneratingExam ? 'spin' : ''">↻</span>
-                  {{ isRegeneratingExam ? 'Regenerating…' : 'Regenerate exam' }}
-                </button>
-              </div>
-              <h2>📝 Exam — Section {{ currentSection + 1 }}</h2>
-              <p>{{ currentSec.title }}</p>
-            </div>
-            <div v-if="!currentSec.examLoaded" class="loading-row" style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:20px">
-              <div class="loading-spinner sm"></div> Generating exam…
+            <div v-if="!currentSec.examLoaded" class="loading-inline" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px">
+              <div class="spinner sm"></div> Generating exam…
             </div>
             <template v-else>
-              <div v-for="(q, qi) in currentSec.questions" :key="qi" :class="['q-card', questionState(currentSection, qi)]" style="margin-bottom:10px">
+              <div v-for="(q, qi) in currentSec.questions" :key="qi" :class="['q-card', questionState(currentSection, qi)]">
                 <div class="q-text"><span class="q-num">{{ qi + 1 }}.</span> {{ q.question }}</div>
                 <div v-for="(opt, oi) in q.options" :key="oi" :class="['option', optionClass(currentSection, qi, oi)]" @click="selectAnswer(currentSection, qi, oi)">
                   <div class="option-letter">{{ letters[oi] }}</div>
@@ -363,515 +621,290 @@
                 </div>
                 <div class="explanation" v-if="isRevealed(currentSection, qi) && q.explanation">{{ q.explanation }}</div>
               </div>
-              <div class="score-card" v-if="sectionAllAnswered">
-                <h3>Section {{ currentSection + 1 }} result</h3>
-                <div class="score-big">{{ sectionCorrect }} / {{ sectionTotal }}</div>
-                <div class="score-detail">{{ sectionCorrect === sectionTotal ? "Perfect! 🎉" : sectionCorrect >= sectionTotal / 2 ? "Good job! 💪" : "Keep practising 📖" }}</div>
+              <div class="score-banner" v-if="sectionAllAnswered">
+                <div>
+                  <div class="label">Section result</div>
+                  <div class="value">{{ sectionCorrect }}<small> / {{ sectionTotal }}</small></div>
+                </div>
+                <div class="score-banner-msg">{{ sectionCorrect === sectionTotal ? "Perfect 🎉" : sectionCorrect >= sectionTotal/2 ? "Good work 💪" : "Keep practising 📖" }}</div>
+                <div style="display:flex;gap:8px">
+                  <button v-if="currentSection < sections.length - 1" class="btn btn-primary"
+                    :disabled="!sections[currentSection + 1]?.summaryLoaded"
+                    @click="goToSection(currentSection + 1)">Next section →</button>
+                  <button v-else class="btn btn-primary" :disabled="!streamDone"
+                    @click="currentView = 'done'; scrollToTop()">See results →</button>
+                </div>
               </div>
             </template>
           </template>
-
         </template>
 
-        <!-- DONE view -->
+        <!-- RESULTS -->
         <template v-if="currentView === 'done'">
-          <div class="score-card">
-            <h3>Final result</h3>
-            <div class="score-big">{{ totalCorrect }} / {{ totalQuestions }}</div>
-            <div class="score-detail">{{ totalCorrect === totalQuestions ? 'Perfect! 🎉' : totalCorrect >= totalQuestions / 2 ? 'Good job! 💪' : 'Keep practising 📖' }}</div>
+          <div class="overview-header">
+            <div class="overview-kicker">Final results</div>
+            <h1 class="overview-title">{{ formatTopicName(currentTopic) }}</h1>
           </div>
-          <div v-for="(sec, si) in sections" :key="'r-'+si" class="structure-card" style="padding:13px 17px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span style="font-weight:600">{{ si + 1 }}. {{ sec.title }}</span>
-              <span :style="{fontWeight:700,color:secScore(si).correct===secScore(si).total?'#059669':'#d97706'}">
+          <div class="score-banner" style="margin-bottom:24px">
+            <div>
+              <div class="label">Overall score</div>
+              <div class="value">{{ totalCorrect }}<small> / {{ totalQuestions }}</small></div>
+            </div>
+            <div class="score-banner-msg">{{ totalCorrect === totalQuestions ? 'Perfect! 🎉' : totalCorrect >= totalQuestions/2 ? 'Good job! 💪' : 'Keep practising 📖' }}</div>
+            <button class="btn btn-primary" style="background:white;color:var(--ink);border-color:white" @click="resetSession">New class</button>
+          </div>
+          <div class="results-grid">
+            <div v-for="(sec, si) in sections" :key="'r-'+si" class="result-row">
+              <div>
+                <div style="font-size:0.66rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Section {{ si+1 }}</div>
+                <div class="result-row-name">{{ sec.title }}</div>
+              </div>
+              <div class="result-row-score" :style="{color: secScore(si).correct===secScore(si).total?'var(--accent)':secScore(si).correct>=secScore(si).total/2?'var(--amber)':'var(--red)'}">
                 {{ secScore(si).correct }} / {{ secScore(si).total }}
-              </span>
+              </div>
             </div>
           </div>
         </template>
 
-      </div><!-- /scroll-area -->
-
-      <!-- ACTION BAR -->
-      <div class="action-bar">
-        <div class="action-bar-left">
-          <button
-            v-if="currentView === 'section'"
-            :class="['panel-toggle', panelOpen ? 'active' : '']"
-            @click="togglePanel"
-          >
-            💬 Ask a question
-            <span v-if="qaCount > 0" class="badge">{{ qaCount }}</span>
-          </button>
-        </div>
-        <div class="action-bar-right">
-          <button v-if="currentView === 'structure'" class="btn btn-primary" :disabled="sections.length === 0" @click="goToSection(0)">
-            Start →
-          </button>
-          <template v-if="currentView === 'section'">
-            <!-- Summary phase: take exam button -->
-            <template v-if="currentSectionPhase === 'summary'">
-              <button
-                class="btn btn-amber"
-                :disabled="!currentSec.examLoaded"
-                @click="sectionPhase[currentSection] = 'exam'; scrollToTop()"
-              >📝 Take exam →</button>
-            </template>
-            <!-- Exam phase: back to summary + next/results -->
-            <template v-if="currentSectionPhase === 'exam'">
-              <button class="btn btn-ghost" :disabled="isRegeneratingExam || !currentSec.examLoaded" @click="regenerateExam">
-                {{ isRegeneratingExam ? 'Regenerating exam…' : '↻ Regenerate exam' }}
-              </button>
-              <button class="btn btn-ghost" @click="sectionPhase[currentSection] = 'summary'; scrollToTop()">← Summary</button>
-              <button
-                v-if="currentSection < sections.length - 1"
-                class="btn btn-primary"
-                :disabled="!sectionAllAnswered || !sections[currentSection + 1]?.summaryLoaded"
-                @click="goToSection(currentSection + 1)"
-              >Next section →</button>
-              <button
-                v-else
-                class="btn btn-primary"
-                :disabled="!sectionAllAnswered || !streamDone"
-                @click="currentView = 'done'; scrollToTop()"
-              >See results →</button>
-            </template>
-          </template>
-          <button v-if="currentView === 'done'" class="btn btn-primary" @click="resetSession">New class</button>
-        </div>
-      </div>
-
-    </div><!-- /main-col -->
-
-    <!-- SIDE PANEL -->
-    <div :class="['side-panel', panelOpen ? 'open' : '']">
-      <div class="panel-header">
-        <div style="font-size:1.05rem">💬</div>
-        <div class="panel-htext">
-          <div class="title">Questions</div>
-          <div class="sub">{{ currentSec.title }}</div>
-        </div>
-        <button class="panel-close" @click="panelOpen = false">✕</button>
-      </div>
-      <div class="panel-messages" ref="panelMessages">
-        <div v-if="currentQA.length === 0 && !isThinking" class="panel-empty">
-          <div class="panel-empty-icon">💬</div>
-          <div class="panel-empty-text">Ask anything about<br><strong>this section's content</strong></div>
-        </div>
-        <template v-for="(entry, i) in currentQA" :key="i">
-          <div class="msg-user">{{ entry.question }}</div>
-          <div v-if="entry.answer === null" class="msg-thinking">
-            Thinking <div class="dot-bounce"><span></span><span></span><span></span></div>
-          </div>
-          <div v-else class="msg-assistant">
-            <div class="md" v-html="renderMarkdown(entry.answer)"></div>
-          </div>
-        </template>
-        <div v-if="isThinking" class="msg-thinking">
-          Thinking <div class="dot-bounce"><span></span><span></span><span></span></div>
-        </div>
-      </div>
-      <div class="panel-input-area">
-        <div class="panel-input-row">
-          <textarea
-            v-model="questionInput"
-            placeholder="Ask about this section…"
-            rows="1"
-            @keydown.enter.exact.prevent="submitQuestion"
-            @input="autoResize"
-            ref="questionTextarea"
-          ></textarea>
-          <button class="send-btn" :disabled="!questionInput.trim() || isThinking || !currentSec.summaryLoaded" @click="submitQuestion">↑</button>
-        </div>
-        <div class="input-hint">Enter to send · Shift+Enter for new line</div>
       </div>
     </div>
 
-  </div><!-- /body-area -->
+    <!-- Q&A FAB -->
+    <button class="qa-fab" v-if="currentView === 'section' && !qaOpen" @click="qaOpen = true">
+      💬 Ask a question
+      <span class="qa-fab-badge" v-if="qaCount > 0">{{ qaCount }}</span>
+    </button>
+
+    <!-- Q&A PANEL -->
+    <div :class="['qa-panel', qaOpen ? 'open' : '']">
+      <div class="qa-panel-inner">
+        <div class="qa-drawer-handle">
+          <div class="qa-drawer-title">
+            💬 Questions
+            <span style="font-size:0.72rem;font-weight:400;color:var(--text-2)">· {{ currentSec.title }}</span>
+          </div>
+          <button class="qa-close" @click="qaOpen = false">✕</button>
+        </div>
+        <div class="qa-messages" ref="panelMessages">
+          <div v-if="currentQA.length === 0 && !isThinking" class="qa-empty">Ask anything about this section</div>
+          <template v-for="(entry, i) in currentQA" :key="i">
+            <div class="qa-msg-user">{{ entry.question }}</div>
+            <div v-if="entry.answer === null" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
+            <div v-else class="qa-msg-ai"><div class="md compact" v-html="renderMarkdown(entry.answer)"></div></div>
+          </template>
+          <div v-if="isThinking" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
+        </div>
+        <div class="qa-input-row">
+          <textarea v-model="questionInput" :placeholder="'Ask a question about ' + currentSec.title + '…'" rows="1"
+            @keydown.enter.exact.prevent="submitQuestion" @input="autoResize" ref="questionTextarea"></textarea>
+          <button class="qa-send" :disabled="!questionInput.trim() || isThinking || !currentSec.summaryLoaded" @click="submitQuestion">↑</button>
+        </div>
+        <div class="qa-hint">Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div><!-- /qa-panel -->
+
+  </div>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script type="module">
   import { createApp, ref, reactive, computed, onMounted, nextTick } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-
   const API_URL = 'http://localhost:8000'
 
   createApp({
     setup() {
-      // ── Screen state ───────────────────────────────────────────────────────
-      const screen      = ref('welcome')   // welcome | loading | session | error
-      const currentView = ref('structure') // structure | section | done
-      const errorMsg    = ref('')
-
-      // ── Session data ───────────────────────────────────────────────────────
-      // sections: [{ title, summary, questions, summaryLoaded, examLoaded }]
-      const structure      = ref('')
-      const sections       = reactive([])
-      const streamDone     = ref(false)
-      const streamingSection = ref(-1)  // index currently being generated (-1 = none)
-
-      // ── Navigation ─────────────────────────────────────────────────────────
+      const screen = ref('welcome'), currentView = ref('structure'), errorMsg = ref('')
+      const structure = ref(''), sections = reactive([]), streamDone = ref(false), streamingSection = ref(-1)
       const currentSection = ref(0)
-      const currentSec     = computed(() => sections[currentSection.value] || { title:'', summary:'', questions:[], summaryLoaded:false, examLoaded:false })
-      const currentTopic   = ref('')  // Track which class is currently loaded
-      const chatSessionId  = ref('')
-
-      // ── Misc refs ──────────────────────────────────────────────────────────
-      const apiOk          = ref(false)
-      const topics         = ref([])
-      const letters        = ['a', 'b', 'c', 'd']
-      const fileInput      = ref(null)
-      const uploadStatus   = ref('')
-      const uploadStatusClass = ref('')
-      const scrollArea     = ref(null)
-      const panelMessages  = ref(null)
-      const questionTextarea = ref(null)
-
-      // ── Exam state ─────────────────────────────────────────────────────────
-      const answers  = reactive({})
-      const revealed = reactive({})
-
-      // ── Panel / Q&A ────────────────────────────────────────────────────────
-      const panelOpen     = ref(false)
-      const questionInput = ref('')
-      const isThinking    = ref(false)
-      const isRegenerating = ref(false)
-      const isRegeneratingExam = ref(false)
-      // qaMap[sectionIndex] = [{question, answer}]
-      const qaMap = reactive({})
-      // sectionPhase[si] = 'summary' | 'exam'
-      const sectionPhase = reactive({})
+      const currentSec = computed(() => sections[currentSection.value] || { title:'', summary:'', questions:[], summaryLoaded:false, examLoaded:false })
+      const currentTopic = ref(''), chatSessionId = ref('')
+      const apiOk = ref(false), topics = ref([]), letters = ['a','b','c','d']
+      const fileInput = ref(null), uploadStatus = ref(''), uploadStatusClass = ref('')
+      const scrollArea = ref(null), panelMessages = ref(null), questionTextarea = ref(null)
+      const answers = reactive({}), revealed = reactive({})
+      const qaOpen = ref(false), questionInput = ref(''), isThinking = ref(false)
+      const isRegenerating = ref(false), isRegeneratingExam = ref(false)
+      const qaMap = reactive({}), sectionPhase = reactive({})
       const currentSectionPhase = computed(() => sectionPhase[currentSection.value] || 'summary')
       const currentQA = computed(() => qaMap[currentSection.value] || [])
       const qaCount   = computed(() => (qaMap[currentSection.value] || []).length)
 
-      // ── Helpers ────────────────────────────────────────────────────────────
-      function renderMarkdown(t) { return t ? marked.parse(t) : '' }
-      function generateChatSessionId() {
-        return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-      }
+      const renderMarkdown = t => t ? marked.parse(t) : ''
+      const generateChatSessionId = () => `chat-${Date.now()}-${Math.random().toString(36).slice(2,10)}`
       const topicIcons = { data_bases:'🗄️', neural_networks:'🧠' }
-      function topicIcon(t) { return topicIcons[t] || '📄' }
-      function formatTopicName(t) { return t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) }
+      const topicIcon = t => topicIcons[t] || '📄'
+      const formatTopicName = t => t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())
+      const akey = (si,qi) => `${si}-${qi}`
 
-      function akey(si, qi) { return `${si}-${qi}` }
-      function selectAnswer(si, qi, oi) {
-        const k = akey(si,qi); if (revealed[k]) return
-        answers[k] = oi; revealed[k] = true
-      }
+      function selectAnswer(si,qi,oi) { const k=akey(si,qi); if(revealed[k]) return; answers[k]=oi; revealed[k]=true }
       function isRevealed(si,qi) { return !!revealed[akey(si,qi)] }
       function optionClass(si,qi,oi) {
-        const k = akey(si,qi); if (!revealed[k]) return ''
-        const q = sections[si].questions[qi]
-        return 'disabled ' + (letters[oi]===q.correct_answer ? 'correct-reveal' : answers[k]===oi ? 'wrong-reveal' : '')
+        const k=akey(si,qi); if(!revealed[k]) return ''
+        const q=sections[si].questions[qi]
+        return 'disabled '+(letters[oi]===q.correct_answer?'correct-reveal':answers[k]===oi?'wrong-reveal':'')
       }
       function questionState(si,qi) {
-        const k = akey(si,qi); if (!revealed[k]) return ''
-        return letters[answers[k]] === sections[si].questions[qi].correct_answer ? 'answered-correct' : 'answered-wrong'
+        const k=akey(si,qi); if(!revealed[k]) return ''
+        return letters[answers[k]]===sections[si].questions[qi].correct_answer?'answered-correct':'answered-wrong'
       }
-
       function clearSectionAnswers(si) {
-        Object.keys(answers).forEach(k => {
-          if (k.startsWith(`${si}-`)) delete answers[k]
-        })
-        Object.keys(revealed).forEach(k => {
-          if (k.startsWith(`${si}-`)) delete revealed[k]
-        })
+        Object.keys(answers).forEach(k=>{if(k.startsWith(`${si}-`))delete answers[k]})
+        Object.keys(revealed).forEach(k=>{if(k.startsWith(`${si}-`))delete revealed[k]})
+      }
+      function sectionIsDone(si) {
+        const qs=sections[si]?.questions||[]
+        return qs.length>0 && qs.every((_,qi)=>revealed[akey(si,qi)])
       }
 
-      const sectionTotal    = computed(() => (currentSec.value.questions||[]).length)
-      const sectionCorrect  = computed(() => {
-        const si = currentSection.value
+      const sectionTotal = computed(()=>(currentSec.value.questions||[]).length)
+      const sectionCorrect = computed(()=>{
+        const si=currentSection.value
         return (currentSec.value.questions||[]).filter((q,qi)=>revealed[akey(si,qi)]&&letters[answers[akey(si,qi)]]===q.correct_answer).length
       })
-      const sectionAllAnswered = computed(() => {
-        if (!sectionTotal.value) return false
-        const si = currentSection.value
+      const sectionAllAnswered = computed(()=>{
+        if(!sectionTotal.value) return false
+        const si=currentSection.value
         return (currentSec.value.questions||[]).every((_,qi)=>revealed[akey(si,qi)])
       })
-      const totalQuestions = computed(() => sections.reduce((s,sec)=>s+(sec.questions||[]).length,0))
-      const totalCorrect   = computed(() => {
-        let n=0
-        sections.forEach((sec,si)=>(sec.questions||[]).forEach((q,qi)=>{if(revealed[akey(si,qi)]&&letters[answers[akey(si,qi)]]===q.correct_answer)n++}))
-        return n
+      const totalQuestions = computed(()=>sections.reduce((s,sec)=>s+(sec.questions||[]).length,0))
+      const totalCorrect = computed(()=>{
+        let n=0; sections.forEach((sec,si)=>(sec.questions||[]).forEach((q,qi)=>{if(revealed[akey(si,qi)]&&letters[answers[akey(si,qi)]]===q.correct_answer)n++})); return n
       })
       function secScore(si) {
-        const qs=sections[si].questions||[]; let c=0
+        const qs=sections[si]?.questions||[]; let c=0
         qs.forEach((q,qi)=>{if(revealed[akey(si,qi)]&&letters[answers[akey(si,qi)]]===q.correct_answer)c++})
-        return {correct:c, total:qs.length}
+        return {correct:c,total:qs.length}
       }
+      const progressPct = computed(()=>{
+        if(!sections.length) return 0
+        const done=sections.filter((_,si)=>sectionIsDone(si)).length
+        return Math.round(done/sections.length*100)
+      })
+      function navSidebarClass(si) {
+        const sec=sections[si]; if(!sec) return 'disabled'
+        if(currentView.value==='section'&&si===currentSection.value) return 'active'
+        if(sec.summaryLoaded) return 'done'
+        if(si===streamingSection.value) return 'loading'
+        return 'disabled'
+      }
+      const scrollToTop = () => nextTick(()=>{ if(scrollArea.value) scrollArea.value.scrollTop=0 })
+      const scrollPanelToBottom = () => nextTick(()=>{ if(panelMessages.value) panelMessages.value.scrollTop=panelMessages.value.scrollHeight })
+      function autoResize(e) { const el=e.target; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,90)+'px' }
+      function goToSection(idx) { if(!sections[idx]?.summaryLoaded) return; currentSection.value=idx; currentView.value='section'; scrollToTop() }
+      function goToResults() { currentView.value='done'; scrollToTop() }
 
-      function navClass(si) {
-        const sec = sections[si]
-        if (!sec) return ''
-        if (currentView.value==='section' && si===currentSection.value) return 'active'
-        if (sec.summaryLoaded) return 'done'
-        if (si===streamingSection.value) return 'loading'
-        return ''
-      }
-
-      function scrollToTop()         { nextTick(()=>{ if(scrollArea.value) scrollArea.value.scrollTop=0 }) }
-      function scrollPanelToBottom() { nextTick(()=>{ if(panelMessages.value) panelMessages.value.scrollTop=panelMessages.value.scrollHeight }) }
-      function autoResize(e) { const el=e.target; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px' }
-      function togglePanel() {
-        panelOpen.value = !panelOpen.value
-        if (panelOpen.value) nextTick(()=>{ scrollPanelToBottom(); questionTextarea.value?.focus() })
-      }
-      function goToSection(idx) {
-        if (!sections[idx]?.summaryLoaded) return
-        currentSection.value = idx
-        currentView.value    = 'section'
-        scrollToTop()
-      }
-
-      // ── SSE stream consumer ────────────────────────────────────────────────
-      async function consumeSSE(url, body, onEvent) {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(body),
-        })
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const reader  = res.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
-        while (true) {
-          const {done, value} = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, {stream:true})
-          const lines = buffer.split('\n')
-          buffer = lines.pop()
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try { onEvent(JSON.parse(line.slice(6))) } catch {}
-            }
-          }
+      async function consumeSSE(url,body,onEvent) {
+        const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+        if(!res.ok) throw new Error(`HTTP ${res.status}`)
+        const reader=res.body.getReader(); const decoder=new TextDecoder(); let buffer=''
+        while(true) {
+          const {done,value}=await reader.read(); if(done) break
+          buffer+=decoder.decode(value,{stream:true})
+          const lines=buffer.split('\n'); buffer=lines.pop()
+          for(const line of lines){if(line.startsWith('data: ')){try{onEvent(JSON.parse(line.slice(6)))}catch{}}}
         }
       }
 
-      // ── Handle SSE events ──────────────────────────────────────────────────
       function handleEvent(ev) {
-        if (ev.type === 'structure') {
-          structure.value = ev.structure
-          // Pre-populate sections array so nav renders immediately
-          ev.sections.forEach(title => sections.push({
-            title, summary:'', questions:[], summaryLoaded:false, examLoaded:false
-          }))
-          screen.value      = 'session'
-          currentView.value = 'structure'
-          scrollToTop()
-          return
-        }
-
-        if (ev.type === 'summary') {
-          streamingSection.value = ev.section_index
-          const sec = sections[ev.section_index]
-          if (sec) { sec.summary = ev.summary; sec.summaryLoaded = true }
-          return
-        }
-
-        if (ev.type === 'exam') {
-          const sec = sections[ev.section_index]
-          if (sec) { sec.questions = ev.questions; sec.examLoaded = true }
-          streamingSection.value = ev.section_index + 1  // next one is loading
-          return
-        }
-
-        if (ev.type === 'done') {
-          streamDone.value       = true
-          streamingSection.value = -1
-          return
-        }
-
-        if (ev.type === 'error') {
-          errorMsg.value = ev.message || 'Unknown error'
-          screen.value   = 'error'
-        }
+        if(ev.type==='structure'){structure.value=ev.structure;ev.sections.forEach(t=>sections.push({title:t,summary:'',questions:[],summaryLoaded:false,examLoaded:false}));screen.value='session';currentView.value='structure';scrollToTop();return}
+        if(ev.type==='summary'){streamingSection.value=ev.section_index;const s=sections[ev.section_index];if(s){s.summary=ev.summary;s.summaryLoaded=true}return}
+        if(ev.type==='exam'){const s=sections[ev.section_index];if(s){s.questions=ev.questions;s.examLoaded=true}streamingSection.value=ev.section_index+1;return}
+        if(ev.type==='done'){streamDone.value=true;streamingSection.value=-1;return}
+        if(ev.type==='error'){errorMsg.value=ev.message||'Unknown error';screen.value='error'}
       }
 
-      // ── Start session ──────────────────────────────────────────────────────
       async function startSession(topic) {
-        // Reset everything
-        structure.value = ''; sections.splice(0)
-        streamDone.value = false; streamingSection.value = -1
-        currentSection.value = 0; currentView.value = 'structure'
-        panelOpen.value = false; questionInput.value = ''
-        Object.keys(answers).forEach(k=>delete answers[k])
-        Object.keys(revealed).forEach(k=>delete revealed[k])
-        Object.keys(qaMap).forEach(k=>delete qaMap[k])
-        Object.keys(sectionPhase).forEach(k=>delete sectionPhase[k])
-        currentTopic.value = topic  // Store the current topic
-        chatSessionId.value = generateChatSessionId()
-        screen.value = 'loading'
-
-        try {
-          await consumeSSE(`${API_URL}/start`, {document: topic}, handleEvent)
-        } catch {
-          errorMsg.value = 'Error connecting to the API. Is the server running?'
-          screen.value   = 'error'
-        }
+        structure.value='';sections.splice(0);streamDone.value=false;streamingSection.value=-1
+        currentSection.value=0;currentView.value='structure';qaOpen.value=false;questionInput.value=''
+        Object.keys(answers).forEach(k=>delete answers[k]);Object.keys(revealed).forEach(k=>delete revealed[k])
+        Object.keys(qaMap).forEach(k=>delete qaMap[k]);Object.keys(sectionPhase).forEach(k=>delete sectionPhase[k])
+        currentTopic.value=topic;chatSessionId.value=generateChatSessionId();screen.value='loading'
+        try{await consumeSSE(`${API_URL}/start`,{document:topic},handleEvent)}
+        catch{errorMsg.value='Error connecting to the API.';screen.value='error'}
       }
 
-      // ── Regenerate summary ─────────────────────────────────────────────────
       async function regenerateSummary() {
-        if (isRegenerating.value) return
-        isRegenerating.value = true
-        const sec = sections[currentSection.value]
-        try {
-          const res  = await fetch(`${API_URL}/regenerate-summary`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({topic: currentTopic.value, section_title: sec.title}),
-          })
-          if (!res.ok) throw new Error()
-          const data = await res.json()
-          if (data.error) {
-            throw new Error(data.error)
-          }
-          if (data.summary) sec.summary = data.summary
-          if (data.questions) sec.questions = data.questions
-        } catch (err) {
-          errorMsg.value = err?.message || 'Could not regenerate this section.'
-          screen.value = 'error'
-        }
-        finally { isRegenerating.value = false }
+        if(isRegenerating.value) return; isRegenerating.value=true
+        const sec=sections[currentSection.value]
+        try{
+          const res=await fetch(`${API_URL}/regenerate-summary`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:currentTopic.value,section_title:sec.title})})
+          if(!res.ok) throw new Error(); const data=await res.json(); if(data.error) throw new Error(data.error)
+          if(data.summary)sec.summary=data.summary; if(data.questions)sec.questions=data.questions
+        }catch(err){errorMsg.value=err?.message||'Could not regenerate.';screen.value='error'}
+        finally{isRegenerating.value=false}
       }
 
       async function regenerateExam() {
-        if (isRegeneratingExam.value) return
-        isRegeneratingExam.value = true
-        const si = currentSection.value
-        const sec = sections[si]
-        try {
-          const res = await fetch(`${API_URL}/regenerate-exam`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-              topic: currentTopic.value,
-              section_title: sec.title,
-              section_summary: sec.summary,
-            }),
-          })
-          if (!res.ok) throw new Error()
-          const data = await res.json()
-          if (data.error) throw new Error(data.error)
-          if (data.questions) {
-            sec.questions = data.questions
-            sec.examLoaded = true
-            clearSectionAnswers(si)
-          }
-        } catch (err) {
-          errorMsg.value = err?.message || 'Could not regenerate this exam.'
-          screen.value = 'error'
-        } finally {
-          isRegeneratingExam.value = false
-        }
+        if(isRegeneratingExam.value) return; isRegeneratingExam.value=true
+        const si=currentSection.value; const sec=sections[si]
+        try{
+          const res=await fetch(`${API_URL}/regenerate-exam`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:currentTopic.value,section_title:sec.title,section_summary:sec.summary})})
+          if(!res.ok) throw new Error(); const data=await res.json(); if(data.error) throw new Error(data.error)
+          if(data.questions){sec.questions=data.questions;sec.examLoaded=true;clearSectionAnswers(si)}
+        }catch(err){errorMsg.value=err?.message||'Could not regenerate exam.';screen.value='error'}
+        finally{isRegeneratingExam.value=false}
       }
 
-      // ── Q&A panel ──────────────────────────────────────────────────────────
       async function submitQuestion() {
-        const q = questionInput.value.trim()
-        if (!q || isThinking.value) return
-        questionInput.value = ''
-        nextTick(()=>{ if(questionTextarea.value) questionTextarea.value.style.height='auto' })
-        const si = currentSection.value
-        if (!qaMap[si]) qaMap[si] = []
-        qaMap[si].push({question:q, answer:null})
-        isThinking.value = true; scrollPanelToBottom()
-        try {
-          const res  = await fetch(`${API_URL}/ask`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-              question:        q,
-              section_title:   currentSec.value.title,
-              section_summary: currentSec.value.summary,
-              conversation_id: `${chatSessionId.value || 'chat'}::section-${si}`,
-            }),
-          })
-          if (!res.ok) throw new Error()
-          const data = await res.json()
-          qaMap[si][qaMap[si].length-1].answer = data.content || data.answer || '(No response)'
-        } catch {
-          qaMap[si][qaMap[si].length-1].answer = '⚠️ Could not reach the server.'
-        } finally { isThinking.value=false; scrollPanelToBottom() }
+        const q=questionInput.value.trim(); if(!q||isThinking.value) return
+        questionInput.value=''; nextTick(()=>{if(questionTextarea.value)questionTextarea.value.style.height='auto'})
+        const si=currentSection.value; if(!qaMap[si])qaMap[si]=[]
+        qaMap[si].push({question:q,answer:null}); isThinking.value=true; scrollPanelToBottom()
+        try{
+          const res=await fetch(`${API_URL}/ask`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,section_title:currentSec.value.title,section_summary:currentSec.value.summary,conversation_id:`${chatSessionId.value||'chat'}::section-${si}`})})
+          if(!res.ok) throw new Error(); const data=await res.json()
+          qaMap[si][qaMap[si].length-1].answer=data.content||data.answer||'(No response)'
+        }catch{qaMap[si][qaMap[si].length-1].answer='⚠️ Could not reach the server.'}
+        finally{isThinking.value=false;scrollPanelToBottom()}
       }
 
-      // ── File upload ────────────────────────────────────────────────────────
       async function onFileSelected(event) {
-        const file = event.target.files?.[0]; if (!file) return
-        const lowerName = file.name.toLowerCase()
-        if (!(lowerName.endsWith('.txt') || lowerName.endsWith('.pdf') || lowerName.endsWith('.pptx'))) {
-          uploadStatus.value='Please select a .txt, .pdf or .pptx file'
-          uploadStatusClass.value='error'
-          return
-        }
-        uploadStatus.value='Uploading…'; uploadStatusClass.value='loading'
-        try {
-          const fd=new FormData(); fd.append('file',file)
-          const res=await fetch(`${API_URL}/ingest-and-prepare`,{method:'POST',body:fd})
-          if (!res.ok) throw new Error()
+        const file=event.target.files?.[0]; if(!file) return
+        const ln=file.name.toLowerCase()
+        if(!(ln.endsWith('.txt')||ln.endsWith('.pdf')||ln.endsWith('.pptx'))){uploadStatus.value='Please select a .txt, .pdf or .pptx file';uploadStatusClass.value='error';return}
+        uploadStatus.value='Uploading…';uploadStatusClass.value='loading'
+        try{
+          const fd=new FormData();fd.append('file',file)
+          const res=await fetch(`${API_URL}/ingest-and-prepare`,{method:'POST',body:fd});if(!res.ok)throw new Error()
           const data=await res.json()
-          if (data.error) { uploadStatus.value='Error'; uploadStatusClass.value='error'; errorMsg.value=data.error; screen.value='error'; return }
-          uploadStatus.value='Uploaded!'; uploadStatusClass.value='success'
-          await startSession(data.topic)
-        } catch { uploadStatus.value='Error'; uploadStatusClass.value='error'; errorMsg.value='Error processing file.'; screen.value='error' }
+          if(data.error){uploadStatus.value='Error';uploadStatusClass.value='error';errorMsg.value=data.error;screen.value='error';return}
+          uploadStatus.value='Uploaded!';uploadStatusClass.value='success';await startSession(data.topic)
+        }catch{uploadStatus.value='Error';uploadStatusClass.value='error';errorMsg.value='Error processing file.';screen.value='error'}
       }
 
-      // ── API health / topics ────────────────────────────────────────────────
-      async function checkApi() {
-        try { apiOk.value=(await fetch(`${API_URL}/health`)).ok } catch { apiOk.value=false }
+      async function checkApi(){try{apiOk.value=(await fetch(`${API_URL}/health`)).ok}catch{apiOk.value=false}}
+      async function loadTopics(){try{const r=await fetch(`${API_URL}/topics`);if(r.ok){const d=await r.json();topics.value=d.topics||[]}}catch{}}
+      async function deleteTopic(topic){
+        if(!window.confirm(`Delete "${formatTopicName(topic)}"?`)) return
+        try{
+          const res=await fetch(`${API_URL}/classes/${encodeURIComponent(topic)}`,{method:'DELETE'});if(!res.ok)throw new Error()
+          const data=await res.json();if(data.error)throw new Error(data.error)
+          topics.value=topics.value.filter(t=>t!==topic)
+        }catch{errorMsg.value='Could not delete this class.';screen.value='error'}
       }
-      async function loadTopics() {
-        try { const r=await fetch(`${API_URL}/topics`); if(r.ok){const d=await r.json();topics.value=d.topics||[]} } catch {}
-      }
-      async function deleteTopic(topic) {
-        const ok = window.confirm(`Delete class "${formatTopicName(topic)}"? This will remove its JSON and source file.`)
-        if (!ok) return
-        try {
-          const res = await fetch(`${API_URL}/classes/${encodeURIComponent(topic)}`, { method: 'DELETE' })
-          if (!res.ok) throw new Error()
-          const data = await res.json()
-          if (data.error) throw new Error(data.error)
-          topics.value = topics.value.filter(t => t !== topic)
-        } catch {
-          errorMsg.value = 'Could not delete this class.'
-          screen.value = 'error'
-        }
-      }
-      function resetSession() {
-        structure.value=''; sections.splice(0)
-        streamDone.value=false; streamingSection.value=-1
-        currentSection.value=0; currentView.value='structure'
-        currentTopic.value=''
-        chatSessionId.value=''
-        panelOpen.value=false; questionInput.value=''
-        Object.keys(answers).forEach(k=>delete answers[k])
-        Object.keys(revealed).forEach(k=>delete revealed[k])
-        Object.keys(qaMap).forEach(k=>delete qaMap[k])
-        Object.keys(sectionPhase).forEach(k=>delete sectionPhase[k])
+      function resetSession(){
+        structure.value='';sections.splice(0);streamDone.value=false;streamingSection.value=-1
+        currentSection.value=0;currentView.value='structure';currentTopic.value='';chatSessionId.value=''
+        qaOpen.value=false;questionInput.value=''
+        Object.keys(answers).forEach(k=>delete answers[k]);Object.keys(revealed).forEach(k=>delete revealed[k])
+        Object.keys(qaMap).forEach(k=>delete qaMap[k]);Object.keys(sectionPhase).forEach(k=>delete sectionPhase[k])
         screen.value='welcome'
       }
 
-      onMounted(()=>{ checkApi(); loadTopics(); setInterval(checkApi,5000) })
+      onMounted(()=>{checkApi();loadTopics();setInterval(checkApi,5000)})
 
       return {
-        screen, currentView, errorMsg,
-        structure, sections, streamDone, streamingSection,
-        currentSection, currentSec,
-        apiOk, topics, letters,
-        fileInput, uploadStatus, uploadStatusClass,
-        scrollArea, panelMessages, questionTextarea,
-        panelOpen, questionInput, isThinking, isRegenerating,
-        isRegeneratingExam,
-        currentQA, qaCount,
-        answers, revealed,
-        renderMarkdown, topicIcon, formatTopicName,
-        akey, selectAnswer, isRevealed, optionClass, questionState,
-        sectionTotal, sectionCorrect, sectionAllAnswered,
-        totalQuestions, totalCorrect, secScore,
-        navClass, scrollToTop, togglePanel, autoResize,
-        sectionPhase, currentSectionPhase,
-        goToSection, regenerateSummary, regenerateExam, submitQuestion,
-        startSession, resetSession, onFileSelected, deleteTopic,
+        screen,currentView,errorMsg,structure,sections,streamDone,streamingSection,
+        currentSection,currentSec,currentTopic,apiOk,topics,letters,
+        fileInput,uploadStatus,uploadStatusClass,scrollArea,panelMessages,questionTextarea,
+        qaOpen,questionInput,isThinking,isRegenerating,isRegeneratingExam,currentQA,qaCount,
+        answers,revealed,renderMarkdown,topicIcon,formatTopicName,
+        akey,selectAnswer,isRevealed,optionClass,questionState,
+        sectionTotal,sectionCorrect,sectionAllAnswered,totalQuestions,totalCorrect,secScore,sectionIsDone,
+        navSidebarClass,scrollToTop,autoResize,sectionPhase,currentSectionPhase,progressPct,
+        goToSection,goToResults,regenerateSummary,regenerateExam,submitQuestion,
+        startSession,resetSession,onFileSelected,deleteTopic,
       }
     }
   }).mount('#app')
