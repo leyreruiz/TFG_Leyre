@@ -569,7 +569,7 @@
 
           <div class="structure-content">
             <div class="structure-content-label">Full class structure</div>
-            <div class="md compact" v-html="renderMarkdown(structure)"></div>
+            <div class="md compact" v-math="structure"></div>
           </div>
 
           <div style="margin-top:20px;display:flex;justify-content:flex-end">
@@ -606,7 +606,7 @@
 
           <template v-if="currentSectionPhase === 'summary'">
             <div class="summary-card">
-              <div v-if="currentSec.summaryLoaded" class="md" v-html="renderMarkdown(currentSec.summary)"></div>
+              <div v-if="currentSec.summaryLoaded" class="md" v-math="currentSec.summary"></div>
               <div v-else class="loading-inline"><div class="spinner sm"></div> Generating summary…</div>
             </div>
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
@@ -710,7 +710,7 @@
           <template v-for="(entry, i) in currentQA" :key="i">
             <div class="qa-msg-user">{{ entry.question }}</div>
             <div v-if="entry.answer === null" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
-            <div v-else class="qa-msg-ai"><div class="md compact" v-html="renderMarkdown(entry.answer)"></div></div>
+            <div v-else class="qa-msg-ai"><div class="md compact" v-math="entry.answer"></div></div>
           </template>
           <div v-if="isThinking" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
         </div>
@@ -727,12 +727,15 @@
 
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script type="module">
   import { createApp, ref, reactive, computed, onMounted, nextTick } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
   const API_URL = 'http://localhost:8000'
 
-  createApp({
+  const app = createApp({
     setup() {
       const screen = ref('welcome'), currentView = ref('structure'), errorMsg = ref('')
       const structure = ref(''), sections = reactive([]), streamDone = ref(false), streamingSection = ref(-1)
@@ -880,8 +883,14 @@
       async function deleteQuestion(qi) {
         const si=currentSection.value; const sec=sections[si]
         sec.questions.splice(qi,1)
-        // Remove answers/revealed for this section since indices shifted
-        clearSectionAnswers(si)
+        // Remap answers/revealed: discard the deleted index, shift down indices above it
+        const totalAfter=sec.questions.length
+        for(let i=qi; i<totalAfter; i++){
+          const oldKey=akey(si,i+1), newKey=akey(si,i)
+          if(answers[oldKey]!==undefined){ answers[newKey]=answers[oldKey]; delete answers[oldKey] } else { delete answers[newKey] }
+          if(revealed[oldKey]!==undefined){ revealed[newKey]=revealed[oldKey]; delete revealed[oldKey] } else { delete revealed[newKey] }
+        }
+        delete answers[akey(si,totalAfter)]; delete revealed[akey(si,totalAfter)]
         // Persist updated list
         await fetch(`${API_URL}/update-questions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:currentTopic.value,section_title:sec.title,questions:sec.questions})})
       }
@@ -947,7 +956,29 @@
         startSession,resetSession,onFileSelected,deleteTopic,
       }
     }
-  }).mount('#app')
+  })
+
+  // KaTeX: renders markdown + math inside an element
+  const KATEX_OPTIONS = {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$',  right: '$',  display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true },
+    ],
+    throwOnError: false,
+  }
+  function applyMath(el, value) {
+    el.innerHTML = value ? marked.parse(value) : ''
+    renderMathInElement(el, KATEX_OPTIONS)
+  }
+
+  app.directive('math', {
+    mounted(el, binding)  { applyMath(el, binding.value) },
+    updated(el, binding)  { applyMath(el, binding.value) },
+  })
+
+  app.mount('#app')
 </script>
 </body>
 </html>
