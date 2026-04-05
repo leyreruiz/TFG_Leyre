@@ -14,4 +14,6 @@ dependencies = [
     "pytest",
     "fastapi",
     "uvicorn",
+    "mcp[cli]",
+    "wikipedia-api",
 ]

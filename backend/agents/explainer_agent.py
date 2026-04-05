@@ -41,6 +41,7 @@ class ExplainerAgent(BaseAgent):
         request: StudentRequest,
         section_context: str = "",
         conversation_id: Optional[str] = None,
+        wikipedia_context: str = "",
     ) -> dict:
         conversation_key = (conversation_id or "default").strip() or "default"
 
@@ -64,6 +65,18 @@ class ExplainerAgent(BaseAgent):
                     "content": (
                         "Current section context that must be used as primary reference:\n"
                         f"---\n{section_context}\n---"
+                    ),
+                }
+            )
+
+        if wikipedia_context.strip():
+            messages.append(
+                {
+                    "role": "system",
+                    "content": (
+                        "Additional context from Wikipedia to complement the section material "
+                        "(use only if relevant to the student's question):\n"
+                        f"---\n{wikipedia_context}\n---"
                     ),
                 }
             )

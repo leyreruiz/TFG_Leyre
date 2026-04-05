@@ -13,29 +13,29 @@
   ],
   "sections_data": {
     "Entropy and Information Measures": {
-      "summary": "# Entropy and Information Measures\n\nIn the realm of information theory, **Entropy** (H) represents the measure of uncertainty or randomness in a discrete random variable. It's a fundamental concept that quantifies the amount of information in a source, and it's essential to understand the various measures related to entropy.\n\n## Entropy and Conditional Entropy\n\nEntropy (H) measures the uncertainty of a random variable, while **Conditional Entropy** (H(X|Y)) measures the remaining uncertainty of X given the value of Y.\n\n*   H(X) = Entropy of X\n*   H(Y) = Entropy of Y\n*   H(X, Y) = Joint Entropy of X and Y\n*   H(X|Y) = Conditional Entropy of X given Y\n\nUnderstanding these measures is crucial, as they help us analyze the relationships between random variables.\n\n## Information Measures and Their Properties\n\nInformation measures, such as Entropy, Conditional Entropy, and Mutual Information, have several properties that are essential to grasp:\n\n*   **Kraft's Inequality**: If the total length of a prefix-free code is bounded by a constant, then there exists a prefix-free code with the given lengths.\n*   **Shannon's Source-Coding Theorem**: The average length of a prefix-free code is at most 1 + H(X) bits.\n*   **KL Divergence**: Measures the difference between two probability distributions.\n\nThese properties provide a solid foundation for understanding information theory and its applications.\n\n## Key Takeaway\n\nEntropy and information measures are fundamental concepts in information theory, and understanding their properties and relationships is crucial for analyzing and working with random variables. By grasping these concepts, we can better appreciate the intricacies of information theory and its applications in various fields.",
+      "summary": "## Entropy and Information Measures\n\nEntropy, a fundamental concept in Information Theory, measures the uncertainty or randomness of a **discrete random variable**. It plays a crucial role in understanding how information is encoded and transmitted.\n\n### **Entropy (H(X))**\n\n* **Entropy** measures the average uncertainty or randomness of a discrete random variable X.\n* It is calculated using the formula: H(X) = - ∑ p(x) log2(p(x)), where p(x) is the probability of each outcome x.\n* A higher entropy indicates more uncertainty and randomness in the variable.\n\n### Conditional Entropy (H(X | Y))\n\n* **Conditional entropy** measures the remaining uncertainty in X given the value of Y.\n* It is calculated using the formula: H(X | Y) = - ∑ p(x, y) log2(p(x | y)), where p(x, y) is the joint probability of X and Y.\n* A higher conditional entropy indicates more uncertainty in X given Y.\n\n### Joint Entropy (H(X, Y))\n\n* **Joint entropy** measures the total uncertainty of X and Y together.\n* It is calculated using the formula: H(X, Y) = - ∑ p(x, y) log2(p(x, y)), where p(x, y) is the joint probability of X and Y.\n* Joint entropy can be used to understand the relationship between two random variables.\n\n### Mutual Information (I(X; Y))\n\n* **Mutual information** measures the amount of information that X and Y share.\n* It is calculated using the formula: I(X; Y) = H(X) + H(Y) - H(X, Y), which can also be written as I(X; Y) = H(X) - H(X | Y).\n* Mutual information can be used to understand the relationship between two random variables.\n\n### Kraft's Inequality\n\n* **Kraft's inequality** is a necessary and sufficient condition for the existence of a prefix-free binary code.\n* It states that if ℓ1, ..., ℓm are the codeword lengths of a prefix-free code, then ∑2^(-ℓi) ≤ 1.\n* Kraft's inequality can be used to determine whether a given set of codeword lengths can be used to construct a prefix-free code.\n\n## Key Takeaway\n\nEntropy is a fundamental concept in Information Theory that measures the uncertainty or randomness of a discrete random variable. Understanding entropy and its relationships with other concepts, such as conditional entropy, joint entropy, and mutual information, is essential for grasping the principles of Information Theory.",
       "questions": [
         {
-          "question": "What does the term \"Entropy\" (H) represent in the realm of information theory?",
+          "question": "What is the formula for calculating the entropy of a discrete random variable X?",
           "options": [
-            "The measure of predictability in a discrete random variable",
-            "The measure of uncertainty or randomness in a discrete random variable",
-            "The measure of joint entropy of two random variables",
-            "The measure of conditional entropy of a random variable given another variable"
+            "H(X) = ∑ p(x) log2(p(x))",
+            "H(X) = - ∑ p(x) log2(p(x))",
+            "H(X) = ∑ p(x) log2(1/p(x))",
+            "H(X) = - ∑ p(x) log2(1/p(x))"
           ],
           "correct_answer": "b",
-          "explanation": "Entropy (H) is the measure of uncertainty or randomness in a discrete random variable, which is a fundamental concept in information theory."
+          "explanation": "The correct formula for calculating the entropy of a discrete random variable X is H(X) = - ∑ p(x) log2(p(x)), where p(x) is the probability of each outcome x."
         },
         {
-          "question": "What is the name of the property that measures the difference between two probability distributions?",
+          "question": "What is the relationship between mutual information I(X; Y) and conditional entropy H(X | Y)?",
           "options": [
-            "Kraft's Inequality",
-            "Shannon's Source-Coding Theorem",
-            "KL Divergence",
-            "Joint Entropy"
+            "I(X; Y) = H(X) + H(Y)",
+            "I(X; Y) = H(X) - H(Y)",
+            "I(X; Y) = H(X) + H(Y) - H(X, Y)",
+            "I(X; Y) = H(X) - H(X | Y)"
           ],
-          "correct_answer": "c",
-          "explanation": "KL Divergence is the property that measures the difference between two probability distributions, providing a way to quantify the similarity or dissimilarity between them."
+          "correct_answer": "d",
+          "explanation": "Mutual information I(X; Y) is equal to the entropy of X minus the conditional entropy of X given Y, I(X; Y) = H(X) - H(X | Y)."
         }
       ]
     },
@@ -97,26 +97,15 @@
       "summary": "# Data Compression: Key Concepts and Problems\n\n## Problem P1: Kraft's Inequality and Prefix-Free Code\n\nThe problem presents a scenario where we need to determine whether it's possible to construct a **prefix-free code** with specific lengths for the symbols `b`, `c`, and `d`. We're given the lengths: `ℓ(b) = 2`, `ℓ(c) = 3`, and `ℓ(d) = 3`.\n\nTo apply **Kraft's inequality**, we need to check if the following condition is satisfied:\n\n* `2^(-ℓ(b)) + 2^(-ℓ(c)) + 2^(-ℓ(d)) ≤ 1`\n\nLet's evaluate the left-hand side of the inequality:\n\n* `2^(-2) = 1/4`\n* `2^(-3) = 1/8`\n* `2^(-3) = 1/8`\n\nAdding these values together, we get:\n\n* `1/4 + 1/8 + 1/8 = 3/8`\n\nSince `3/8` is greater than `1/2`, **Kraft's inequality** is not satisfied, and it's impossible to construct a prefix-free code with these lengths.\n\n## Problem P4: Binary Huffman Code\n\nWe're given a source with probabilities `PX(a) = 0.30`, `PX(b) = 0.25`, `PX(c) = 0.20`, `PX(d) = 0.15`, and `PX(e) = 0.10`.\n\nTo construct a **binary Huffman code**, we need to repeatedly merge the two nodes with the lowest probabilities until we're left with a single node.\n\nHere's a step-by-step guide to constructing the Huffman code:\n\n1. Merge `b` and `e` to form a new node with probability `0.25 + 0.10 = 0.35`.\n2. Merge `c` and `d` to form a new node with probability `0.20 + 0.15 = 0.35`.\n3. Merge the new nodes from steps 1 and 2 to form a single node with probability `0.35 + 0.35 = 0.70`.\n4. Assign codewords to each symbol based on the merged nodes.\n\n## Problem P6: Uniquely Decodable Code\n\nWe need to prove that a **binary prefix-free code** is uniquely decodable, i.e., the extension `C∗ : X∗ → {0, 1}∗` defined by concatenation is injective.\n\nHere are the key steps to prove this:\n\n1. Assume that `C∗` is not injective, i.e., there exist two different strings `x` and `y` in `X∗` such that `C∗(x) = C∗(y)`.\n2. Since `C` is prefix-free, the codewords assigned to each symbol are unique.\n3. Therefore, the concatenation of these codewords is also unique, which means that `x` and `y` must be equal.\n4. This contradicts our assumption that `x` and `y` are different, so `C∗` must be injective.\n\n## Key Takeaway\n\n* Kraft's inequality provides a necessary condition for the existence of a prefix-free code with specific lengths.\n* A binary Huffman code is a type of prefix-free code that can be constructed using a greedy algorithm.\n* A binary prefix-free code is uniquely decodable, meaning that the extension defined by concatenation is injective.",
       "questions": [
         {
-          "question": "What does Kraft's inequality state about the possibility of constructing a prefix-free code with specific lengths?",
+          "question": "What is the main reason why a binary prefix-free code is uniquely decodable?",
           "options": [
-            "It guarantees the existence of a prefix-free code with any lengths.",
-            "It provides a sufficient condition for the existence of a prefix-free code with specific lengths.",
-            "It states that the sum of the reciprocals of the lengths of the symbols must be less than or equal to 1.",
-            "It provides a necessary condition for the existence of a prefix-free code with specific lengths."
+            "Because the concatenation of the codewords is unique due to the properties of binary numbers.",
+            "Because the code assigns unique codewords to each symbol.",
+            "Because the code is constructed using a greedy algorithm.",
+            "Because the code satisfies Kraft's inequality."
           ],
-          "correct_answer": "d",
-          "explanation": "Kraft's inequality is a necessary condition that must be satisfied for a prefix-free code with specific lengths to exist. If the condition is not met, a prefix-free code cannot be constructed."
-        },
-        {
-          "question": "What is a key property of a binary prefix-free code?",
-          "options": [
-            "It is uniquely decodable, but not injective.",
-            "It is not uniquely decodable, but injective.",
-            "It is uniquely decodable and injective.",
-            "It is neither uniquely decodable nor injective."
-          ],
-          "correct_answer": "c",
-          "explanation": "A binary prefix-free code is uniquely decodable, meaning that the extension defined by concatenation is injective, and it is also injective, meaning that no two different strings can have the same codeword."
+          "correct_answer": "b",
+          "explanation": "According to the problem statement, since C is prefix-free, the codewords assigned to each symbol are unique. Therefore, the concatenation of these codewords is also unique, which means that the code is uniquely decodable."
         }
       ]
     },
@@ -148,29 +137,40 @@
       ]
     },
     "Probability and Random Variables": {
-      "summary": "# Information Theory Midterm Exam Summary\n\n## Understanding the Basics of Information Theory\n\nBefore diving into the specific questions and problems, it's essential to grasp the fundamental concepts of information theory. **Entropy** is a crucial concept in this field, representing the amount of uncertainty or randomness in a probability distribution. There are different types of entropy, including **Shannon entropy**, which is used to measure the uncertainty of a discrete random variable.\n\n### Key Terms and Concepts\n\n* **Discrete random variable**: a random variable that can take on a countable number of distinct values\n* **Joint distribution**: a probability distribution that describes the relationship between two or more random variables\n* **Conditional entropy**: the amount of uncertainty in a random variable given the value of another random variable\n* **Mutual information**: a measure of the amount of information that one random variable contains about another\n\n## Answering the True or False Questions\n\nThe true or false questions require a clear understanding of the concepts mentioned above. Let's break down each question:\n\n### Q1: If H(X) = 0 for a discrete random variable X, then X is almost surely constant.\n\n* This statement is **true**. If the entropy of a discrete random variable is 0, it means that the variable is almost surely constant, as there is no uncertainty in its value.\n\n### Q2: If H(X | Y) = 0, then there exists a function f such that X = f(Y) holds with probability 1.\n\n* This statement is **true**. If the conditional entropy of X given Y is 0, it means that X is completely determined by Y, and there exists a function f such that X = f(Y) holds with probability 1.\n\n### Q3: If I(X; Y) = 0, then H(X | Y) = H(X).\n\n* This statement is **true**. If the mutual information between X and Y is 0, it means that X and Y are independent, and the conditional entropy of X given Y is equal to the entropy of X.\n\n### Q4: For all probability distributions P and Q on the same alphabet, the KL divergence is symmetric: D(P∥Q) = D(Q∥P).\n\n* This statement is **false**. The KL divergence is not symmetric, and in general, D(P∥Q) ≠ D(Q∥P).\n\n### Q5: If integers ℓ1, ..., ℓm satisfy ∑m i=1 2−ℓi ≤ 1, then there exists a prefix-free binary code whose codeword lengths are exactly ℓ1, ..., ℓm.\n\n* This statement is **true**. According to Kraft's inequality, if the sum of the lengths of the codewords is less than or equal to 1, then there exists a prefix-free binary code with those lengths.\n\n## Solving the Problems\n\nNow, let's move on to the problems. We'll focus on problem P3, which involves constructing a prefix-free binary code for a given source X with alphabet X = {a, b, c, d} and probabilities PX(a) = 1/2, PX(b) = 1/4, PX(c) = 1/8, PX(d) = 1/8.\n\n### Problem P3\n\n* **Compute the entropy H(X)**:\n\t+ H(X) = -∑x∈X PX(x) log2 PX(x)\n\t+ H(X) = - (1/2 log2 1/2 + 1/4 log2 1/4 + 1/8 log2 1/8 + 1/8 log2 1/8)\n\t+ H(X) = 2 bits\n* **Consider the proposed binary code lengths**:\n\t+ ℓ(a) = 1, ℓ(b) = 2, ℓ(c) = 3, ℓ(d) = 3\n* **Use Kraft's inequality to decide whether there exists a prefix-free code with these lengths**:\n\t+ ∑m i=1 2−ℓi ≤ 1\n\t+ 2−1 + 2−2 + 2−3 + 2−3 < 1\n\t+ Therefore, there exists a prefix-free binary code with these lengths.\n* **Construct a prefix-free code and compute its average length**:\n\t+ We can construct a prefix-free code by assigning the shortest possible codeword to the most probable symbol, and then assigning the next shortest codeword to the next most probable symbol, and so on.\n\t+ The resulting code is:\n\t\t- a: 0\n\t\t- b: 10\n\t\t- c: 110\n\t\t- d: 111\n\t+ The average length of this code is:\n\t\t- ℓC(PX) = ∑x∈X PX(x) ℓ(x)\n\t\t- ℓC(PX) = (1/2) (1) + (1/4) (2) + (1/8) (3) + (1/8) (3)\n\t\t- ℓC(PX) = 2.125 bits\n* **Verify that the average length is consistent with Shannon's source-coding theorem**:\n\t+ Shannon's theorem states that the minimum average length of a prefix-free code is equal to the entropy of the source, i.e., ℓC(PX) ≥ H(X).\n\t+ In this case, we have ℓC(PX) = 2.125 bits, which is greater than the entropy H(X) = 2 bits.\n\n## Key Takeaway\n\nIn this summary, we have covered the true or false questions and the problems on information theory. The key takeaway is that understanding the concepts of entropy, joint distribution, conditional entropy, and mutual information is essential for solving problems in information theory. Additionally, Kraft's inequality is a powerful tool for deciding whether a given set of code lengths can be used to construct a prefix-free binary code.",
+      "summary": "## Probability and Random Variables\n\nIn the context of information theory, **probability** and **random variables** play a crucial role in understanding the behavior of sources and channels. A **random variable** is a variable whose value is a function of a chance event or experiment.\n\n### Key Concepts\n\n* **Discrete random variable**: A random variable that can only take on a countable number of distinct values.\n* **Joint distribution**: A way of describing the joint behavior of multiple random variables.\n* **Conditional entropy**: A measure of the uncertainty of a random variable given the knowledge of another random variable.\n\n### Important Theorems and Results\n\n* **Kraft's inequality**: A theorem that provides a necessary and sufficient condition for the existence of a prefix-free binary code for a given set of codeword lengths.\n* **Shannon's source-coding theorem**: A theorem that provides a fundamental limit on the average length of a prefix-free binary code for a given source distribution.\n\n### Examples and Applications\n\n* **Binary random variables**: Random variables that can only take on two distinct values, 0 and 1.\n* **Prefix-free code**: A binary code in which no codeword is a prefix of any other codeword.\n\n## Key Takeaway\n\nThe concept of probability and random variables is essential in information theory, allowing us to model and analyze the behavior of sources and channels. By understanding these concepts, we can design efficient codes and systems that achieve optimal performance. Specifically, Kraft's inequality and Shannon's source-coding theorem provide fundamental limits on the existence and performance of prefix-free codes.",
       "questions": [
         {
-          "question": "What is the condition for a discrete random variable X to have an entropy of 0?",
+          "question": "What is a key characteristic of a discrete random variable?",
           "options": [
-            "H(X) = 1",
-            "H(X) = 2",
-            "H(X) = 0",
-            "H(X) = ∞"
+            "It can take on a continuous range of values.",
+            "It can only take on a countable number of distinct values.",
+            "It is only used in continuous-time systems.",
+            "It is only used in discrete-time systems."
           ],
-          "correct_answer": "c",
-          "explanation": "If the entropy of a discrete random variable is 0, it means that the variable is almost surely constant, as there is no uncertainty in its value."
+          "correct_answer": "b",
+          "explanation": "A discrete random variable is a random variable that can only take on a countable number of distinct values, making option b the correct answer."
         },
         {
-          "question": "According to Kraft's inequality, what is the condition for a set of code lengths to be used to construct a prefix-free binary code?",
+          "question": "What does Kraft's inequality provide a condition for in information theory?",
           "options": [
-            "∑m i=1 2−ℓi > 1",
-            "∑m i=1 2−ℓi = 1",
-            "∑m i=1 2−ℓi < 1",
-            "∑m i=1 2−ℓi ≥ 1"
+            "The existence of a prefix-free binary code for a given source distribution.",
+            "The optimal length of a prefix-free binary code for a given source distribution.",
+            "The minimum entropy of a source distribution.",
+            "The maximum rate of a channel."
           ],
-          "correct_answer": "c",
-          "explanation": "Kraft's inequality states that if the sum of the lengths of the codewords is less than or equal to 1, then there exists a prefix-free binary code with those lengths."
+          "correct_answer": "a",
+          "explanation": "Kraft's inequality provides a necessary and sufficient condition for the existence of a prefix-free binary code for a given set of codeword lengths, making option a the correct answer."
+        },
+        {
+          "question": "What is the purpose of conditional entropy in the context of information theory?",
+          "options": [
+            "To measure the uncertainty of a random variable given no prior knowledge",
+            "To measure the uncertainty of a random variable given the knowledge of another random variable",
+            "To measure the joint behavior of multiple random variables",
+            "To provide a necessary and sufficient condition for the existence of a prefix-free binary code"
+          ],
+          "correct_answer": "b",
+          "explanation": "Conditional entropy measures the uncertainty of a random variable given the knowledge of another random variable, making it a crucial concept in understanding the relationship between variables."
         }
       ]
     },
@@ -198,6 +198,28 @@
           ],
           "correct_answer": "b",
           "explanation": "Kraft's Inequality states that for the existence of a prefix-free code, the sum of 2 to the power of minus the codeword lengths must be less than or equal to 1."
+        },
+        {
+          "question": "What is the implication of H(X | Y) = 0 for a discrete random variable X and a discrete random variable Y?",
+          "options": [
+            "X and Y are independent",
+            "X is conditionally deterministic given Y",
+            "H(X) = H(X | Y)",
+            "I(X; Y) = 0"
+          ],
+          "correct_answer": "b",
+          "explanation": "If H(X | Y) = 0, it means that X is conditionally deterministic given Y, i.e., there exists a function f such that X = f(Y) with probability 1."
+        },
+        {
+          "question": "Which of the following statements about KL divergence is correct?",
+          "options": [
+            "D(P∥Q) = D(Q∥P) for all probability distributions P and Q",
+            "D(P∥Q) ≥ 0 for all probability distributions P and Q",
+            "D(P∥Q) can be negative for some probability distributions P and Q",
+            "D(P∥Q) = 0 if and only if P = Q"
+          ],
+          "correct_answer": "b",
+          "explanation": "KL divergence is a measure of the difference between two probability distributions, and it is always non-negative, i.e., D(P∥Q) ≥ 0 for all probability distributions P and Q."
         }
       ]
     },
@@ -230,5 +252,5 @@
     }
   },
   "created_at": "2026-04-04T14:05:21.145363",
-  "updated_at": "2026-04-04T14:09:32.830686"
+  "updated_at": "2026-04-05T20:27:30.091838"
 }

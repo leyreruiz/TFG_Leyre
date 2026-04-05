@@ -23,7 +23,7 @@ from backend.models.schemas import (
     AddQuestionsRequest,
     UpdateQuestionsRequest,
 )
-from backend.rag.retriever import ChromaDbRetriever
+from backend.mcp_client import MCPRetriever
 from backend.ingest_topics import ingest_file
 from backend.class_storage import (
     get_class,
@@ -38,7 +38,7 @@ import re
 app = FastAPI(title="University Assistant API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-_retriever  = ChromaDbRetriever()
+_retriever  = MCPRetriever()
 _structurer = StructurerAgent(_retriever)
 _summary    = SummaryAgent(_retriever)
 _exam       = ExamAgent(_retriever, num_questions=2)
@@ -303,11 +303,14 @@ def ask(request: AskRequest):
         normalized_section = "_".join((request.section_title or "section").strip().lower().split())
         conversation_id = f"default::{normalized_section}"
 
+    wikipedia_context = _retriever.search_wikipedia(request.question)
+
     req    = StudentRequest(message=request.question, intent="explain")
     result = _explainer.handle(
         req,
         section_context=request.section_summary,
         conversation_id=conversation_id,
+        wikipedia_context=wikipedia_context,
     )
     logger.debug("Explainer answered for section: %s", request.section_title)
     return result
