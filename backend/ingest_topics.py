@@ -1,4 +1,4 @@
-"""Script to ingest all test topic files into ChromaDB.
+"""Script to ingest topic files into ChromaDB.
 
 Usage:
   python -m backend.ingest_topics           # ingest (keeps existing data)
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 def _divide_in_chunks(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
-    """Split a text into overlapping chunks."""
+    """Split a text into overlapping fixed-size chunks."""
     chunks = []
     start = 0
     while start < len(text):
@@ -42,6 +42,7 @@ def _divide_in_chunks(text: str, chunk_size: int = 500, overlap: int = 50) -> li
 
 
 def _infer_topic_from_path_or_metadata(file_path: str, metadata: dict | None = None) -> str:
+    """Determine the topic name from metadata or the file name (without extension)."""
     if isinstance(metadata, dict):
         meta_topic = metadata.get("topic")
         if isinstance(meta_topic, str) and meta_topic.strip():
@@ -49,8 +50,33 @@ def _infer_topic_from_path_or_metadata(file_path: str, metadata: dict | None = N
     return os.path.splitext(os.path.basename(file_path))[0]
 
 
+def _ingest_chunks(text: str, file_path: str, metadata: dict | None = None) -> list[str]:
+    """Chunk the extracted text and save each chunk to ChromaDB.
+
+    This is the shared core of all ingest_file_* functions.
+    Returns the list of saved document IDs.
+    """
+    logger.info("Reading %s (%d characters)...", file_path, len(text))
+    chunks = _divide_in_chunks(text)
+    logger.info("Split into %d chunks", len(chunks))
+
+    topic_name = _infer_topic_from_path_or_metadata(file_path, metadata)
+    filename = os.path.basename(file_path)
+    ids_saved = []
+
+    for i, chunk in enumerate(chunks):
+        meta = dict(metadata or {})
+        meta.update({"chunk": i, "source": filename})
+        doc_id = save_text_chroma(chunk, metadata=meta, topic=topic_name)
+        if doc_id:
+            ids_saved.append(doc_id)
+
+    logger.info("Ingest complete: %d chunks saved", len(ids_saved))
+    return ids_saved
+
+
 def ingest_file_txt(file_path: str, metadata: dict | None = None) -> list[str]:
-    """Read a .txt file and ingest it into ChromaDB in chunks."""
+    """Extract text from a .txt file and ingest it into ChromaDB."""
     if not os.path.exists(file_path):
         logger.error("File not found: %s", file_path)
         return []
@@ -62,27 +88,11 @@ def ingest_file_txt(file_path: str, metadata: dict | None = None) -> list[str]:
         logger.error("Error reading file: %s", e)
         return []
 
-    logger.info("Reading %s (%d characters)...", file_path, len(text))
-    chunks = _divide_in_chunks(text)
-    logger.info("Split into %d chunks", len(chunks))
-
-    ids_saved = []
-    topic_name = _infer_topic_from_path_or_metadata(file_path, metadata)
-    filename = os.path.basename(file_path)
-
-    for i, chunk in enumerate(chunks):
-        meta = dict(metadata or {})
-        meta.update({"chunk": i, "source": filename})
-        doc_id = save_text_chroma(chunk, metadata=meta, topic=topic_name)
-        if doc_id:
-            ids_saved.append(doc_id)
-
-    logger.info("Ingest complete: %d chunks saved", len(ids_saved))
-    return ids_saved
+    return _ingest_chunks(text, file_path, metadata)
 
 
 def ingest_file_pdf(file_path: str, metadata: dict | None = None) -> list[str]:
-    """Read a .pdf file and ingest it into ChromaDB in chunks."""
+    """Extract text from a .pdf file and ingest it into ChromaDB."""
     if fitz is None:
         logger.error("PyMuPDF is not installed. Install 'pymupdf' to ingest PDFs.")
         return []
@@ -93,8 +103,7 @@ def ingest_file_pdf(file_path: str, metadata: dict | None = None) -> list[str]:
 
     try:
         with fitz.open(file_path) as pdf:
-            pages = [page.get_text("text") for page in pdf]
-        text = "\n".join(pages)
+            text = "\n".join(page.get_text("text") for page in pdf)
     except Exception as e:
         logger.error("Error reading PDF file: %s", e)
         return []
@@ -103,27 +112,11 @@ def ingest_file_pdf(file_path: str, metadata: dict | None = None) -> list[str]:
         logger.error("PDF has no extractable text: %s", file_path)
         return []
 
-    logger.info("Reading %s (%d characters extracted)...", file_path, len(text))
-    chunks = _divide_in_chunks(text)
-    logger.info("Split into %d chunks", len(chunks))
-
-    ids_saved = []
-    topic_name = _infer_topic_from_path_or_metadata(file_path, metadata)
-    filename = os.path.basename(file_path)
-
-    for i, chunk in enumerate(chunks):
-        meta = dict(metadata or {})
-        meta.update({"chunk": i, "source": filename})
-        doc_id = save_text_chroma(chunk, metadata=meta, topic=topic_name)
-        if doc_id:
-            ids_saved.append(doc_id)
-
-    logger.info("Ingest complete: %d chunks saved", len(ids_saved))
-    return ids_saved
+    return _ingest_chunks(text, file_path, metadata)
 
 
 def ingest_file_pptx(file_path: str, metadata: dict | None = None) -> list[str]:
-    """Read a .pptx file and ingest it into ChromaDB in chunks."""
+    """Extract text from a .pptx file and ingest it into ChromaDB."""
     if Presentation is None:
         logger.error("python-pptx is not installed. Install 'python-pptx' to ingest PowerPoints.")
         return []
@@ -139,6 +132,7 @@ def ingest_file_pptx(file_path: str, metadata: dict | None = None) -> list[str]:
             for shape in slide.shapes:
                 if hasattr(shape, "text") and shape.text:
                     text_parts.append(shape.text)
+                # Also extract text from table cells
                 if hasattr(shape, "table") and shape.table:
                     for row in shape.table.rows:
                         for cell in row.cells:
@@ -153,23 +147,7 @@ def ingest_file_pptx(file_path: str, metadata: dict | None = None) -> list[str]:
         logger.error("PowerPoint has no extractable text: %s", file_path)
         return []
 
-    logger.info("Reading %s (%d characters extracted)...", file_path, len(text))
-    chunks = _divide_in_chunks(text)
-    logger.info("Split into %d chunks", len(chunks))
-
-    ids_saved = []
-    topic_name = _infer_topic_from_path_or_metadata(file_path, metadata)
-    filename = os.path.basename(file_path)
-
-    for i, chunk in enumerate(chunks):
-        meta = dict(metadata or {})
-        meta.update({"chunk": i, "source": filename})
-        doc_id = save_text_chroma(chunk, metadata=meta, topic=topic_name)
-        if doc_id:
-            ids_saved.append(doc_id)
-
-    logger.info("Ingest complete: %d chunks saved", len(ids_saved))
-    return ids_saved
+    return _ingest_chunks(text, file_path, metadata)
 
 
 def ingest_file(file_path: str, metadata: dict | None = None) -> list[str]:

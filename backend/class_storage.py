@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 from backend.utils import normalize_topic as _normalize_topic
+from backend.clients.bbdd_client import delete_collection
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def _iter_topic_keys() -> list[str]:
 
 
 def _resolve_topic_key(topic: str) -> Optional[str]:
-    """Find the existing file key that matches a topic, using normalized comparison."""
+    """Find the stored file key that matches a topic, using normalized comparison."""
     normalized_target = _normalize_topic(topic)
     for key in _iter_topic_keys():
         if key == topic or _normalize_topic(key) == normalized_target:
@@ -45,6 +46,26 @@ def _write_topic_file(topic_key: str, class_obj: dict) -> bool:
     except Exception as e:
         logger.error("Error writing topic file: %s", e)
         return False
+
+
+def _load_class_and_section(topic: str, section_title: str) -> tuple[Optional[str], Optional[dict]]:
+    """Load and validate class data for a given topic and section.
+
+    Returns (topic_key, class_obj) if both exist, or (None, None) with a warning logged.
+    This avoids repeating the same lookup + validation pattern across multiple functions.
+    """
+    topic_key = _resolve_topic_key(topic)
+    class_obj = get_class(topic)
+    if not class_obj:
+        logger.warning("Class '%s' not found", topic)
+        return None, None
+    if section_title not in class_obj.get("sections_data", {}):
+        logger.warning("Section '%s' not found in '%s'", section_title, topic)
+        return None, None
+    # Fallback: derive topic_key from stored data if the initial resolve failed
+    if not topic_key:
+        topic_key = _normalize_topic(class_obj.get("topic", topic))
+    return topic_key, class_obj
 
 
 def get_class(topic: str) -> Optional[dict]:
@@ -77,6 +98,7 @@ def save_class(topic: str, structure: str, sections: list[str], sections_data: d
             "updated_at": datetime.now().isoformat(),
         }
 
+        # Preserve original creation date if the class already existed
         if previous and previous.get("created_at"):
             class_obj["created_at"] = previous["created_at"]
 
@@ -92,27 +114,14 @@ def save_class(topic: str, structure: str, sections: list[str], sections_data: d
 
 def update_section_summary(topic: str, section_title: str, new_summary: str) -> bool:
     """Update the summary of a specific section."""
-    _ensure_storage_dir()
     try:
-        topic_key = _resolve_topic_key(topic)
-        class_obj = get_class(topic)
-        if not class_obj:
-            logger.warning("Class '%s' not found", topic)
+        topic_key, class_obj = _load_class_and_section(topic, section_title)
+        if class_obj is None:
             return False
-
-        if section_title not in class_obj.get("sections_data", {}):
-            logger.warning("Section '%s' not found in '%s'", section_title, topic)
-            return False
-
         class_obj["sections_data"][section_title]["summary"] = new_summary
         class_obj["updated_at"] = datetime.now().isoformat()
-
-        if not topic_key:
-            topic_key = _normalize_topic(class_obj.get("topic", topic))
-
         if not _write_topic_file(topic_key, class_obj):
             return False
-
         logger.info("Summary updated for '%s' -> '%s'", topic_key, section_title)
         return True
     except Exception as e:
@@ -122,31 +131,66 @@ def update_section_summary(topic: str, section_title: str, new_summary: str) -> 
 
 def update_section_questions(topic: str, section_title: str, questions: list) -> bool:
     """Update the questions of a specific section."""
-    _ensure_storage_dir()
     try:
-        topic_key = _resolve_topic_key(topic)
-        class_obj = get_class(topic)
-        if not class_obj:
-            logger.warning("Class '%s' not found", topic)
+        topic_key, class_obj = _load_class_and_section(topic, section_title)
+        if class_obj is None:
             return False
-
-        if section_title not in class_obj.get("sections_data", {}):
-            logger.warning("Section '%s' not found in '%s'", section_title, topic)
-            return False
-
         class_obj["sections_data"][section_title]["questions"] = questions
         class_obj["updated_at"] = datetime.now().isoformat()
-
-        if not topic_key:
-            topic_key = _normalize_topic(class_obj.get("topic", topic))
-
         if not _write_topic_file(topic_key, class_obj):
             return False
-
         logger.info("Questions updated for '%s' -> '%s'", topic_key, section_title)
         return True
     except Exception as e:
         logger.error("Error updating section questions: %s", e)
+        return False
+
+
+def clear_section_conversation(topic: str, section_title: str) -> bool:
+    """Remove the conversation log from a section."""
+    try:
+        topic_key, class_obj = _load_class_and_section(topic, section_title)
+        if class_obj is None:
+            return False
+        class_obj["sections_data"][section_title]["conversation"] = []
+        class_obj["updated_at"] = datetime.now().isoformat()
+        return _write_topic_file(topic_key, class_obj)
+    except Exception as e:
+        logger.error("Error clearing conversation: %s", e)
+        return False
+
+
+def append_section_conversation_turn(topic: str, section_title: str, question: str, answer: str) -> bool:
+    """Append a Q&A turn to the conversation log of a section."""
+    try:
+        topic_key, class_obj = _load_class_and_section(topic, section_title)
+        if class_obj is None:
+            return False
+        section_data = class_obj["sections_data"][section_title]
+        section_data.setdefault("conversation", []).append({"question": question, "answer": answer})
+        class_obj["updated_at"] = datetime.now().isoformat()
+        return _write_topic_file(topic_key, class_obj)
+    except Exception as e:
+        logger.error("Error appending conversation turn: %s", e)
+        return False
+
+
+def update_question_user_answer(topic: str, section_title: str, question_index: int, user_answer: str, user_correct: bool) -> bool:
+    """Save the user's answer (letter + correctness) for a specific question."""
+    try:
+        topic_key, class_obj = _load_class_and_section(topic, section_title)
+        if class_obj is None:
+            return False
+        questions = class_obj["sections_data"][section_title].get("questions", [])
+        if question_index < 0 or question_index >= len(questions):
+            logger.warning("Question index %d out of range in '%s'/'%s'", question_index, topic, section_title)
+            return False
+        questions[question_index]["user_answer"] = user_answer
+        questions[question_index]["user_correct"] = user_correct
+        class_obj["updated_at"] = datetime.now().isoformat()
+        return _write_topic_file(topic_key, class_obj)
+    except Exception as e:
+        logger.error("Error updating question user answer: %s", e)
         return False
 
 
@@ -161,16 +205,22 @@ def list_classes() -> list[str]:
 
 
 def delete_class(topic: str) -> bool:
-    """Delete a saved class JSON file."""
+    """Delete a saved class JSON file and its ChromaDB collection."""
     _ensure_storage_dir()
     try:
         topic_key = _resolve_topic_key(topic)
         if not topic_key:
             logger.warning("Class '%s' not found", topic)
             return False
-
+        
+        # Delete JSON file
         os.remove(_topic_file_path(topic_key))
-        logger.info("Class '%s' deleted", topic_key)
+        logger.info("Class '%s' deleted from JSON storage", topic_key)
+        
+        # Delete ChromaDB collection
+        delete_collection(topic=topic_key)
+        logger.info("ChromaDB collection for '%s' deleted", topic_key)
+        
         return True
     except Exception as e:
         logger.error("Error deleting class '%s': %s", topic, e)

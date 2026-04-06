@@ -1,10 +1,10 @@
 """MCP Server: exposes the University Assistant knowledge base as MCP tools.
 
-Expone las capacidades del sistema como herramientas MCP estándar:
-  - Búsqueda semántica en la base de conocimiento (ChromaDB)
-  - Consulta de clases guardadas, resúmenes y preguntas de examen
+Exposes the system's capabilities as standard MCP tools:
+  - Semantic search in the knowledge base (ChromaDB)
+  - Query of saved classes, summaries and exam questions
 
-Ejecución:
+Usage:
     python -m backend.mcp_server
 """
 
@@ -32,6 +32,26 @@ mcp = FastMCP(
 )
 
 _retriever = ChromaDbRetriever()
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _get_section_data(topic: str, section: str) -> tuple[dict | None, str]:
+    """Load class data and validate the section exists.
+
+    Returns (section_dict, "") on success, or (None, error_message) on failure.
+    Avoids repeating the same lookup + validation in get_section_summary and get_section_questions.
+    """
+    data = get_class(topic)
+    if not data:
+        return None, f"No se encontraron datos de clase para el tema '{topic}'."
+    sections_data = data.get("sections_data", {})
+    if section not in sections_data:
+        available = ", ".join(sections_data.keys()) or "ninguna"
+        return None, f"Sección '{section}' no encontrada. Secciones disponibles: {available}"
+    return sections_data[section], ""
 
 
 # ---------------------------------------------------------------------------
@@ -82,16 +102,10 @@ def get_section_summary(topic: str, section: str) -> str:
         topic:   El nombre del tema.
         section: El título exacto de la sección (tal como aparece en la estructura).
     """
-    data = get_class(topic)
-    if not data:
-        return f"No se encontraron datos de clase para el tema '{topic}'."
-
-    sections_data = data.get("sections_data", {})
-    if section not in sections_data:
-        available = ", ".join(sections_data.keys()) or "ninguna"
-        return f"Sección '{section}' no encontrada. Secciones disponibles: {available}"
-
-    summary = sections_data[section].get("summary", "")
+    section_data, error = _get_section_data(topic, section)
+    if error:
+        return error
+    summary = section_data.get("summary", "")
     return summary if summary else f"Aún no se ha generado resumen para '{section}'."
 
 
@@ -118,16 +132,10 @@ def get_section_questions(topic: str, section: str) -> str:
         topic:   El nombre del tema.
         section: El título exacto de la sección.
     """
-    data = get_class(topic)
-    if not data:
-        return f"No se encontraron datos de clase para el tema '{topic}'."
-
-    sections_data = data.get("sections_data", {})
-    if section not in sections_data:
-        available = ", ".join(sections_data.keys()) or "ninguna"
-        return f"Sección '{section}' no encontrada. Secciones disponibles: {available}"
-
-    questions = sections_data[section].get("questions", [])
+    section_data, error = _get_section_data(topic, section)
+    if error:
+        return error
+    questions = section_data.get("questions", [])
     if not questions:
         return f"Aún no se han generado preguntas para la sección '{section}'."
     return json.dumps(questions, ensure_ascii=False, indent=2)
@@ -151,15 +159,14 @@ def search_wikipedia(query: str, sentences: int = 4) -> str:
     for wiki, lang in ((_wiki_es, "es"), (_wiki_en, "en")):
         page = wiki.page(query)
         if page.exists():
-            raw = page.summary
-            frases = [s.strip() for s in raw.split(". ") if s.strip()]
-            resumen = ". ".join(frases[:sentences])
-            if resumen and not resumen.endswith("."):
-                resumen += "."
-            return f"**{page.title}** (Wikipedia/{lang})\n\n{resumen}\n\nFuente: {page.fullurl}"
+            # Take only the first N sentences from the summary
+            raw_sentences = [s.strip() for s in page.summary.split(". ") if s.strip()]
+            summary = ". ".join(raw_sentences[:sentences])
+            if summary and not summary.endswith("."):
+                summary += "."
+            return f"**{page.title}** (Wikipedia/{lang})\n\n{summary}\n\nFuente: {page.fullurl}"
 
     return f"No se encontró artículo en Wikipedia para '{query}'."
-
 
 # ---------------------------------------------------------------------------
 # Entry point

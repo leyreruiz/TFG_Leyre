@@ -1,8 +1,8 @@
 """Exam Agent: generates multiple-choice exam questions.
 
 Two retrieval modes selected automatically:
-  - File mode:     query matches a known .txt file  → all chunks of that file (ChromaDB)
-  - Semantic mode: query is a topic/concept         → similarity search across all sources
+  - Pipeline mode: summary was provided directly → skip RAG, use summary as context
+  - RAG mode:      query is a topic/concept       → similarity search in ChromaDB
 """
 
 import logging
@@ -16,7 +16,16 @@ from backend.utils import extract_search_term
 
 logger = logging.getLogger(__name__)
 
+# Marker used to distinguish pipeline mode (summary provided) from RAG mode
 SUMMARY_MARKER = "using the following summary context:"
+
+# System prompt shared by both question-generation methods
+_EXAM_SYSTEM_PROMPT = (
+    "You are a university professor expert in creating exams. "
+    "Your task is to generate multiple-choice questions based ONLY on the provided content. "
+    "Each question must have exactly 4 options (a, b, c, d) and ONLY ONE correct answer."
+)
+
 
 class ExamAgent(BaseAgent):
     """Generates multiple-choice exam questions using ChromaDB as the only data source."""
@@ -30,20 +39,15 @@ class ExamAgent(BaseAgent):
     def can_handle(self, intent: str) -> bool:
         return intent == "exam"
 
-
     def handle(self, request: StudentRequest) -> dict:
-        """Generate an exam choosing the retrieval mode automatically.
+        """Generate an exam, choosing the retrieval mode automatically.
 
-        - If the message contains "using the following summary context:" the exam is generated directly
-          from the provided summary (pipeline mode), skipping RAG retrieval.
-        - Otherwise, a semantic similarity search is performed across all
-          ingested sources (semantic mode), useful for cross-topic queries.
+        - Pipeline mode: message contains SUMMARY_MARKER → use the provided summary as context.
+        - RAG mode: semantic search in ChromaDB.
 
-        Returns:
-            dict with content (raw text), questions (parsed), mode and source info.
+        Returns a dict with content (raw text), questions (parsed list), mode and source info.
         """
-
-        # PIPELINE MODE: summary was provided, skip RAG
+        # PIPELINE MODE: summary was provided, skip RAG retrieval
         if SUMMARY_MARKER in request.message:
             header, _, summary_text = request.message.partition(SUMMARY_MARKER)
             term = extract_search_term(header.strip(), intent="exam") or header.strip()
@@ -53,12 +57,9 @@ class ExamAgent(BaseAgent):
             logger.debug("Mode: summary (section: %s)", term)
 
             if not context:
-                return {
-                    "agent": "exam",
-                    "error": f"Summary context is empty for '{term}'.",
-                }
+                return {"agent": "exam", "error": f"Summary context is empty for '{term}'."}
 
-        # RAG MODE: search ChromaDB
+        # RAG MODE: search ChromaDB for relevant chunks
         else:
             term = extract_search_term(request.message, intent="exam")
 
@@ -96,14 +97,11 @@ class ExamAgent(BaseAgent):
 
             context = "\n\n".join(docs)
 
-        # Generate questions based on the retrieved context
+        # Generate questions from the retrieved or provided context
         raw_answer = self._generate_questions(context, source_info)
 
         if raw_answer is None:
-            return {
-                "agent": "exam",
-                "error": f"Could not generate questions for '{source_info}'.",
-            }
+            return {"agent": "exam", "error": f"Could not generate questions for '{source_info}'."}
 
         questions = self._parse_questions(raw_answer)
 
@@ -124,44 +122,6 @@ class ExamAgent(BaseAgent):
             return []
         return self._parse_questions(raw)
 
-    def _generate_additional_questions(self, summary: str, section_title: str, existing_texts: str, num_new: int) -> str | None:
-        """Call the LLM to generate new questions, explicitly avoiding the existing ones."""
-        sistema = (
-            "You are a university professor expert in creating exams. "
-            "Your task is to generate multiple-choice questions based ONLY on the provided content. "
-            "Each question must have exactly 4 options (a, b, c, d) and ONLY ONE correct answer."
-        )
-
-        prompt = f"""Section: '{section_title}'
-Content summary:
----
-{summary}
----
-
-The following questions already exist — do NOT repeat them or ask about the same concepts:
-{existing_texts}
-
-Generate exactly {num_new} NEW multiple-choice questions about DIFFERENT aspects of the content.
-
-For each question, use this exact format:
-
-QUESTION 1: [question text]
-a) [option a]
-b) [option b]
-c) [option c]
-d) [option d]
-RESPONSE: [correct letter]
-EXPLANATION: [brief explanation of why it's correct]"""
-
-        return chat_with_model(
-            messages=[
-                {"role": "system", "content": sistema},
-                {"role": "user", "content": prompt},
-            ],
-            model=self.llm_model,
-            temperature=0.7,  # slightly higher for variety
-        )
-
     def _list_known_files(self) -> list[str]:
         """Return the list of .txt filenames available in the data directory."""
         try:
@@ -170,15 +130,8 @@ EXPLANATION: [brief explanation of why it's correct]"""
             return []
 
     def _generate_questions(self, content: str, filename: str) -> str | None:
-        """Call the LLM to generate multiple-choice questions based on the file content."""
-
-        sistema = (
-            "You are a university professor expert in creating exams. "
-            "Your task is to generate multiple-choice questions (multiple options) based ONLY on the provided content. "
-            "Each question must have exactly 4 options (a, b, c, d) and ONLY ONE correct answer."
-        )
-
-        prompt_usuario = f"""File content '{filename}':
+        """Call the LLM to generate multiple-choice questions based on the provided content."""
+        prompt = f"""File content '{filename}':
 ---
 {content}
 ---
@@ -202,22 +155,54 @@ Make sure:
 
         return chat_with_model(
             messages=[
-                {"role": "system", "content": sistema},
-                {"role": "user", "content": prompt_usuario},
+                {"role": "system", "content": _EXAM_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
             ],
             model=self.llm_model,
-            temperature=0.5,  # Lower creativity for more precise exams
+            temperature=0.5,  # lower creativity for more precise exams
+        )
+
+    def _generate_additional_questions(self, summary: str, section_title: str, existing_texts: str, num_new: int) -> str | None:
+        """Call the LLM to generate new questions, explicitly avoiding the existing ones."""
+        prompt = f"""Section: '{section_title}'
+Content summary:
+---
+{summary}
+---
+
+The following questions already exist — do NOT repeat them or ask about the same concepts:
+{existing_texts}
+
+Generate exactly {num_new} NEW multiple-choice questions about DIFFERENT aspects of the content.
+
+For each question, use this exact format:
+
+QUESTION 1: [question text]
+a) [option a]
+b) [option b]
+c) [option c]
+d) [option d]
+RESPONSE: [correct letter]
+EXPLANATION: [brief explanation of why it's correct]"""
+
+        return chat_with_model(
+            messages=[
+                {"role": "system", "content": _EXAM_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            model=self.llm_model,
+            temperature=0.7,  # slightly higher for variety
         )
 
     def _parse_questions(self, raw_text: str) -> list[dict]:
-        """Attempt to parse the LLM response into a structured list.
+        """Parse the LLM response into a structured list of question dicts.
 
-        Uses resilient block parsing to extract each question with its options and answer.
-        Returns an empty list if parsing fails (raw text is still available).
+        Uses block-based parsing to avoid brittle cross-question regex assumptions.
+        Returns an empty list if parsing fails (raw text is still available in the response).
         """
         questions = []
 
-        # Split per QUESTION block to avoid brittle cross-question regex assumptions.
+        # Split into per-QUESTION blocks
         blocks = re.split(r"(?=\bQUESTION\s*\d+\s*:)", raw_text, flags=re.IGNORECASE)
 
         for block in blocks:
@@ -232,7 +217,7 @@ Make sure:
             if not q_match:
                 continue
 
-            # Accept both "a)" and "a." (same for b/c/d), with optional spaces.
+            # Accept both "a)" and "a." formats, with optional spaces
             option_pattern = r"\n\s*([a-dA-D])[\)\.]\s*(.*?)(?=\n\s*[a-dA-D][\)\.]\s|\n\s*RESPONSE\s*:|$)"
             option_matches = re.findall(option_pattern, block, flags=re.IGNORECASE | re.DOTALL)
             options_map = {letter.lower(): text.strip() for letter, text in option_matches}
@@ -241,23 +226,14 @@ Make sure:
                 continue
 
             response_match = re.search(r"RESPONSE\s*:\s*([a-dA-D])", block, flags=re.IGNORECASE)
-            explanation_match = re.search(
-                r"EXPLANATION\s*:\s*(.*)",
-                block,
-                flags=re.IGNORECASE | re.DOTALL,
-            )
+            explanation_match = re.search(r"EXPLANATION\s*:\s*(.*)", block, flags=re.IGNORECASE | re.DOTALL)
 
             if not response_match:
                 continue
 
             questions.append({
                 "question": q_match.group(1).strip(),
-                "options": [
-                    options_map["a"],
-                    options_map["b"],
-                    options_map["c"],
-                    options_map["d"],
-                ],
+                "options": [options_map["a"], options_map["b"], options_map["c"], options_map["d"]],
                 "correct_answer": response_match.group(1).strip().lower(),
                 "explanation": explanation_match.group(1).strip() if explanation_match else "",
             })

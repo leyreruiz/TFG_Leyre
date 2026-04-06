@@ -34,6 +34,7 @@ class AskRequest(BaseModel):
     section_title:   str
     section_summary: str
     conversation_id: Optional[str] = None
+    topic:           Optional[str] = None
 
 class AddQuestionsRequest(BaseModel):
     topic:              str
@@ -46,3 +47,14 @@ class UpdateQuestionsRequest(BaseModel):
     topic:         str
     section_title: str
     questions:     list
+
+class SubmitAnswerRequest(BaseModel):
+    topic:          str
+    section_title:  str
+    question_index: int
+    user_answer:    str   # letter: "a", "b", "c" or "d"
+    user_correct:   bool
+
+class RestartWithSuggestionsRequest(BaseModel):
+    document:    str
+    suggestions: str

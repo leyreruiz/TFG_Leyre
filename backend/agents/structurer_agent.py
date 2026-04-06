@@ -23,15 +23,19 @@ class StructurerAgent(BaseAgent):
     def can_handle(self, intent: str) -> bool:
         return intent == "structure"
 
-    def handle(self, request: StudentRequest) -> dict:
+    def handle(self, request: StudentRequest, suggestions: str = "") -> dict:
+        """Generate the class outline, optionally incorporating user suggestions.
+
+        Args:
+            request: StudentRequest with the document/topic to structure.
+            suggestions: Optional user feedback to incorporate into the outline.
+        """
         term = extract_search_term(request.message, intent="structure")
 
         if not term:
-            return {
-                "agent": "structurer",
-                "error": "No file specified.",
-            }
+            return {"agent": "structurer", "error": "No file specified."}
 
+        # Check if the term matches a known file; use full-file retrieval if so
         candidate_file = term if term.endswith(".txt") else term + ".txt"
         known_files = self._list_known_files()
 
@@ -50,27 +54,22 @@ class StructurerAgent(BaseAgent):
             }
 
         context = "\n\n".join(docs)
-        structure = self._generate_structure(context, source)
+        structure = self._generate_structure(context, source, suggestions=suggestions)
 
         if structure is None:
-            return {
-                "agent": "structurer",
-                "error": f"No information found about '{term}'.",
-            }
+            return {"agent": "structurer", "error": f"No information found about '{term}'."}
 
-        return {
-            "agent": "structurer",
-            "content": structure,
-            "source": source,
-        }
+        return {"agent": "structurer", "content": structure, "source": source}
 
     def _list_known_files(self) -> list[str]:
+        """Return the list of .txt filenames available in the data directory."""
         try:
             return [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
         except Exception:
             return []
 
-    def _generate_structure(self, content: str, source: str) -> str | None:
+    def _generate_structure(self, content: str, source: str, suggestions: str = "") -> str | None:
+        """Call the LLM to produce a class outline from the document content."""
         system = (
             "You are a university professor creating a class outline. "
             "Generate a clean, high-level structure that serves as a table of contents — "
@@ -78,10 +77,16 @@ class StructurerAgent(BaseAgent):
             "No explanations, no definitions, no details. Those come later when each section is taught."
         )
 
+        suggestions_block = (
+            f"\n\nUSER SUGGESTIONS TO INCORPORATE:\n{suggestions.strip()}"
+            if suggestions and suggestions.strip()
+            else ""
+        )
+
         prompt = f"""Document: '{source}'
     ---
     {content}
-    ---
+    ---{suggestions_block}
 
     Generate a high-level class outline using this format:
 
@@ -98,7 +103,8 @@ class StructurerAgent(BaseAgent):
     - Topic names should be short: 2-5 words max
     - No definitions, no descriptions, no "how" or "why" phrases
     - This is a table of contents, not a lesson plan
-    - Cover all main topics in the document"""
+    - Cover all main topics in the document
+    {"- Apply the user suggestions listed above" if suggestions and suggestions.strip() else ""}"""
 
         return chat_with_model(
             messages=[

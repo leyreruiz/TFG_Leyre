@@ -392,6 +392,8 @@
     .qa-drawer-title { font-size: 0.84rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .qa-close { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-2); font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
     .qa-close:hover { background: var(--bg-2); color: var(--text); }
+    .qa-clear { flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px; border: 1px solid #fca5a5; background: #fee2e2; color: #dc2626; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .qa-clear:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
     .qa-messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
     .qa-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 0.8rem; padding: 16px; text-align: center; }
     .qa-msg-user { align-self: flex-end; background: var(--bg-3); border: 1px solid var(--border); padding: 8px 12px; border-radius: 10px 10px 2px 10px; max-width: 88%; font-size: 0.82rem; color: var(--text); line-height: 1.5; }
@@ -410,6 +412,30 @@
     .qa-send:hover:not(:disabled) { background: var(--accent); }
     .qa-send:disabled { opacity: 0.3; cursor: not-allowed; }
     .qa-hint { font-size: 0.63rem; color: var(--text-3); text-align: center; padding: 0 14px 8px; }
+
+    /* ── IMPROVE STRUCTURE MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-card {
+      background: var(--bg); border-radius: var(--r-xl); box-shadow: var(--shadow-lg);
+      width: 100%; max-width: 640px; max-height: 80vh;
+      display: flex; flex-direction: column; border: 1px solid var(--border);
+    }
+    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+    .modal-title  { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .modal-sub    { font-size: 0.78rem; color: var(--text-2); line-height: 1.5; }
+    .modal-body   { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .modal-textarea {
+      width: 100%; resize: vertical; min-height: 140px;
+      border: 1px solid var(--border-2); border-radius: var(--r);
+      padding: 12px 14px; font-family: var(--font); font-size: 0.84rem;
+      line-height: 1.65; color: var(--text); background: var(--bg-2); outline: none; transition: border-color 0.2s;
+    }
+    .modal-textarea:focus { border-color: var(--text); background: var(--bg); }
+    .modal-textarea::placeholder { color: var(--text-3); }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -572,7 +598,10 @@
             <div class="md compact" v-math="structure"></div>
           </div>
 
-          <div style="margin-top:20px;display:flex;justify-content:flex-end">
+          <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:8px">
+            <button class="btn btn-ghost" v-if="streamDone" @click="showImproveModal = true">
+              ✦ Propose improvements
+            </button>
             <button class="btn btn-primary" :disabled="!sections[0]?.summaryLoaded" @click="goToSection(0)">
               Start studying →
             </button>
@@ -712,9 +741,9 @@
             <div v-if="entry.answer === null" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
             <div v-else class="qa-msg-ai"><div class="md compact" v-math="entry.answer"></div></div>
           </template>
-          <div v-if="isThinking" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
         </div>
         <div class="qa-input-row">
+          <button v-if="qaCount > 0" class="qa-clear" @click="clearConversation" title="Clear conversation">🗑</button>
           <textarea v-model="questionInput" :placeholder="'Ask a question about ' + currentSec.title + '…'" rows="1"
             @keydown.enter.exact.prevent="submitQuestion" @input="autoResize" ref="questionTextarea"></textarea>
           <button class="qa-send" :disabled="!questionInput.trim() || isThinking || !currentSec.summaryLoaded" @click="submitQuestion">↑</button>
@@ -723,6 +752,31 @@
       </div>
     </div><!-- /qa-panel -->
 
+  </div>
+
+  <!-- IMPROVE STRUCTURE MODAL -->
+  <div v-if="showImproveModal" class="modal-overlay" @click.self="showImproveModal = false">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Propose structure improvements</div>
+          <div class="modal-sub">Describe what you'd like to change. The assistant will regenerate the structure and all summaries.</div>
+        </div>
+        <button class="qa-close" @click="showImproveModal = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <textarea class="modal-textarea" v-model="improveSuggestions"
+          placeholder="e.g. Add a section about practical applications. Merge sections 2 and 3. Cover topic X before topic Y…"
+          rows="6"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" @click="showImproveModal = false">Cancel</button>
+        <button class="btn btn-primary" :disabled="isRestarting || !improveSuggestions.trim()" @click="confirmImprovements">
+          <span v-if="isRestarting">Regenerating…</span>
+          <span v-else>Regenerate class →</span>
+        </button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -748,10 +802,12 @@
       const answers = reactive({}), revealed = reactive({})
       const qaOpen = ref(false), questionInput = ref(''), isThinking = ref(false)
       const isRegenerating = ref(false), isRegeneratingExam = ref(false), isAddingQuestions = ref(false)
+      const showImproveModal = ref(false), improveSuggestions = ref(''), isRestarting = ref(false)
       const qaMap = reactive({}), sectionPhase = reactive({})
       const currentSectionPhase = computed(() => sectionPhase[currentSection.value] || 'summary')
       const currentQA = computed(() => qaMap[currentSection.value] || [])
       const qaCount   = computed(() => (qaMap[currentSection.value] || []).length)
+      const sessionQaCount = ref(0)
 
       const renderMarkdown = t => t ? marked.parse(t) : ''
       const generateChatSessionId = () => `chat-${Date.now()}-${Math.random().toString(36).slice(2,10)}`
@@ -760,7 +816,14 @@
       const formatTopicName = t => t.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())
       const akey = (si,qi) => `${si}-${qi}`
 
-      function selectAnswer(si,qi,oi) { const k=akey(si,qi); if(revealed[k]) return; answers[k]=oi; revealed[k]=true }
+      async function selectAnswer(si,qi,oi) {
+        const k=akey(si,qi); if(revealed[k]) return; answers[k]=oi; revealed[k]=true
+        if(currentTopic.value) {
+          const sec=sections[si]; const q=sec.questions[qi]
+          const userLetter=letters[oi]; const correct=userLetter===q.correct_answer
+          fetch(`${API_URL}/submit-answer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:currentTopic.value,section_title:sec.title,question_index:qi,user_answer:userLetter,user_correct:correct})})
+        }
+      }
       function isRevealed(si,qi) { return !!revealed[akey(si,qi)] }
       function optionClass(si,qi,oi) {
         const k=akey(si,qi); if(!revealed[k]) return ''
@@ -832,7 +895,8 @@
       function handleEvent(ev) {
         if(ev.type==='structure'){structure.value=ev.structure;ev.sections.forEach(t=>sections.push({title:t,summary:'',questions:[],summaryLoaded:false,examLoaded:false}));screen.value='session';currentView.value='structure';scrollToTop();return}
         if(ev.type==='summary'){streamingSection.value=ev.section_index;const s=sections[ev.section_index];if(s){s.summary=ev.summary;s.summaryLoaded=true}return}
-        if(ev.type==='exam'){const s=sections[ev.section_index];if(s){s.questions=ev.questions;s.examLoaded=true}streamingSection.value=ev.section_index+1;return}
+        if(ev.type==='exam'){const s=sections[ev.section_index];if(s){s.questions=ev.questions;s.examLoaded=true;ev.questions.forEach((q,qi)=>{if(q.user_answer!==undefined){const k=akey(ev.section_index,qi);answers[k]=letters.indexOf(q.user_answer);revealed[k]=true}})}streamingSection.value=ev.section_index+1;return}
+        if(ev.type==='conversation'){if(ev.qa&&ev.qa.length)qaMap[ev.section_index]=ev.qa.map(t=>({question:t.question,answer:t.answer}));return}
         if(ev.type==='done'){streamDone.value=true;streamingSection.value=-1;return}
         if(ev.type==='error'){errorMsg.value=ev.message||'Unknown error';screen.value='error'}
       }
@@ -901,11 +965,41 @@
         const si=currentSection.value; if(!qaMap[si])qaMap[si]=[]
         qaMap[si].push({question:q,answer:null}); isThinking.value=true; scrollPanelToBottom()
         try{
-          const res=await fetch(`${API_URL}/ask`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,section_title:currentSec.value.title,section_summary:currentSec.value.summary,conversation_id:`${chatSessionId.value||'chat'}::section-${si}`})})
+          const res=await fetch(`${API_URL}/ask`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,section_title:currentSec.value.title,section_summary:currentSec.value.summary,conversation_id:`${chatSessionId.value||'chat'}::section-${si}`,topic:currentTopic.value})})
           if(!res.ok) throw new Error(); const data=await res.json()
           qaMap[si][qaMap[si].length-1].answer=data.content||data.answer||'(No response)'
         }catch{qaMap[si][qaMap[si].length-1].answer='⚠️ Could not reach the server.'}
         finally{isThinking.value=false;scrollPanelToBottom()}
+      }
+
+      async function clearConversation() {
+        const si=currentSection.value
+        const conversation_id=`${chatSessionId.value||'chat'}::section-${si}`
+        await fetch(`${API_URL}/clear-conversation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:'',section_title:currentSec.value.title,section_summary:'',conversation_id:conversation_id,topic:currentTopic.value})})
+        qaMap[si]=[]
+      }
+
+      async function confirmImprovements() {
+        if (!improveSuggestions.value.trim() || isRestarting.value) return
+        isRestarting.value = true
+        showImproveModal.value = false
+        // Reset session state
+        structure.value = ''; sections.splice(0); streamDone.value = false; streamingSection.value = -1
+        currentSection.value = 0; currentView.value = 'structure'; qaOpen.value = false; questionInput.value = ''
+        Object.keys(answers).forEach(k => delete answers[k]); Object.keys(revealed).forEach(k => delete revealed[k])
+        Object.keys(qaMap).forEach(k => delete qaMap[k]); Object.keys(sectionPhase).forEach(k => delete sectionPhase[k])
+        chatSessionId.value = generateChatSessionId(); screen.value = 'loading'
+        try {
+          await consumeSSE(`${API_URL}/restart-with-suggestions`, {
+            document: currentTopic.value,
+            suggestions: improveSuggestions.value,
+          }, handleEvent)
+          improveSuggestions.value = ''
+        } catch {
+          errorMsg.value = 'Error regenerating the class.'; screen.value = 'error'
+        } finally {
+          isRestarting.value = false
+        }
       }
 
       async function onFileSelected(event) {
@@ -952,8 +1046,9 @@
         akey,selectAnswer,isRevealed,optionClass,questionState,
         sectionTotal,sectionCorrect,sectionAllAnswered,totalQuestions,totalCorrect,secScore,sectionIsDone,
         navSidebarClass,scrollToTop,autoResize,sectionPhase,currentSectionPhase,progressPct,
-        goToSection,goToResults,regenerateSummary,regenerateExam,addQuestions,deleteQuestion,submitQuestion,
-        startSession,resetSession,onFileSelected,deleteTopic,
+        goToSection,goToResults,regenerateSummary,regenerateExam,addQuestions,deleteQuestion,submitQuestion,clearConversation,
+        startSession,resetSession,onFileSelected,deleteTopic,confirmImprovements,
+        showImproveModal,improveSuggestions,isRestarting,
       }
     }
   })

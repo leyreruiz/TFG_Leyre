@@ -25,10 +25,11 @@ class SummaryAgent(BaseAgent):
 
         Args:
             section_title:   Title of the section to summarise.
-            section_outline: The block from the class index that belongs to this
-                             section (e.g. the bullet points listed under the ### heading).
+            section_outline: The block from the class index that belongs to this section
+                             (e.g. the bullet points listed under the ### heading).
                              Pass an empty string if not available.
         """
+        # Retrieve relevant document chunks for this section
         docs = self.retriever.search(section_title, k=5)
         context = "\n\n".join(docs) if docs else "(No relevant documents found)"
 
@@ -46,6 +47,7 @@ class SummaryAgent(BaseAgent):
             "7. Keep the tone approachable and direct — like a good teacher, not a textbook."
         )
 
+        # Include the outline block only when one is available
         outline_block = (
             f"\nClass index for this section (follow this structure):\n{section_outline}\n"
             if section_outline else ""

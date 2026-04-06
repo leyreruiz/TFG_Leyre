@@ -63,32 +63,33 @@
           "correct_answer": "d",
           "explanation": "Activation functions introduce non-linearity into the model, enabling it to learn and represent complex relationships between inputs and outputs."
         }
-      ]
+      ],
+      "conversation": []
     },
     "Activation Functions": {
-      "summary": "# Activation Functions\n\n## Introduction\n\nActivation functions introduce non-linearity into the model, allowing the artificial neural network to learn complex relationships between inputs and outputs.\n\n## Types of Activation Functions\n\nHere are the key types of activation functions:\n\n### 1. Sigmoid\n\n* Maps values to the range (0, 1)\n* Historically used in hidden layers\n* **Definition:** f(x) = 1 / (1 + e^(-x))\n\n### 2. ReLU (Rectified Linear Unit)\n\n* Returns max(0, x)\n* Currently the most popular due to its computational efficiency\n* **Definition:** f(x) = max(0, x)\n\n### 3. Tanh\n\n* Maps values to the range (-1, 1)\n* Similar to sigmoid but centered at zero\n* **Definition:** f(x) = 2 / (1 + e^(-2x)) - 1\n\n### 4. Softmax\n\n* Used in the output layer for multi-class classification problems\n* **Definition:** f(x) = e^x / Σ(e^x)\n\n## Characteristics of Activation Functions\n\n* **Non-linearity:** Introduces non-linearity into the model, allowing it to learn complex relationships.\n* **Computational efficiency:** Some activation functions, like ReLU, are more computationally efficient than others.\n\n## Importance of Activation Functions\n\n* **Biological inspiration:** Activation functions are inspired by the way biological neurons respond to stimuli.\n* **Model complexity:** Activation functions can increase the complexity of the model, allowing it to learn more complex relationships.",
+      "summary": "## Introduction to Activation Functions\n\nActivation functions are a crucial component in artificial neural networks, serving as the **non-linear gatekeepers** that enable complex decision-making and pattern recognition. Without activation functions, neural networks would be incapable of processing and learning from data, rendering them useless for a wide range of applications.\n\n### Key Features of Activation Functions\n\n* **Non-linearity**: Activation functions introduce non-linearity into the neural network, allowing it to learn and represent complex relationships between inputs and outputs.\n* **Threshold**: Activation functions apply a threshold to the weighted sum of inputs, determining whether the neuron should be activated or not.\n* **Output**: Activation functions produce an output value that can be used by subsequent layers in the network.\n\n### Common Types of Activation Functions\n\n* **Sigmoid**: A **logistic** function that maps real-valued numbers to values between 0 and 1, often used for binary classification problems.\n* **ReLU (Rectified Linear Unit)**: A **non-linear** function that outputs 0 for negative inputs and the input value for positive inputs, widely used for hidden layers.\n* **Tanh (Hyperbolic Tangent)**: A **non-linear** function that maps real-valued numbers to values between -1 and 1, often used for hidden layers.\n\n### Choosing the Right Activation Function\n\n* Consider the problem type: Binary classification (Sigmoid), Multi-class classification (Softmax), or Regression (Linear).\n* Experiment with different activation functions to find the best fit for your model.\n* Be aware of the potential drawbacks of each activation function, such as **vanishing gradients** in Sigmoid.\n\n## Key Takeaway\n\nActivation functions are **non-linear gatekeepers** that enable neural networks to learn complex relationships between inputs and outputs. Choosing the right activation function is crucial for a network's performance, and understanding their key features and types is essential for selecting the best fit for your model. By experimenting with different activation functions and considering the problem type, you can unlock the full potential of your neural network.",
       "questions": [
         {
-          "question": "What is a characteristic of the ReLU (Rectified Linear Unit) activation function?",
+          "question": "What is the primary purpose of activation functions in artificial neural networks?",
           "options": [
-            "Maps values to the range (0, 1)",
-            "Returns min(0, x)",
-            "Currently the most popular due to its simplicity",
-            "Maps values to the range (-1, 1)"
+            "To introduce linearity into the network",
+            "To apply a threshold to the weighted sum of inputs",
+            "To produce a constant output value",
+            "To prevent overfitting"
           ],
-          "correct_answer": "c",
-          "explanation": "ReLU is currently the most popular activation function due to its computational efficiency."
+          "correct_answer": "b",
+          "explanation": "Activation functions apply a threshold to the weighted sum of inputs, determining whether the neuron should be activated or not."
         },
         {
-          "question": "Which activation function is used in the output layer for multi-class classification problems?",
+          "question": "Which activation function is commonly used for binary classification problems due to its ability to map real-valued numbers to values between 0 and 1?",
           "options": [
+            "ReLU (Rectified Linear Unit)",
+            "Tanh (Hyperbolic Tangent)",
             "Sigmoid",
-            "ReLU",
-            "Tanh",
-            "Softmax"
+            "Linear"
           ],
-          "correct_answer": "d",
-          "explanation": "Softmax is used in the output layer for multi-class classification problems as it normalizes the output to ensure it sums up to 1."
+          "correct_answer": "c",
+          "explanation": "The Sigmoid function is a logistic function that maps real-valued numbers to values between 0 and 1, making it suitable for binary classification problems."
         }
       ]
     },
@@ -202,5 +203,5 @@
     }
   },
   "created_at": "2026-03-20T12:09:49.274027",
-  "updated_at": "2026-03-20T12:31:59.582240"
+  "updated_at": "2026-04-06T12:02:32.461554"
 }
