@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>University Assistant</title>
+  <title>Student's Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; background: #d9d8d2; }
+    html, body { height: 100%; overflow: hidden; background: #C1D5E0; }
 
     :root {
       --bg:        #ffffff;
       --bg-2:      #faf9f7;
       --bg-3:      #f2f1ed;
       --bg-4:      #eae9e4;
-      --page:      #d9d8d2;
+      --page:      #C1D5E0;
       --border:    #e8e7e2;
       --border-2:  #d8d7d1;
       --text:      #1a1915;
       --text-2:    #6b6a64;
       --text-3:    #a8a7a0;
       --ink:       #0f0e0c;
-      --accent:    #2d5a3d;
-      --accent-2:  #3d7a54;
-      --accent-bg: #eef4f0;
-      --accent-border: #c8dcd0;
+      --accent:    #2a7b9b;
+      --accent-2:  #3a9fc4;
+      --accent-bg: #d6f0fa;
+      --accent-border: #a0d8ef;
       --amber:     #8a5c1a;
       --amber-bg:  #fdf4e7;
       --amber-border: #e8d0a0;
@@ -169,13 +169,37 @@
     .error-box { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); padding: 14px 20px; border-radius: var(--r-lg); font-size: 0.84rem; text-align: center; max-width: 380px; line-height: 1.6; }
 
     /* ════════ SESSION LAYOUT ════════ */
-    .session-layout { flex: 1; display: flex; overflow: hidden; background: var(--page); }
+    .session-layout { flex: 1; display: flex; overflow: hidden; background: var(--page); position: relative; }
 
     .sidebar {
       width: var(--sidebar-w); flex-shrink: 0;
       background: var(--bg); border-right: 1px solid var(--border);
       display: flex; flex-direction: column; overflow: hidden;
+      transition: margin-left 0.3s ease, opacity 0.3s ease;
+      position: relative;
     }
+    .sidebar.collapsed {
+      margin-left: calc(-1 * var(--sidebar-w));
+      opacity: 0; pointer-events: none;
+    }
+    .sidebar-toggle {
+      position: absolute; top: 50%; right: -18px; transform: translateY(-50%);
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px; color: var(--text-2);
+      z-index: 10; transition: all 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .sidebar-toggle:hover { background: var(--bg-2); color: var(--text); }
+    .sidebar-open-btn {
+      position: absolute; top: 50%; left: 8px; transform: translateY(-50%);
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px; color: var(--text-2);
+      z-index: 10; transition: all 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .sidebar-open-btn:hover { background: var(--bg-2); color: var(--text); }
     .sidebar-top { padding: 18px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .sidebar-logo { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
     .sidebar-logo-mark {
@@ -344,6 +368,22 @@
     .result-row-name { font-size: 0.84rem; font-weight: 500; color: var(--text); }
     .result-row-score { font-family: var(--font); font-size: 1.1rem; font-weight: 600; }
 
+    /* ── DOWNLOAD ── */
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border-2);
+      background: transparent; color: var(--text-2); font-size: 0.74rem; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; font-family: var(--font);
+    }
+    .download-btn:hover { background: var(--bg-2); color: var(--text); border-color: var(--text-3); }
+    .download-all-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 18px; border-radius: 7px; border: 2.5px solid #3b82f6;
+      background: var(--bg); color: var(--text); font-size: 0.81rem; font-weight: 600;
+      cursor: pointer; transition: all 0.18s var(--ease); font-family: var(--font);
+    }
+    .download-all-btn:hover { background: #eff6ff; border-color: #2563eb; }
+
     /* ── BUTTONS ── */
     .btn { padding: 7px 18px; border: 1px solid transparent; border-radius: 7px; font-size: 0.81rem; font-weight: 600; cursor: pointer; transition: all 0.18s var(--ease); font-family: var(--font); }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -445,13 +485,12 @@
   <div v-if="screen === 'welcome'" class="welcome-screen">
     <div class="welcome-left">
       <div class="welcome-left-pattern"></div>
-      <div class="welcome-logo">
+      <div class="welcome-logo" @click="resetSession" style="cursor: pointer;">
         <div class="welcome-logo-mark">L</div>
-        <span class="welcome-logo-name">University Assistant</span>
+        <span class="welcome-logo-name">Student's Assistant</span>
       </div>
       <div class="welcome-hero">
-        <div class="welcome-kicker">University Assistant</div>
-        <h1 class="welcome-title">Learn<br><em>smarter,</em><br>not harder.</h1>
+        <h1 class="welcome-title">Student's<br><em>Assistant</em></h1>
         <p class="welcome-desc">Select a class or upload your own material. Summaries, structure, and interactive exams generate automatically.</p>
       </div>
       <div class="welcome-stats">
@@ -510,11 +549,13 @@
   <div v-if="screen === 'session'" class="session-layout">
 
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <button v-if="!sidebarOpen" class="sidebar-open-btn" @click="sidebarOpen = true">▶</button>
+    <div :class="['sidebar', { collapsed: !sidebarOpen }]">
+      <button class="sidebar-toggle" @click="sidebarOpen = false">◀</button>
       <div class="sidebar-top">
-        <div class="sidebar-logo">
+        <div class="sidebar-logo" @click="resetSession" style="cursor: pointer;">
           <div class="sidebar-logo-mark">L</div>
-          <span class="sidebar-logo-name">University Assistant</span>
+          <span class="sidebar-logo-name">Student's Assistant</span>
         </div>
         <div class="class-pill">
           <div class="class-pill-icon">{{ topicIcon(currentTopic) }}</div>
@@ -708,10 +749,18 @@
                 <div style="font-size:0.66rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Section {{ si+1 }}</div>
                 <div class="result-row-name">{{ sec.title }}</div>
               </div>
-              <div class="result-row-score" :style="{color: secScore(si).correct===secScore(si).total?'var(--accent)':secScore(si).correct>=secScore(si).total/2?'var(--amber)':'var(--red)'}">
-                {{ secScore(si).correct }} / {{ secScore(si).total }}
+              <div style="display:flex;align-items:center;gap:10px">
+                <button class="download-btn" @click="downloadSummary(si)" title="Download as Markdown">⬇ .md</button>
+                <button class="download-btn" @click="downloadSummaryDoc(si)" title="Download as Word document">⬇ .doc</button>
+                <div class="result-row-score" :style="{color: secScore(si).correct===secScore(si).total?'var(--accent)':secScore(si).correct>=secScore(si).total/2?'var(--amber)':'var(--red)'}">
+                  {{ secScore(si).correct }} / {{ secScore(si).total }}
+                </div>
               </div>
             </div>
+          </div>
+          <div style="margin-top:20px;display:flex;justify-content:center">
+            <button class="download-all-btn" style="padding:12px 28px;font-size:0.9rem" @click="downloadAllSummaries">⬇ Download lesson in Markdown</button>
+            <button class="download-all-btn" style="padding:12px 28px;font-size:0.9rem;margin-left:10px" @click="downloadAllSummariesDoc">⬇ Download lesson in Word</button>
           </div>
         </template>
 
@@ -801,6 +850,7 @@
       const scrollArea = ref(null), panelMessages = ref(null), questionTextarea = ref(null)
       const answers = reactive({}), revealed = reactive({})
       const qaOpen = ref(false), questionInput = ref(''), isThinking = ref(false)
+      const sidebarOpen = ref(true)
       const isRegenerating = ref(false), isRegeneratingExam = ref(false), isAddingQuestions = ref(false)
       const showImproveModal = ref(false), improveSuggestions = ref(''), isRestarting = ref(false)
       const qaMap = reactive({}), sectionPhase = reactive({})
@@ -1026,6 +1076,57 @@
           topics.value=topics.value.filter(t=>t!==topic)
         }catch{errorMsg.value='Could not delete this class.';screen.value='error'}
       }
+      function triggerDownload(filename, content) {
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a'); a.href = url; a.download = filename
+        document.body.appendChild(a); a.click(); document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+
+      function downloadSummary(si) {
+        const sec = sections[si]
+        if (!sec || !sec.summary) return
+        const filename = `${formatTopicName(currentTopic.value)} - ${sec.title}.md`
+        const content = `# ${sec.title}\n\n${sec.summary}`
+        triggerDownload(filename, content)
+      }
+
+      function downloadAllSummaries() {
+        const topic = formatTopicName(currentTopic.value)
+        const content = sections.map((sec, i) =>
+          `# Section ${i + 1}: ${sec.title}\n\n${sec.summary}`
+        ).join('\n\n---\n\n')
+        triggerDownload(`${topic} - All Summaries.md`, `# ${topic}\n\n${content}`)
+      }
+
+      function triggerDownloadDoc(filename, htmlBody) {
+        const doc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.6;color:#1a1a1a}h1{font-size:18pt;margin:16pt 0 8pt}h2{font-size:15pt;margin:14pt 0 6pt}h3{font-size:12pt;margin:10pt 0 4pt}ul,ol{margin-bottom:8pt}li{margin-bottom:3pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:5pt 8pt}th{background:#f0f0f0;font-weight:bold}</style></head>
+<body>${htmlBody}</body></html>`
+        const blob = new Blob([doc], { type: 'application/msword' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a'); a.href = url; a.download = filename
+        document.body.appendChild(a); a.click(); document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+
+      function downloadSummaryDoc(si) {
+        const sec = sections[si]
+        if (!sec || !sec.summary) return
+        const filename = `${formatTopicName(currentTopic.value)} - ${sec.title}.doc`
+        const html = renderMarkdown(`# ${sec.title}\n\n${sec.summary}`)
+        triggerDownloadDoc(filename, html)
+      }
+
+      function downloadAllSummariesDoc() {
+        const topic = formatTopicName(currentTopic.value)
+        const md = `# ${topic}\n\n` + sections.map((sec, i) =>
+          `# Section ${i + 1}: ${sec.title}\n\n${sec.summary}`
+        ).join('\n\n---\n\n')
+        triggerDownloadDoc(`${topic} - All Summaries.doc`, renderMarkdown(md))
+      }
+
       function resetSession(){
         structure.value='';sections.splice(0);streamDone.value=false;streamingSection.value=-1
         currentSection.value=0;currentView.value='structure';currentTopic.value='';chatSessionId.value=''
@@ -1049,7 +1150,8 @@
         navSidebarClass,scrollToTop,autoResize,sectionPhase,currentSectionPhase,progressPct,
         goToSection,goToResults,regenerateSummary,regenerateExam,addQuestions,deleteQuestion,submitQuestion,clearConversation,
         startSession,resetSession,onFileSelected,deleteTopic,confirmImprovements,
-        showImproveModal,improveSuggestions,isRestarting,
+        showImproveModal,improveSuggestions,isRestarting,sidebarOpen,
+        downloadSummary,downloadAllSummaries,downloadSummaryDoc,downloadAllSummariesDoc,
       }
     }
   })

@@ -204,23 +204,30 @@ def list_classes() -> list[str]:
         return []
 
 
-def delete_class(topic: str) -> bool:
-    """Delete a saved class JSON file and its ChromaDB collection."""
+def delete_class(topic: str, keep_chromadb: bool = False) -> bool:
+    """Delete a saved class JSON file and optionally its ChromaDB collection.
+
+    Args:
+        topic: The topic/class to delete.
+        keep_chromadb: If True, only delete the JSON file and keep the
+            ChromaDB collection (useful when regenerating a class).
+    """
     _ensure_storage_dir()
     try:
         topic_key = _resolve_topic_key(topic)
         if not topic_key:
             logger.warning("Class '%s' not found", topic)
             return False
-        
+
         # Delete JSON file
         os.remove(_topic_file_path(topic_key))
         logger.info("Class '%s' deleted from JSON storage", topic_key)
-        
-        # Delete ChromaDB collection
-        delete_collection(topic=topic_key)
-        logger.info("ChromaDB collection for '%s' deleted", topic_key)
-        
+
+        # Delete ChromaDB collection unless told to keep it
+        if not keep_chromadb:
+            delete_collection(topic=topic_key)
+            logger.info("ChromaDB collection for '%s' deleted", topic_key)
+
         return True
     except Exception as e:
         logger.error("Error deleting class '%s': %s", topic, e)

@@ -292,7 +292,7 @@ def restart_with_suggestions(request: RestartWithSuggestionsRequest):
     The existing saved class is deleted first so the fresh result is stored.
     """
     _retriever.set_topic(request.document)
-    delete_class(request.document)
+    delete_class(request.document, keep_chromadb=True)
     return StreamingResponse(
         _run_pipeline(request.document, suggestions=request.suggestions),
         media_type="text/event-stream",

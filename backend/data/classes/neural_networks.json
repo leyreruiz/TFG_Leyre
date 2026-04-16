@@ -171,37 +171,59 @@
           ],
           "correct_answer": "c",
           "explanation": "Regularization is a technique used to prevent overfitting by adding a penalty term to the loss function, making models less prone to overfitting and more generalizable to new data."
+        },
+        {
+          "question": "What is a common cause of underfitting in neural networks?",
+          "options": [
+            "Complex models",
+            "Small number of parameters",
+            "Large learning rates",
+            "Deep networks"
+          ],
+          "correct_answer": "b",
+          "explanation": "A small number of parameters can lead to underfitting, as the model is too simple and fails to capture the underlying patterns in the data."
+        },
+        {
+          "question": "What is a benefit of batch normalization in neural networks?",
+          "options": [
+            "Models learn slower and are less robust to changes in input data",
+            "Models are more prone to overfitting",
+            "Models learn faster and are more robust to changes in input data",
+            "Models are less generalizable to new data"
+          ],
+          "correct_answer": "c",
+          "explanation": "Batch normalization helps to normalize the inputs to each layer, improving the stability and speed of training, and making models more robust to changes in input data."
         }
       ]
     },
     "Applications of Neural Networks": {
-      "summary": "**Applications of Neural Networks**\n=====================================\n\nNeural networks have a wide range of applications across various fields, including:\n\n### Image Recognition\n\n* **Image classification**: identifying objects or scenes in images\n* **Object detection**: locating objects within images\n* **Image segmentation**: separating objects or regions within an image\n\n### Natural Language Processing\n\n* **Text classification**: categorizing text into different categories\n* **Language translation**: translating text from one language to another\n* **Sentiment analysis**: determining the sentiment or emotion behind text\n\n### Autonomous Driving\n\n* **Object detection**: identifying objects on the road, such as pedestrians, cars, and traffic signals\n* **Lane detection**: detecting the lanes on the road\n* **Predicting driver behavior**: predicting the actions of other drivers on the road\n\n### Diagnosis\n\n* **Medical diagnosis**: identifying diseases or conditions based on medical images or patient data\n* **Predicting patient outcomes**: predicting the likelihood of a patient recovering from a disease or condition\n\n### Other Applications\n\n* **Speech recognition**: recognizing spoken words or phrases\n* **Recommendation systems**: suggesting products or services based on user behavior\n* **Time series forecasting**: predicting future values in a time series\n\nThese are just a few examples of the many applications of neural networks. The versatility and power of neural networks make them a valuable tool in a wide range of fields.",
+      "summary": "## Introduction to Neural Networks\n\nSince no context was provided, we'll start with a general overview of neural networks and their applications.\n\nNeural networks are a type of machine learning model inspired by the structure and function of the human brain. They consist of **interconnected nodes** or **neurons**, which process and transmit information.\n\n### Key Applications of Neural Networks\n\n• **Image and Speech Recognition**: Neural networks are used in applications such as self-driving cars, facial recognition systems, and voice assistants like Siri or Alexa.\n• **Natural Language Processing**: Neural networks are used in language translation, text summarization, and sentiment analysis.\n• **Game Playing and Decision Making**: Neural networks are used in game playing AI, such as chess or Go, and decision-making systems like credit risk assessment.\n• **Predictive Modeling**: Neural networks are used in predicting stock prices, weather patterns, and medical diagnoses.\n\n### Deep Learning\n\nDeep learning is a subfield of neural networks that involves the use of multiple layers of interconnected nodes to learn complex patterns in data.\n\nSome key applications of deep learning include:\n\n• **Convolutional Neural Networks (CNNs)**: Used in image recognition, object detection, and image segmentation.\n• **Recurrent Neural Networks (RNNs)**: Used in speech recognition, language modeling, and time-series forecasting.\n• **Generative Adversarial Networks (GANs)**: Used in generating realistic images, videos, and music.\n\n## Key Takeaway\n\nNeural networks have numerous applications in various fields, including image and speech recognition, natural language processing, game playing, and predictive modeling. They can process and transmit information through interconnected nodes or neurons, and are especially useful when dealing with complex patterns in data. By leveraging deep learning techniques, neural networks can be trained to perform a wide range of tasks with high accuracy.",
       "questions": [
         {
-          "question": "What is an example of a neural network application in the field of Natural Language Processing?",
+          "question": "What is a key application of neural networks in the field of artificial intelligence?",
           "options": [
-            "Image segmentation",
-            "Text classification",
-            "Predicting driver behavior",
-            "Time series forecasting"
+            "Predicting medical diagnoses",
+            "Game playing AI, such as chess or Go",
+            "Generating realistic images",
+            "Language translation"
           ],
           "correct_answer": "b",
-          "explanation": "Text classification is a task in Natural Language Processing where neural networks categorize text into different categories, such as spam vs. non-spam emails."
+          "explanation": "Neural networks are used in game playing AI, such as chess or Go, as mentioned in the section on \"Game Playing and Decision Making\"."
         },
         {
-          "question": "Which of the following is NOT a primary application of neural networks in Autonomous Driving?",
+          "question": "What is a key characteristic of deep learning?",
           "options": [
-            "Object detection",
-            "Lane detection",
-            "Image classification",
-            "Speech recognition"
+            "It involves using a single layer of interconnected nodes",
+            "It is only used for image recognition",
+            "It involves the use of multiple layers of interconnected nodes",
+            "It is only used for natural language processing"
           ],
-          "correct_answer": "d",
-          "explanation": "While speech recognition is an application of neural networks, it is not a primary application in Autonomous Driving, which focuses on tasks such as object detection, lane detection, and predicting driver behavior."
+          "correct_answer": "c",
+          "explanation": "Deep learning is a subfield of neural networks that involves the use of multiple layers of interconnected nodes to learn complex patterns in data, as stated in the section on \"Deep Learning\"."
         }
       ]
     }
   },
   "created_at": "2026-03-20T12:09:49.274027",
-  "updated_at": "2026-04-06T12:02:32.461554"
+  "updated_at": "2026-04-10T13:14:49.297279"
 }
