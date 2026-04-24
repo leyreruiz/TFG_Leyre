@@ -148,9 +148,10 @@ class ExplainerAgent(BaseAgent):
                 logger.info("Explainer source for '%s': %s", request.message[:80], source)
                 answer = answer[: match.start()].rstrip()
             else:
+                source = "section"
                 logger.warning("Explainer did not include a source tag for: '%s'", request.message[:80])
 
             self._append_turn(conversation_key, request.message, answer)
-            return {"agent": "explainer", "content": answer}
+            return {"agent": "explainer", "content": answer, "source": source}
         else:
             return {"agent": "explainer", "error": "Could not generate a response."}

@@ -194,6 +194,24 @@ def update_question_user_answer(topic: str, section_title: str, question_index: 
         return False
 
 
+def save_final_exam(topic: str, final_exam: dict) -> bool:
+    """Save or update the final exam data in the class JSON."""
+    try:
+        topic_key = _resolve_topic_key(topic)
+        if not topic_key:
+            logger.warning("Class '%s' not found", topic)
+            return False
+        class_obj = get_class(topic)
+        if not class_obj:
+            return False
+        class_obj["final_exam"] = final_exam
+        class_obj["updated_at"] = datetime.now().isoformat()
+        return _write_topic_file(topic_key, class_obj)
+    except Exception as e:
+        logger.error("Error saving final exam for '%s': %s", topic, e)
+        return False
+
+
 def list_classes() -> list[str]:
     """Return sorted list of all saved class topic keys."""
     _ensure_storage_dir()

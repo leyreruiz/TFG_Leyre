@@ -16,4 +16,5 @@ dependencies = [
     "uvicorn",
     "mcp[cli]",
     "wikipedia-api",
+    "python-docx",
 ]

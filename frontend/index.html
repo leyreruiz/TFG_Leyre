@@ -383,6 +383,12 @@
       cursor: pointer; transition: all 0.18s var(--ease); font-family: var(--font);
     }
     .download-all-btn:hover { background: #eff6ff; border-color: #2563eb; }
+    .download-check { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
+    .download-select-bar {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+      padding: 8px 14px; background: var(--bg-2); border-radius: 8px; font-size: 0.78rem; color: var(--text-2);
+    }
+    .download-select-bar label { cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; }
 
     /* ── BUTTONS ── */
     .btn { padding: 7px 18px; border: 1px solid transparent; border-radius: 7px; font-size: 0.81rem; font-weight: 600; cursor: pointer; transition: all 0.18s var(--ease); font-family: var(--font); }
@@ -439,6 +445,7 @@
     .qa-msg-user { align-self: flex-end; background: var(--bg-3); border: 1px solid var(--border); padding: 8px 12px; border-radius: 10px 10px 2px 10px; max-width: 88%; font-size: 0.82rem; color: var(--text); line-height: 1.5; }
     .qa-msg-ai   { align-self: flex-start; background: var(--bg); border: 1px solid var(--border); padding: 9px 12px; border-radius: 2px 10px 10px 10px; max-width: 96%; font-size: 0.81rem; color: var(--text); line-height: 1.65; }
     .qa-thinking { align-self: flex-start; display: flex; align-items: center; gap: 7px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px 10px 10px 10px; font-size: 0.76rem; color: var(--text-3); }
+    .qa-source { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--border); font-size: 0.68rem; color: var(--text-3); font-style: italic; }
     .dot-bounce { display: inline-flex; gap: 3px; }
     .dot-bounce span { width: 4px; height: 4px; background: var(--text-3); border-radius: 50%; animation: dbounce 1.1s infinite; }
     .dot-bounce span:nth-child(2) { animation-delay: 0.18s; }
@@ -476,6 +483,96 @@
     .modal-textarea:focus { border-color: var(--text); background: var(--bg); }
     .modal-textarea::placeholder { color: var(--text-3); }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+    /* ── FINAL EXAM ── */
+    .fe-mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }
+    .fe-mode-card {
+      background: var(--bg); border: 2px solid var(--border); border-radius: var(--r-xl);
+      padding: 22px 20px; cursor: pointer; transition: all 0.2s var(--ease); text-align: center;
+    }
+    .fe-mode-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-md); }
+    .fe-mode-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+    .fe-mode-card-icon { font-size: 28px; margin-bottom: 8px; }
+    .fe-mode-card-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .fe-mode-card-desc { font-size: 0.76rem; color: var(--text-2); line-height: 1.5; }
+
+    .fe-analysis-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .fe-analysis-label { font-size: 0.8rem; font-weight: 500; color: var(--text); min-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fe-analysis-track { flex: 1; height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+    .fe-analysis-fill { height: 100%; border-radius: 4px; transition: width 0.5s var(--ease); }
+    .fe-analysis-fill.weak { background: #e57373; }
+    .fe-analysis-fill.medium { background: #ffb74d; }
+    .fe-analysis-fill.strong { background: #81c784; }
+    .fe-analysis-pct { font-size: 0.75rem; font-weight: 600; color: var(--text-2); min-width: 36px; text-align: right; }
+
+    .fe-progress-bar { margin: 20px 0; }
+    .fe-progress-track { height: 6px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
+    .fe-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s var(--ease); }
+    .fe-progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.72rem; color: var(--text-2); }
+
+    .fe-difficulty-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 0.63rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .fe-difficulty-badge.easy { background: #e8f5e9; color: #2e7d32; }
+    .fe-difficulty-badge.medium { background: #fff3e0; color: #e65100; }
+    .fe-difficulty-badge.hard { background: #fce4ec; color: #c62828; }
+
+    .fe-section-badge { font-size: 0.68rem; color: var(--text-3); margin-left: 8px; }
+
+    .fe-result-section { margin-bottom: 12px; }
+    .fe-result-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .fe-result-section-name { font-size: 0.84rem; font-weight: 500; color: var(--text); }
+    .fe-result-section-score { font-size: 0.84rem; font-weight: 600; }
+    .fe-result-bar { height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+    .fe-result-fill { height: 100%; border-radius: 4px; transition: width 0.5s var(--ease); }
+
+    .fe-review-list { margin-top: 16px; padding: 14px 18px; background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: var(--r-lg); }
+    .fe-review-title { font-size: 0.82rem; font-weight: 600; color: var(--amber); margin-bottom: 8px; }
+    .fe-review-item { font-size: 0.8rem; color: var(--text); padding: 2px 0; }
+
+    .fe-summary-hint { margin-top: 10px; padding: 10px 14px; background: var(--bg-2); border-radius: var(--r); border: 1px solid var(--border); font-size: 0.78rem; color: var(--text-2); line-height: 1.6; }
+    .option.option-selected { background: var(--bg-3); border-color: var(--text); color: var(--text); font-weight: 500; }
+
+    /* ── TIMER ── */
+    .fe-timer {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 8px 16px;
+      box-shadow: var(--shadow); user-select: none;
+    }
+    .fe-timer-display {
+      font-family: 'Inter', monospace; font-size: 1.3rem; font-weight: 700;
+      color: var(--text); letter-spacing: 0.04em; min-width: 80px; text-align: center;
+    }
+    .fe-timer-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--border-2); background: var(--bg);
+      color: var(--text); font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .fe-timer-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .fe-timer-btn.running { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+
+    .fe-paused-overlay {
+      position: fixed; inset: 0; z-index: 150;
+      background: rgba(15, 14, 12, 0.85);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      backdrop-filter: blur(6px);
+    }
+    .fe-paused-icon { font-size: 56px; opacity: 0.9; }
+    .fe-paused-title { font-size: 1.4rem; font-weight: 700; color: white; }
+    .fe-paused-sub { font-size: 0.88rem; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+    .fe-paused-time { font-family: 'Inter', monospace; font-size: 2.2rem; font-weight: 700; color: white; letter-spacing: 0.05em; }
+    .fe-resume-btn {
+      margin-top: 12px; padding: 12px 32px; border-radius: 12px;
+      background: white; color: var(--ink); border: none;
+      font-size: 0.95rem; font-weight: 700; font-family: var(--font);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .fe-resume-btn:hover { background: var(--accent-bg); color: var(--accent); }
   </style>
 </head>
 <body>
@@ -593,6 +690,14 @@
           <div class="sidebar-num" style="font-size:10px">★</div>
           <span class="sidebar-item-text">Results</span>
         </div>
+
+        <div class="sidebar-label" style="margin-top:14px" v-if="streamDone">Final exam</div>
+        <div v-if="streamDone"
+          :class="['sidebar-item', currentView === 'finalExam' ? 'active' : 'done']"
+          @click="goToFinalExam()" style="cursor:pointer">
+          <div class="sidebar-num" style="font-size:10px">&#9878;</div>
+          <span class="sidebar-item-text">Smart Final Exam</span>
+        </div>
       </div>
 
       <div class="sidebar-progress">
@@ -614,6 +719,7 @@
           <span class="current" v-if="currentView === 'structure'">Dashboard</span>
           <span class="current" v-if="currentView === 'section'">Section {{ currentSection + 1 }} · {{ currentSectionPhase === 'summary' ? 'Summary' : 'Exam' }}</span>
           <span class="current" v-if="currentView === 'done'">Results</span>
+          <span class="current" v-if="currentView === 'finalExam'">Final Exam</span>
         </div>
         <div class="topbar-actions">
           <div class="status-chip">
@@ -745,23 +851,262 @@
           </div>
           <div class="results-grid">
             <div v-for="(sec, si) in sections" :key="'r-'+si" class="result-row">
-              <div>
-                <div style="font-size:0.66rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Section {{ si+1 }}</div>
-                <div class="result-row-name">{{ sec.title }}</div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <input type="checkbox" class="download-check" :checked="downloadSelected[si]" @change="downloadSelected[si] = $event.target.checked">
+                <div>
+                  <div style="font-size:0.66rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">Section {{ si+1 }}</div>
+                  <div class="result-row-name">{{ sec.title }}</div>
+                </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px">
-                <button class="download-btn" @click="downloadSummary(si)" title="Download as Markdown">⬇ .md</button>
-                <button class="download-btn" @click="downloadSummaryDoc(si)" title="Download as Word document">⬇ .doc</button>
                 <div class="result-row-score" :style="{color: secScore(si).correct===secScore(si).total?'var(--accent)':secScore(si).correct>=secScore(si).total/2?'var(--amber)':'var(--red)'}">
                   {{ secScore(si).correct }} / {{ secScore(si).total }}
                 </div>
               </div>
             </div>
           </div>
-          <div style="margin-top:20px;display:flex;justify-content:center">
-            <button class="download-all-btn" style="padding:12px 28px;font-size:0.9rem" @click="downloadAllSummaries">⬇ Download lesson in Markdown</button>
-            <button class="download-all-btn" style="padding:12px 28px;font-size:0.9rem;margin-left:10px" @click="downloadAllSummariesDoc">⬇ Download lesson in Word</button>
+          <div class="download-select-bar">
+            <label><input type="checkbox" class="download-check" :checked="allDownloadSelected" @change="toggleAllDownload($event.target.checked)"> Select all</label>
+            <span style="color:var(--text-3)">{{ downloadSelectedCount }} of {{ sections.length }} selected</span>
           </div>
+          <div style="margin-top:12px;display:flex;justify-content:center;gap:10px">
+            <button class="download-all-btn" style="padding:12px 28px;font-size:0.9rem" :disabled="downloadSelectedCount===0" @click="downloadSelectedSummaries('md')">⬇ Download selected summaries (.md)</button>
+            <button class="download-all-btn" style="padding:12px 28px;font-size:0.9rem" :disabled="downloadSelectedCount===0" @click="downloadSelectedSummaries('doc')">⬇ Download selected summaries (.doc)</button>
+          </div>
+        </template>
+
+        <!-- FINAL EXAM -->
+        <template v-if="currentView === 'finalExam'">
+
+          <!-- PRE-EXAM: analysis + mode selection -->
+          <template v-if="fePhase === 'pre'">
+            <div class="overview-header">
+              <div class="overview-kicker">Personalized assessment</div>
+              <h1 class="overview-title">Smart Final Exam</h1>
+              <div class="overview-meta">Based on your performance across all sections</div>
+            </div>
+
+            <div v-if="feLoading" class="loading-inline" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;justify-content:center">
+              <div class="spinner sm"></div> Analyzing your performance...
+            </div>
+
+            <template v-if="!feLoading && feAnalysis">
+              <div class="structure-content" style="margin-bottom:20px">
+                <div class="structure-content-label">Your performance analysis</div>
+                <div v-for="s in feAnalysis.sections" :key="s.title" class="fe-analysis-bar">
+                  <span class="fe-analysis-label">{{ s.title }}</span>
+                  <div class="fe-analysis-track">
+                    <div :class="['fe-analysis-fill', s.level]" :style="{width: Math.round(s.score * 100) + '%'}"></div>
+                  </div>
+                  <span class="fe-analysis-pct">{{ Math.round(s.score * 100) }}%</span>
+                </div>
+                <div style="margin-top:14px;display:flex;gap:16px;flex-wrap:wrap">
+                  <div v-if="feAnalysis.weak.length" style="font-size:0.76rem;color:var(--red)">Weak: {{ feAnalysis.weak.length }} section{{ feAnalysis.weak.length > 1 ? 's' : '' }}</div>
+                  <div v-if="feAnalysis.medium.length" style="font-size:0.76rem;color:var(--amber)">Medium: {{ feAnalysis.medium.length }} section{{ feAnalysis.medium.length > 1 ? 's' : '' }}</div>
+                  <div v-if="feAnalysis.strong.length" style="font-size:0.76rem;color:var(--accent)">Strong: {{ feAnalysis.strong.length }} section{{ feAnalysis.strong.length > 1 ? 's' : '' }}</div>
+                </div>
+              </div>
+
+              <!-- Written analysis report -->
+              <div class="structure-content" style="margin-bottom:20px">
+                <div class="structure-content-label">Analysis report</div>
+                <div style="font-size:0.88rem;line-height:1.6;color:var(--text-secondary)">
+                  <p v-if="feAnalysis.strong.length" style="margin:0 0 10px 0">
+                    <strong style="color:var(--accent)">Strong areas:</strong>
+                    You performed well in
+                    <span v-for="(s, i) in feAnalysis.strong" :key="s"><strong>{{ s }}</strong>{{ i < feAnalysis.strong.length - 2 ? ', ' : i === feAnalysis.strong.length - 2 ? ' and ' : '' }}</span>.
+                    <span v-for="sec in feAnalysis.sections.filter(x => x.level === 'strong')" :key="sec.title + '-detail'">
+                      In <em>{{ sec.title }}</em> you got {{ sec.correct }}/{{ sec.total }} questions right{{ sec.conversations > 0 ? ' and asked ' + sec.conversations + ' question' + (sec.conversations > 1 ? 's' : '') + ' to the assistant' : '' }}.
+                    </span>
+                    These topics seem well understood.
+                  </p>
+                  <p v-if="feAnalysis.medium.length" style="margin:0 0 10px 0">
+                    <strong style="color:var(--amber)">Areas to reinforce:</strong>
+                    You showed moderate understanding in
+                    <span v-for="(s, i) in feAnalysis.medium" :key="s"><strong>{{ s }}</strong>{{ i < feAnalysis.medium.length - 2 ? ', ' : i === feAnalysis.medium.length - 2 ? ' and ' : '' }}</span>.
+                    <span v-for="sec in feAnalysis.sections.filter(x => x.level === 'medium')" :key="sec.title + '-detail'">
+                      In <em>{{ sec.title }}</em> you got {{ sec.correct }}/{{ sec.total }} questions right{{ sec.conversations > 0 ? ' and needed ' + sec.conversations + ' clarification' + (sec.conversations > 1 ? 's' : '') : '' }}.
+                    </span>
+                    The exam will include some extra questions on these topics.
+                  </p>
+                  <p v-if="feAnalysis.weak.length" style="margin:0 0 10px 0">
+                    <strong style="color:var(--red)">Weak areas:</strong>
+                    You struggled the most with
+                    <span v-for="(s, i) in feAnalysis.weak" :key="s"><strong>{{ s }}</strong>{{ i < feAnalysis.weak.length - 2 ? ', ' : i === feAnalysis.weak.length - 2 ? ' and ' : '' }}</span>.
+                    <span v-for="sec in feAnalysis.sections.filter(x => x.level === 'weak')" :key="sec.title + '-detail'">
+                      In <em>{{ sec.title }}</em> you only got {{ sec.correct }}/{{ sec.total }} questions right{{ sec.conversations > 0 ? ' and asked ' + sec.conversations + ' question' + (sec.conversations > 1 ? 's' : '') + ' for help' : '' }}.
+                    </span>
+                    The exam will focus more heavily on these sections to help you practice.
+                  </p>
+                  <p v-if="!feAnalysis.weak.length && !feAnalysis.medium.length" style="margin:0 0 10px 0">
+                    You performed strongly across all sections. The exam will still cover every topic to confirm your knowledge.
+                  </p>
+                </div>
+              </div>
+
+              <div class="structure-content-label">Choose your mode</div>
+              <div class="fe-mode-cards">
+                <div :class="['fe-mode-card', feMode === 'study' ? 'selected' : '']" @click="feMode = 'study'">
+                  <div class="fe-mode-card-icon">📖</div>
+                  <div class="fe-mode-card-title">Study mode</div>
+                  <div class="fe-mode-card-desc">See explanations after each wrong answer. Learn as you go.</div>
+                </div>
+                <div :class="['fe-mode-card', feMode === 'exam' ? 'selected' : '']" @click="feMode = 'exam'">
+                  <div class="fe-mode-card-icon">&#9201;</div>
+                  <div class="fe-mode-card-title">Exam mode</div>
+                  <div class="fe-mode-card-desc">All results at the end. Simulates a real exam.</div>
+                </div>
+              </div>
+
+              <div style="display:flex;justify-content:flex-end;margin-top:16px">
+                <button class="btn btn-primary" :disabled="feGenerating" @click="generateFinalExam">
+                  {{ feGenerating ? 'Generating exam...' : 'Start final exam →' }}
+                </button>
+              </div>
+            </template>
+          </template>
+
+          <!-- EXAM IN PROGRESS -->
+          <template v-if="fePhase === 'exam'">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div class="overview-header" style="margin-bottom:0">
+                <div class="overview-kicker">Final exam · {{ feMode === 'study' ? 'Study mode' : 'Exam mode' }}</div>
+                <h1 class="overview-title">Question {{ feCurrentIdx + 1 }} of {{ feQuestions.length }}</h1>
+              </div>
+              <div class="fe-timer">
+                <button :class="['fe-timer-btn', feTimerRunning ? 'running' : '']" @click="feToggleTimer" :title="feTimerRunning ? 'Pause' : 'Resume'">
+                  {{ feTimerRunning ? '⏸' : '▶' }}
+                </button>
+                <div class="fe-timer-display">{{ feTimerFormatted }}</div>
+              </div>
+            </div>
+
+            <!-- Paused overlay -->
+            <teleport to="body">
+              <div v-if="fePhase === 'exam' && !feTimerRunning && feTimerStarted" class="fe-paused-overlay" @click="feToggleTimer">
+                <div class="fe-paused-icon">⏸</div>
+                <div class="fe-paused-title">Exam paused</div>
+                <div class="fe-paused-sub">Your progress is saved. The content is hidden while paused.</div>
+                <div class="fe-paused-time">{{ feTimerFormatted }}</div>
+                <button class="fe-resume-btn" @click.stop="feToggleTimer">Resume exam</button>
+              </div>
+            </teleport>
+
+            <div class="fe-progress-bar">
+              <div class="fe-progress-label">
+                <span>Progress</span>
+                <span>{{ feCurrentIdx + 1 }} / {{ feQuestions.length }}</span>
+              </div>
+              <div class="fe-progress-track">
+                <div class="fe-progress-fill" :style="{width: ((feCurrentIdx + 1) / feQuestions.length * 100) + '%'}"></div>
+              </div>
+            </div>
+
+            <div class="q-card" v-if="feCurrentQ">
+              <div class="q-text">
+                <span class="q-num">{{ feCurrentIdx + 1 }}.</span> {{ feCurrentQ.question }}
+                <span :class="['fe-difficulty-badge', feCurrentQ.difficulty]">{{ feCurrentQ.difficulty }}</span>
+                <span class="fe-section-badge">{{ feCurrentQ.section }}</span>
+              </div>
+              <div v-for="(opt, oi) in feCurrentQ.options" :key="oi"
+                :class="['option', feOptionClass(oi)]"
+                @click="feSelectAnswer(oi)">
+                <div class="option-letter">{{ letters[oi] }}</div>
+                <span>{{ opt }}</span>
+                <span class="option-feedback" v-if="feRevealed && letters[oi] === feCurrentQ.correct_answer">&#10003;</span>
+                <span class="option-feedback" v-if="feRevealed && feAnswers[feCurrentIdx] === oi && letters[oi] !== feCurrentQ.correct_answer">&#10007;</span>
+              </div>
+
+              <!-- Study mode: show explanation after wrong answer -->
+              <template v-if="feMode === 'study' && feRevealed">
+                <div class="explanation" v-if="feCurrentQ.explanation">{{ feCurrentQ.explanation }}</div>
+                <div class="fe-summary-hint" v-if="!feCurrentCorrect">
+                  <strong>Review this section:</strong> {{ feCurrentQ.section }}
+                </div>
+              </template>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+              <button v-if="feCanAdvance" class="btn btn-primary" @click="feNext">
+                {{ feCurrentIdx < feQuestions.length - 1 ? 'Next question →' : 'See results →' }}
+              </button>
+            </div>
+          </template>
+
+          <!-- RESULTS -->
+          <template v-if="fePhase === 'results'">
+            <div class="overview-header">
+              <div class="overview-kicker">Final exam completed</div>
+              <h1 class="overview-title">Your Results</h1>
+            </div>
+
+            <div class="score-banner" style="margin-bottom:24px">
+              <div>
+                <div class="label">Final score</div>
+                <div class="value">{{ feResults.correct }}<small> / {{ feResults.total }}</small></div>
+              </div>
+              <div>
+                <div class="label">Percentage</div>
+                <div class="value">{{ feResults.percentage }}<small>%</small></div>
+              </div>
+              <div v-if="feResults.time">
+                <div class="label">Time</div>
+                <div class="value" style="font-size:1.4rem">{{ feResults.time }}</div>
+              </div>
+              <div class="score-banner-msg">
+                {{ feResults.percentage === 100 ? 'Perfect!' : feResults.percentage >= 70 ? 'Great job!' : feResults.percentage >= 50 ? 'Good effort!' : 'Keep studying!' }}
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:center;gap:10px;margin-bottom:24px">
+              <button class="btn btn-primary" style="font-size:0.82rem;padding:8px 18px" @click="downloadFinalExam(false)">Download exam (blank)</button>
+              <button class="btn btn-primary" style="font-size:0.82rem;padding:8px 18px" @click="downloadFinalExam(true)">Download exam (with results)</button>
+            </div>
+
+            <!-- Detailed answers (all questions with results) -->
+            <div v-if="feResults.results && feResults.results.length" style="margin-bottom:24px">
+              <div class="structure-content-label">Detailed answers</div>
+              <div v-for="(r, ri) in feResults.results" :key="ri" :class="['q-card', r.is_correct ? 'answered-correct' : 'answered-wrong']" style="margin-bottom:8px">
+                <div class="q-text">
+                  <span class="q-num">{{ ri + 1 }}.</span> {{ r.question }}
+                  <span :class="['fe-difficulty-badge', r.difficulty]">{{ r.difficulty }}</span>
+                  <span class="fe-section-badge">{{ r.section }}</span>
+                </div>
+                <div style="font-size:0.82rem;margin-bottom:4px">
+                  Your answer: <strong :style="{color: r.is_correct ? 'var(--accent)' : 'var(--red)'}">{{ r.user_answer }}</strong>
+                  <span v-if="!r.is_correct"> · Correct: <strong style="color:var(--accent)">{{ r.correct_answer }}</strong></span>
+                </div>
+                <div class="explanation" v-if="r.explanation">{{ r.explanation }}</div>
+              </div>
+            </div>
+
+            <!-- Score by section -->
+            <div class="structure-content" style="margin-bottom:20px">
+              <div class="structure-content-label">Score by section</div>
+              <div v-for="sb in feResults.section_breakdown" :key="sb.section" class="fe-result-section">
+                <div class="fe-result-section-header">
+                  <span class="fe-result-section-name">{{ sb.section }}</span>
+                  <span class="fe-result-section-score" :style="{color: sb.percentage >= 70 ? 'var(--accent)' : sb.percentage >= 50 ? 'var(--amber)' : 'var(--red)'}">
+                    {{ sb.correct }}/{{ sb.total }} ({{ sb.percentage }}%)
+                  </span>
+                </div>
+                <div class="fe-result-bar">
+                  <div class="fe-result-fill" :style="{width: sb.percentage + '%', background: sb.percentage >= 70 ? 'var(--accent)' : sb.percentage >= 50 ? 'var(--amber)' : '#e57373'}"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fe-review-list" v-if="feResults.review_sections && feResults.review_sections.length">
+              <div class="fe-review-title">Sections to review</div>
+              <div class="fe-review-item" v-for="rs in feResults.review_sections" :key="rs">&#8226; {{ rs }}</div>
+            </div>
+
+            <div style="display:flex;justify-content:center;gap:10px;margin-top:24px">
+              <button class="btn btn-ghost" @click="goToFinalExam(true)">Retake exam</button>
+              <button class="btn btn-primary" @click="currentView = 'done'; scrollToTop()">Back to results</button>
+            </div>
+          </template>
+
         </template>
 
       </div>
@@ -788,7 +1133,7 @@
           <template v-for="(entry, i) in currentQA" :key="i">
             <div class="qa-msg-user">{{ entry.question }}</div>
             <div v-if="entry.answer === null" class="qa-thinking">Thinking <div class="dot-bounce"><span></span><span></span><span></span></div></div>
-            <div v-else class="qa-msg-ai"><div class="md compact" v-math="entry.answer"></div></div>
+            <div v-else class="qa-msg-ai"><div class="md compact" v-math="entry.answer"></div><div v-if="entry.source" class="qa-source">Source: {{ entry.source === 'both' ? 'knowledge base + Wikipedia' : entry.source === 'wikipedia' ? 'Wikipedia' : 'knowledge base' }}</div></div>
           </template>
         </div>
         <div class="qa-input-row">
@@ -928,7 +1273,7 @@
       const scrollPanelToBottom = () => nextTick(()=>{ if(panelMessages.value) panelMessages.value.scrollTop=panelMessages.value.scrollHeight })
       function autoResize(e) { const el=e.target; el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,90)+'px' }
       function goToSection(idx) { if(!sections[idx]?.summaryLoaded) return; currentSection.value=idx; currentView.value='section'; scrollToTop() }
-      function goToResults() { currentView.value='done'; scrollToTop() }
+      function goToResults() { currentView.value='done'; sections.forEach((_, i) => { downloadSelected[i] = true }); scrollToTop() }
 
       async function consumeSSE(url,body,onEvent) {
         const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -947,6 +1292,18 @@
         if(ev.type==='summary'){streamingSection.value=ev.section_index;const s=sections[ev.section_index];if(s){s.summary=ev.summary;s.summaryLoaded=true}return}
         if(ev.type==='exam'){const s=sections[ev.section_index];if(s){s.questions=ev.questions;s.examLoaded=true;ev.questions.forEach((q,qi)=>{if(q.user_answer!==undefined){const k=akey(ev.section_index,qi);answers[k]=letters.indexOf(q.user_answer);revealed[k]=true}})}streamingSection.value=ev.section_index+1;return}
         if(ev.type==='conversation'){if(ev.qa&&ev.qa.length)qaMap[ev.section_index]=ev.qa.map(t=>({question:t.question,answer:t.answer}));return}
+        if(ev.type==='final_exam'){
+          feQuestions.value=ev.questions||[]
+          feMode.value=ev.mode||'study'
+          feAnalysis.value=ev.analysis||null
+          if(ev.results){
+            feResults.value=ev.results
+            fePhase.value='results'
+          } else {
+            fePhase.value='pre'
+          }
+          return
+        }
         if(ev.type==='done'){streamDone.value=true;streamingSection.value=-1;return}
         if(ev.type==='error'){errorMsg.value=ev.message||'Unknown error';screen.value='error'}
       }
@@ -1018,6 +1375,7 @@
           const res=await fetch(`${API_URL}/ask`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,section_title:currentSec.value.title,section_summary:currentSec.value.summary,conversation_id:`${chatSessionId.value||'chat'}::section-${si}`,topic:currentTopic.value})})
           if(!res.ok) throw new Error(); const data=await res.json()
           qaMap[si][qaMap[si].length-1].answer=data.content||data.answer||'(No response)'
+          if(data.source) qaMap[si][qaMap[si].length-1].source=data.source
         }catch{qaMap[si][qaMap[si].length-1].answer='⚠️ Could not reach the server.'}
         finally{isThinking.value=false;scrollPanelToBottom()}
       }
@@ -1084,20 +1442,13 @@
         URL.revokeObjectURL(url)
       }
 
-      function downloadSummary(si) {
-        const sec = sections[si]
-        if (!sec || !sec.summary) return
-        const filename = `${formatTopicName(currentTopic.value)} - ${sec.title}.md`
-        const content = `# ${sec.title}\n\n${sec.summary}`
-        triggerDownload(filename, content)
-      }
+      // ── Download selection state ──
+      const downloadSelected = reactive({})
+      const downloadSelectedCount = computed(() => sections.filter((_, i) => downloadSelected[i]).length)
+      const allDownloadSelected = computed(() => sections.length > 0 && sections.every((_, i) => downloadSelected[i]))
 
-      function downloadAllSummaries() {
-        const topic = formatTopicName(currentTopic.value)
-        const content = sections.map((sec, i) =>
-          `# Section ${i + 1}: ${sec.title}\n\n${sec.summary}`
-        ).join('\n\n---\n\n')
-        triggerDownload(`${topic} - All Summaries.md`, `# ${topic}\n\n${content}`)
+      function toggleAllDownload(checked) {
+        sections.forEach((_, i) => { downloadSelected[i] = checked })
       }
 
       function triggerDownloadDoc(filename, htmlBody) {
@@ -1111,20 +1462,176 @@
         URL.revokeObjectURL(url)
       }
 
-      function downloadSummaryDoc(si) {
-        const sec = sections[si]
-        if (!sec || !sec.summary) return
-        const filename = `${formatTopicName(currentTopic.value)} - ${sec.title}.doc`
-        const html = renderMarkdown(`# ${sec.title}\n\n${sec.summary}`)
-        triggerDownloadDoc(filename, html)
-      }
-
-      function downloadAllSummariesDoc() {
+      function downloadSelectedSummaries(format) {
         const topic = formatTopicName(currentTopic.value)
-        const md = `# ${topic}\n\n` + sections.map((sec, i) =>
+        const selected = sections.map((sec, i) => ({ sec, i })).filter(({ i }) => downloadSelected[i])
+        if (selected.length === 0) return
+        if (selected.length === 1) {
+          const { sec } = selected[0]
+          const md = `# ${sec.title}\n\n${sec.summary}`
+          const filename = `${topic} - ${sec.title}`
+          if (format === 'md') triggerDownload(`${filename}.md`, md)
+          else triggerDownloadDoc(`${filename}.doc`, renderMarkdown(md))
+          return
+        }
+        const md = `# ${topic}\n\n` + selected.map(({ sec, i }) =>
           `# Section ${i + 1}: ${sec.title}\n\n${sec.summary}`
         ).join('\n\n---\n\n')
-        triggerDownloadDoc(`${topic} - All Summaries.doc`, renderMarkdown(md))
+        const filename = `${topic} - Selected Summaries`
+        if (format === 'md') triggerDownload(`${filename}.md`, md)
+        else triggerDownloadDoc(`${filename}.doc`, renderMarkdown(md))
+      }
+
+      // ── Final Exam state ──
+      const fePhase = ref('pre')  // 'pre' | 'exam' | 'results'
+      const feMode = ref('study')
+      const feLoading = ref(false)
+      const feGenerating = ref(false)
+      const feAnalysis = ref(null)
+      const feQuestions = ref([])
+      const feAnswers = reactive({})
+      const feRevealedMap = reactive({})
+      const feCurrentIdx = ref(0)
+      const feResults = ref({})
+
+      // Timer state
+      const feTimerSeconds = ref(0)
+      const feTimerRunning = ref(false)
+      const feTimerStarted = ref(false)
+      let feTimerInterval = null
+
+      const feTimerFormatted = computed(() => {
+        const m = Math.floor(feTimerSeconds.value / 60)
+        const s = feTimerSeconds.value % 60
+        return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      })
+
+      function feToggleTimer() {
+        if (feTimerRunning.value) {
+          clearInterval(feTimerInterval); feTimerInterval = null
+          feTimerRunning.value = false
+        } else {
+          feTimerStarted.value = true
+          feTimerRunning.value = true
+          feTimerInterval = setInterval(() => { feTimerSeconds.value++ }, 1000)
+        }
+      }
+
+      function feResetTimer() {
+        clearInterval(feTimerInterval); feTimerInterval = null
+        feTimerSeconds.value = 0; feTimerRunning.value = false; feTimerStarted.value = false
+      }
+
+      const feCurrentQ = computed(() => feQuestions.value[feCurrentIdx.value] || null)
+      const feRevealed = computed(() => !!feRevealedMap[feCurrentIdx.value])
+      const feCurrentCorrect = computed(() => {
+        if (!feRevealed.value || !feCurrentQ.value) return false
+        return letters[feAnswers[feCurrentIdx.value]] === feCurrentQ.value.correct_answer
+      })
+      const feCanAdvance = computed(() => {
+        if (feMode.value === 'exam') return feAnswers[feCurrentIdx.value] !== undefined
+        return feRevealed.value
+      })
+
+      async function goToFinalExam(forceNew = false) {
+        // If results were already restored from saved data, show them directly
+        if (!forceNew && feResults.value && feResults.value.results && feResults.value.results.length) {
+          currentView.value = 'finalExam'; scrollToTop()
+          fePhase.value = 'results'
+          return
+        }
+        fePhase.value = 'pre'; feMode.value = 'study'; feAnalysis.value = null
+        feQuestions.value = []; feCurrentIdx.value = 0; feResults.value = {}
+        Object.keys(feAnswers).forEach(k => delete feAnswers[k])
+        Object.keys(feRevealedMap).forEach(k => delete feRevealedMap[k])
+        currentView.value = 'finalExam'; scrollToTop()
+        feLoading.value = true
+        try {
+          const res = await fetch(`${API_URL}/final-exam/analyze/${encodeURIComponent(currentTopic.value)}`)
+          if (!res.ok) throw new Error()
+          feAnalysis.value = await res.json()
+        } catch { feAnalysis.value = null }
+        finally { feLoading.value = false }
+      }
+
+      async function generateFinalExam() {
+        if (feGenerating.value) return
+        feGenerating.value = true
+        try {
+          const res = await fetch(`${API_URL}/final-exam/generate`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ topic: currentTopic.value, mode: feMode.value })
+          })
+          if (!res.ok) throw new Error()
+          const data = await res.json()
+          if (data.error) throw new Error(data.error)
+          feQuestions.value = data.questions
+          feCurrentIdx.value = 0
+          Object.keys(feAnswers).forEach(k => delete feAnswers[k])
+          Object.keys(feRevealedMap).forEach(k => delete feRevealedMap[k])
+          feResetTimer(); feToggleTimer()
+          fePhase.value = 'exam'; scrollToTop()
+        } catch (err) {
+          errorMsg.value = err?.message || 'Could not generate final exam.'
+          screen.value = 'error'
+        } finally { feGenerating.value = false }
+      }
+
+      function feSelectAnswer(oi) {
+        const idx = feCurrentIdx.value
+        if (feRevealedMap[idx]) return  // already answered
+        if (feMode.value === 'exam' && feAnswers[idx] !== undefined) return
+        feAnswers[idx] = oi
+        if (feMode.value === 'study') {
+          feRevealedMap[idx] = true
+        } else {
+          // Exam mode: just record, don't reveal
+          feRevealedMap[idx] = false
+        }
+      }
+
+      function feOptionClass(oi) {
+        const idx = feCurrentIdx.value
+        const q = feCurrentQ.value
+        if (feMode.value === 'study') {
+          if (!feRevealedMap[idx]) return ''
+          return 'disabled ' + (letters[oi] === q.correct_answer ? 'correct-reveal' : feAnswers[idx] === oi ? 'wrong-reveal' : '')
+        } else {
+          // Exam mode: highlight selected but don't reveal correct/wrong
+          if (feAnswers[idx] === oi) return 'option-selected'
+          return ''
+        }
+      }
+
+      async function feNext() {
+        if (feCurrentIdx.value < feQuestions.value.length - 1) {
+          feCurrentIdx.value++; scrollToTop()
+        } else {
+          // Submit exam
+          const answersPayload = feQuestions.value.map((q, i) => ({
+            question_index: i,
+            user_answer: letters[feAnswers[i]] || ''
+          }))
+          try {
+            const res = await fetch(`${API_URL}/final-exam/submit`, {
+              method: 'POST', headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ topic: currentTopic.value, answers: answersPayload })
+            })
+            if (!res.ok) throw new Error()
+            feResults.value = await res.json()
+            feResults.value.time = feTimerFormatted.value
+            if (feTimerRunning.value) feToggleTimer()  // stop timer
+            fePhase.value = 'results'; scrollToTop()
+          } catch {
+            errorMsg.value = 'Could not submit final exam.'
+            screen.value = 'error'
+          }
+        }
+      }
+
+      function downloadFinalExam(includeResults) {
+        const url = `${API_URL}/final-exam/download/${encodeURIComponent(currentTopic.value)}?include_results=${includeResults}`
+        window.open(url, '_blank')
       }
 
       function resetSession(){
@@ -1151,7 +1658,11 @@
         goToSection,goToResults,regenerateSummary,regenerateExam,addQuestions,deleteQuestion,submitQuestion,clearConversation,
         startSession,resetSession,onFileSelected,deleteTopic,confirmImprovements,
         showImproveModal,improveSuggestions,isRestarting,sidebarOpen,
-        downloadSummary,downloadAllSummaries,downloadSummaryDoc,downloadAllSummariesDoc,
+        downloadSelected,downloadSelectedCount,allDownloadSelected,toggleAllDownload,downloadSelectedSummaries,
+        fePhase,feMode,feLoading,feGenerating,feAnalysis,feQuestions,feAnswers,feRevealedMap,
+        feCurrentIdx,feResults,feCurrentQ,feRevealed,feCurrentCorrect,feCanAdvance,
+        goToFinalExam,generateFinalExam,feSelectAnswer,feOptionClass,feNext,downloadFinalExam,
+        feTimerSeconds,feTimerRunning,feTimerStarted,feTimerFormatted,feToggleTimer,
       }
     }
   })

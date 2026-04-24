@@ -15,8 +15,6 @@ class ExamQuestion(BaseModel):
     explanation: str           # brief explanation of why the answer is correct
 
 
-# ── API request models ────────────────────────────────────────────────────────
-
 class StartRequest(BaseModel):
     document: str
 
@@ -58,3 +56,13 @@ class SubmitAnswerRequest(BaseModel):
 class RestartWithSuggestionsRequest(BaseModel):
     document:    str
     suggestions: str
+
+
+class FinalExamGenerateRequest(BaseModel):
+    topic: str
+    mode:  str = "study"  # "study" or "exam"
+
+
+class FinalExamSubmitRequest(BaseModel):
+    topic:   str
+    answers: list  # [{question_index: int, user_answer: str}]

@@ -8,7 +8,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from fastapi import FastAPI, UploadFile, File
+import tempfile
+from fastapi import FastAPI, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 
@@ -26,7 +27,10 @@ from backend.models.schemas import (
     UpdateQuestionsRequest,
     SubmitAnswerRequest,
     RestartWithSuggestionsRequest,
+    FinalExamGenerateRequest,
+    FinalExamSubmitRequest,
 )
+from backend.agents.final_exam_agent import analyze_weak_points, generate_final_exam
 from backend.mcp_client import MCPRetriever
 from backend.ingest_topics import ingest_file
 from backend.class_storage import (
@@ -39,6 +43,7 @@ from backend.class_storage import (
     update_question_user_answer,
     list_classes,
     delete_class,
+    save_final_exam,
 )
 import re
 
@@ -232,6 +237,11 @@ def _run_saved_pipeline(class_data: dict):
                 "section_index": idx,
                 "qa": conversation,
             })
+
+    # Restore final exam if one was saved
+    final_exam = class_data.get("final_exam")
+    if final_exam:
+        yield _sse({"type": "final_exam", **final_exam})
 
     yield _sse({"type": "done"})
 
@@ -578,6 +588,233 @@ def remove_class(topic: str):
             "source_deleted": source_deleted,
         }
     return {"error": f"Could not delete class '{topic}'"}
+
+
+# ── Final Exam endpoints ────────────────────────────────────────────────────
+
+@app.get("/final-exam/analyze/{topic}")
+def final_exam_analyze(topic: str):
+    """Analyze the student's weak points for a topic based on past performance."""
+    class_data = get_class(topic)
+    if not class_data:
+        return {"error": f"Class '{topic}' not found"}
+    analysis = analyze_weak_points(class_data)
+    return analysis
+
+
+@app.post("/final-exam/generate")
+def final_exam_generate(request: FinalExamGenerateRequest):
+    """Generate a personalized final exam weighted by the student's weak points."""
+    class_data = get_class(request.topic)
+    if not class_data:
+        return {"error": f"Class '{request.topic}' not found"}
+    analysis = analyze_weak_points(class_data)
+    questions = generate_final_exam(class_data, analysis)
+    if not questions:
+        return {"error": "Could not generate final exam questions"}
+
+    # Persist the generated final exam so it can be restored on reload
+    save_final_exam(request.topic, {
+        "mode": request.mode,
+        "analysis": analysis,
+        "questions": questions,
+    })
+
+    return {
+        "topic": request.topic,
+        "mode": request.mode,
+        "analysis": analysis,
+        "questions": questions,
+        "total": len(questions),
+    }
+
+
+@app.post("/final-exam/submit")
+def final_exam_submit(request: FinalExamSubmitRequest):
+    """Grade the final exam and return results with per-section breakdown."""
+    class_data = get_class(request.topic)
+    if not class_data:
+        return {"error": f"Class '{request.topic}' not found"}
+
+    questions = class_data.get("final_exam", {}).get("questions", [])
+    if not questions:
+        return {"error": "No final exam found for this class"}
+
+    correct = 0
+    total = len(request.answers)
+    results = []
+    section_scores = {}
+
+    for ans in request.answers:
+        idx = ans.get("question_index")
+        if idx is None or idx < 0 or idx >= len(questions):
+            continue
+        q = questions[idx]
+        user_answer = ans.get("user_answer", "")
+        is_correct = user_answer.lower() == q.get("correct_answer", "").lower()
+        if is_correct:
+            correct += 1
+
+        section = q.get("section", "Unknown")
+        if section not in section_scores:
+            section_scores[section] = {"correct": 0, "total": 0}
+        section_scores[section]["total"] += 1
+        if is_correct:
+            section_scores[section]["correct"] += 1
+
+        results.append({
+            "question": q.get("question", ""),
+            "user_answer": user_answer,
+            "correct_answer": q.get("correct_answer", ""),
+            "is_correct": is_correct,
+            "explanation": q.get("explanation", ""),
+            "section": section,
+            "difficulty": q.get("difficulty", "medium"),
+        })
+
+    # Build per-section summary
+    section_breakdown = []
+    for section, scores in section_scores.items():
+        pct = round(scores["correct"] / scores["total"] * 100) if scores["total"] else 0
+        section_breakdown.append({
+            "section": section,
+            "correct": scores["correct"],
+            "total": scores["total"],
+            "percentage": pct,
+        })
+
+    # Sections to review: those below 50%
+    review_sections = [s["section"] for s in section_breakdown if s["percentage"] < 50]
+
+    submit_results = {
+        "correct": correct,
+        "total": total,
+        "percentage": round(correct / total * 100) if total else 0,
+        "results": results,
+        "section_breakdown": section_breakdown,
+        "review_sections": review_sections,
+    }
+
+    # Update the persisted final exam with submission results
+    existing_fe = class_data.get("final_exam", {})
+    existing_fe["results"] = submit_results
+    save_final_exam(request.topic, existing_fe)
+
+    return submit_results
+
+
+@app.get("/final-exam/download/{topic}")
+def final_exam_download(topic: str, include_results: bool = Query(False)):
+    """Download the final exam as a .docx file.
+
+    If include_results is True, each question shows the student's answer,
+    the correct answer and the explanation. Otherwise only the questions
+    and options are included (blank exam).
+    """
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    class_data = get_class(topic)
+    if not class_data:
+        return {"error": f"Class '{topic}' not found"}
+    final_exam = class_data.get("final_exam")
+    if not final_exam:
+        return {"error": "No final exam found for this class"}
+
+    questions = final_exam.get("questions", [])
+    results = final_exam.get("results", {}).get("results", []) if include_results else []
+    results_map = {r["question"]: r for r in results}
+
+    doc = Document()
+
+    # --- Title ---
+    title_p = doc.add_heading(level=1)
+    title_run = title_p.add_run(f"Final Exam — {topic.replace('_', ' ').title()}")
+    title_run.font.size = Pt(18)
+    title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    if include_results:
+        sub = doc.add_paragraph()
+        sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        score_data = final_exam.get("results", {})
+        run = sub.add_run(
+            f"Score: {score_data.get('correct', '?')}/{score_data.get('total', '?')} "
+            f"({score_data.get('percentage', '?')}%)"
+        )
+        run.font.size = Pt(12)
+        run.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
+
+    doc.add_paragraph("")  # spacer
+
+    letters = ["a", "b", "c", "d"]
+
+    for i, q in enumerate(questions):
+        # Question text
+        q_para = doc.add_paragraph()
+        q_run = q_para.add_run(f"{i + 1}. {q['question']}")
+        q_run.bold = True
+        q_run.font.size = Pt(11)
+
+        difficulty = q.get("difficulty", "")
+        section = q.get("section", "")
+        if difficulty or section:
+            meta_run = q_para.add_run(f"  [{difficulty}]  —  {section}")
+            meta_run.font.size = Pt(9)
+            meta_run.font.color.rgb = RGBColor(0x99, 0x99, 0x99)
+
+        # Options
+        for oi, opt in enumerate(q.get("options", [])):
+            opt_para = doc.add_paragraph(style="List Bullet")
+            opt_run = opt_para.add_run(f"{letters[oi]}) {opt}")
+            opt_run.font.size = Pt(10)
+
+            if include_results:
+                r = results_map.get(q["question"])
+                if r:
+                    if letters[oi] == r.get("correct_answer"):
+                        opt_run.font.color.rgb = RGBColor(0x2E, 0x7D, 0x32)
+                        opt_run.bold = True
+                    elif letters[oi] == r.get("user_answer") and not r.get("is_correct"):
+                        opt_run.font.color.rgb = RGBColor(0xC6, 0x28, 0x28)
+
+        # Results detail
+        if include_results:
+            r = results_map.get(q["question"])
+            if r:
+                ans_para = doc.add_paragraph()
+                your = ans_para.add_run(f"Your answer: {r.get('user_answer', '?')}")
+                your.font.size = Pt(9)
+                your.font.color.rgb = (
+                    RGBColor(0x2E, 0x7D, 0x32) if r.get("is_correct")
+                    else RGBColor(0xC6, 0x28, 0x28)
+                )
+                if not r.get("is_correct"):
+                    correct_run = ans_para.add_run(f"  ·  Correct: {r.get('correct_answer', '?')}")
+                    correct_run.font.size = Pt(9)
+                    correct_run.font.color.rgb = RGBColor(0x2E, 0x7D, 0x32)
+
+                if r.get("explanation"):
+                    exp_para = doc.add_paragraph()
+                    exp_run = exp_para.add_run(f"Explanation: {r['explanation']}")
+                    exp_run.font.size = Pt(9)
+                    exp_run.italic = True
+                    exp_run.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+
+        doc.add_paragraph("")  # spacer between questions
+
+    # Save to temp file and return
+    suffix = "_results" if include_results else "_blank"
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    doc.save(tmp.name)
+    tmp.close()
+
+    filename = f"final_exam_{topic}{suffix}.docx"
+    return FileResponse(
+        tmp.name,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=filename,
+    )
 
 
 @app.get("/health")
