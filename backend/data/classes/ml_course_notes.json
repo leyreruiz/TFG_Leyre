@@ -342,5 +342,386 @@
     }
   },
   "created_at": "2026-04-10T14:06:51.329379",
-  "updated_at": "2026-04-10T14:10:32.449340"
+  "updated_at": "2026-04-24T11:44:03.247867",
+  "final_exam": {
+    "mode": "study",
+    "analysis": {
+      "sections": [
+        {
+          "title": "Part I - Methodological Aspects of Machine Learning",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 1. Data Preparation",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 2. Supervised Learning",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 3. Evaluation Metrics",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 4. Hypothesis Evaluation",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "Part II - Prediction in Temporal Series",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 5. Temporal Series",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 6. Technical Indicators",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 7. Model Selection and Hyperparameter Tuning",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 8. Feature Selection",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 9. Dimensionality Reduction",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        },
+        {
+          "title": "# 10. Model Evaluation and Deployment",
+          "correct": 0,
+          "total": 0,
+          "conversations": 0,
+          "score": 0.3,
+          "level": "weak"
+        }
+      ],
+      "weak": [
+        "Part I - Methodological Aspects of Machine Learning",
+        "# 1. Data Preparation",
+        "# 2. Supervised Learning",
+        "# 3. Evaluation Metrics",
+        "# 4. Hypothesis Evaluation",
+        "Part II - Prediction in Temporal Series",
+        "# 5. Temporal Series",
+        "# 6. Technical Indicators",
+        "# 7. Model Selection and Hyperparameter Tuning",
+        "# 8. Feature Selection",
+        "# 9. Dimensionality Reduction",
+        "# 10. Model Evaluation and Deployment"
+      ],
+      "medium": [],
+      "strong": []
+    },
+    "questions": [
+      {
+        "question": "What is the term for the process of selecting a subset of the most relevant features from a larger set of features?",
+        "options": [
+          "Feature extraction",
+          "Feature transformation",
+          "Feature selection",
+          "Dimensionality reduction"
+        ],
+        "correct_answer": "c",
+        "explanation": "Feature selection is the process of selecting a subset of the most relevant features from a larger set of features.",
+        "difficulty": "easy",
+        "section": "Part I - Methodological Aspects of Machine Learning"
+      },
+      {
+        "question": "What type of data the model must find patterns in when it is supervised learning?",
+        "options": [
+          "Labeled data",
+          "Unlabeled data",
+          "Time series data",
+          "Financial data"
+        ],
+        "correct_answer": "b",
+        "explanation": "According to the content, in unsupervised learning, the model must find patterns in unlabeled data, which is the opposite of supervised learning.",
+        "difficulty": "easy",
+        "section": "# 2. Supervised Learning"
+      },
+      {
+        "question": "What is the purpose of a Confusion Matrix in evaluating a model's performance?",
+        "options": [
+          "To calculate the F-Measure",
+          "To display the number of true positives, false positives, true negatives, and false negatives",
+          "To determine the model's accuracy",
+          "To identify the most important evaluation metric"
+        ],
+        "correct_answer": "b",
+        "explanation": "A Confusion Matrix provides a visual representation of a model's performance by displaying the number of true and false predictions, making it easier to understand the model's strengths and weaknesses.",
+        "difficulty": "easy",
+        "section": "# 3. Evaluation Metrics"
+      },
+      {
+        "question": "What is the purpose of discretizing historical returns into classes?",
+        "options": [
+          "To capture short-term momentum",
+          "To reveal the underlying direction of the price",
+          "To determine the minimum movement deemed economically significant",
+          "To transform indicators into scale-invariant relative features"
+        ],
+        "correct_answer": "c",
+        "explanation": "Discretizing historical returns into classes allows for the identification of economically significant movements, which can be used to make informed investment decisions.",
+        "difficulty": "easy",
+        "section": "# 6. Technical Indicators"
+      },
+      {
+        "question": "What is an example of a statistical measure used as a criterion in filter methods for feature selection?",
+        "options": [
+          "Mean Absolute Error",
+          "Mutual Information",
+          "Standard Deviation",
+          "Coefficient of Determination"
+        ],
+        "correct_answer": "b",
+        "explanation": "Mutual information is a statistical measure used to evaluate the dependency between two variables, making it a suitable criterion for filter methods in feature selection.",
+        "difficulty": "easy",
+        "section": "# 8. Feature Selection"
+      },
+      {
+        "question": "What is the key takeaway from model evaluation and deployment in machine learning?",
+        "options": [
+          "Model evaluation and deployment are unnecessary steps in the machine learning process.",
+          "Model evaluation and deployment are critical components of the machine learning process.",
+          "Model evaluation and deployment only consider the accuracy of a model.",
+          "Model evaluation and deployment are only used for simple machine learning models."
+        ],
+        "correct_answer": "b",
+        "explanation": "The correct answer is b) Model evaluation and deployment are critical components of the machine learning process, as stated in the Key Takeaway section of the content.",
+        "difficulty": "easy",
+        "section": "# 10. Model Evaluation and Deployment"
+      },
+      {
+        "question": "What is the term for a technique used to evaluate a model's performance on unseen data?",
+        "options": [
+          "Cross-validation",
+          "Bootstrapping",
+          "Grid search",
+          "Random sampling"
+        ],
+        "correct_answer": "a",
+        "explanation": "Cross-validation is a technique used to evaluate a model's performance on unseen data by splitting the available data into training and testing sets.",
+        "difficulty": "medium",
+        "section": "Part I - Methodological Aspects of Machine Learning"
+      },
+      {
+        "question": "What is the purpose of imputation in unknown/missing data treatment?",
+        "options": [
+          "To remove cases with missing values",
+          "To identify and remove outliers",
+          "To replace missing values with estimated or interpolated values",
+          "To apply filters to smooth out noisy data"
+        ],
+        "correct_answer": "c",
+        "explanation": "Imputation involves replacing missing values with estimated or interpolated values, making it a key strategy for treating unknown/missing data.",
+        "difficulty": "medium",
+        "section": "# 1. Data Preparation"
+      },
+      {
+        "question": "What is the goal of selecting a future time window starting at t + 1 when creating a table of labeled data?",
+        "options": [
+          "To determine the relevance of attribute values",
+          "To identify trends in the time series data",
+          "To derive a label or numeric target",
+          "To transform the data into a suitable format"
+        ],
+        "correct_answer": "c",
+        "explanation": "The goal of selecting a future time window starting at t + 1 is to derive a label or numeric target from the future time window, which is used to train the supervised learning model.",
+        "difficulty": "medium",
+        "section": "# 2. Supervised Learning"
+      },
+      {
+        "question": "What is the term for when a model is too simple and fails to capture the underlying patterns in the data, resulting in poor performance on both training and test data?",
+        "options": [
+          "Overfitting",
+          "Underfitting",
+          "Regularization",
+          "Cross-validation"
+        ],
+        "correct_answer": "b",
+        "explanation": "Underfitting occurs when a model is too simple and fails to capture the underlying patterns in the data, resulting in poor performance on both training and test data.",
+        "difficulty": "medium",
+        "section": "# 4. Hypothesis Evaluation"
+      },
+      {
+        "question": "What is the primary objective of outperforming a specific share relative to its index over a given period in the context of temporal series prediction?",
+        "options": [
+          "To forecast future stock prices",
+          "To identify patterns in the data",
+          "To compare the performance of a specific stock against its index",
+          "To predict the overall market trend"
+        ],
+        "correct_answer": "c",
+        "explanation": "This objective involves comparing the performance of a specific stock against its index over a given period, which is a key aspect of temporal series prediction in financial markets.",
+        "difficulty": "medium",
+        "section": "Part II - Prediction in Temporal Series"
+      },
+      {
+        "question": "What is the term for the number of steps each successive training example is generated by sliding the window forward in temporal series data?",
+        "options": [
+          "Shift",
+          "Tick",
+          "Observation window",
+          "Prediction horizon"
+        ],
+        "correct_answer": "a",
+        "explanation": "The correct answer is \"Shift\", as it refers to the number of steps each successive training example is generated by sliding the window forward.",
+        "difficulty": "medium",
+        "section": "# 5. Temporal Series"
+      },
+      {
+        "question": "Which of the following categories of technical indicators is characterized by the rate of change of the price or volume?",
+        "options": [
+          "Trend",
+          "Momentum",
+          "Oscillators",
+          "Volatility"
+        ],
+        "correct_answer": "b",
+        "explanation": "The category of technical indicators known as \"Momentum\" refers to the rate of change of the price or volume, which can help identify accelerating or decelerating price movements.",
+        "difficulty": "medium",
+        "section": "# 6. Technical Indicators"
+      },
+      {
+        "question": "What is the name of the technique that involves integrating feature selection into the model learning step itself?",
+        "options": [
+          "Regularised Regression",
+          "Backtesting",
+          "Cross-Validation",
+          "Embedded Methods"
+        ],
+        "correct_answer": "d",
+        "explanation": "According to the content, Embedded Methods integrate feature selection into the model learning step itself.",
+        "difficulty": "medium",
+        "section": "# 7. Model Selection and Hyperparameter Tuning"
+      },
+      {
+        "question": "Which of the following wrapper method components is NOT necessarily required for the search process?",
+        "options": [
+          "Search algorithm",
+          "Evaluation criterion",
+          "Stopping criterion",
+          "Evaluation metric"
+        ],
+        "correct_answer": "d",
+        "explanation": "While an evaluation metric is related to an evaluation criterion, it is not explicitly mentioned as a required component in the search process of wrapper methods.",
+        "difficulty": "medium",
+        "section": "# 8. Feature Selection"
+      },
+      {
+        "question": "What is the key property of the new components created by PCA that is ordered by relevance?",
+        "options": [
+          "Mutual dependence",
+          "Ordered by variance",
+          "Uncorrelated with each other",
+          "Independent of the original components"
+        ],
+        "correct_answer": "b",
+        "explanation": "According to the content, the new components created by PCA are ordered by relevance, with the first component capturing the most variance, the second component capturing the second most variance, and so on.",
+        "difficulty": "medium",
+        "section": "# 9. Dimensionality Reduction"
+      },
+      {
+        "question": "What type of methods use statistical measures to select features, such as correlation, mutual information, and variance?",
+        "options": [
+          "Wrapper methods",
+          "Embedded methods",
+          "Filter methods",
+          "Grid search methods"
+        ],
+        "correct_answer": "c",
+        "explanation": "Filter methods use statistical measures to select features, such as correlation, mutual information, and variance.",
+        "difficulty": "hard",
+        "section": "Part I - Methodological Aspects of Machine Learning"
+      },
+      {
+        "question": "What is a key consideration in feature engineering for temporal series data?",
+        "options": [
+          "Extracting information from the time series data, such as trends, seasonality, and cycles",
+          "Transforming the data into a suitable format for the chosen machine learning algorithm",
+          "Selecting the most informative features to reduce noise and improve model performance",
+          "All of the above"
+        ],
+        "correct_answer": "d",
+        "explanation": "Feature engineering involves several key considerations, including extracting relevant information from the time series data, transforming the data into a suitable format for the chosen machine learning algorithm, and selecting the most informative features to reduce noise and improve model performance.",
+        "difficulty": "hard",
+        "section": "# 2. Supervised Learning"
+      },
+      {
+        "question": "What type of transformation converts raw indicator values into scale-invariant relative features?",
+        "options": [
+          "Trend of the indicator",
+          "Deviation from price",
+          "Both trend of the indicator and deviation from price",
+          "Neither trend of the indicator nor deviation from price"
+        ],
+        "correct_answer": "c",
+        "explanation": "Both the trend of the indicator and deviation from price transformations are used to convert raw indicator values into scale-invariant relative features, making them comparable across different assets or time periods.",
+        "difficulty": "hard",
+        "section": "# 6. Technical Indicators"
+      },
+      {
+        "question": "What is a key advantage of embedded methods in feature selection?",
+        "options": [
+          "They can handle high-dimensional data efficiently",
+          "They can handle categorical features directly",
+          "They can be integrated with other machine learning techniques",
+          "They can provide feature importance scores"
+        ],
+        "correct_answer": "c",
+        "explanation": "Embedded methods have the ability to be integrated with other machine learning techniques, making them a flexible and powerful approach to feature selection.",
+        "difficulty": "hard",
+        "section": "# 8. Feature Selection"
+      }
+    ]
+  }
 }

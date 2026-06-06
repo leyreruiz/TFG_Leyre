@@ -12,9 +12,6 @@ class SummaryAgent(BaseAgent):
         self.retriever = retriever
         self.llm_model = llm_model
 
-    def can_handle(self, intent: str) -> bool:
-        return intent == "summary"
-
     def handle(self, request: StudentRequest) -> dict:
         """Entry point used by the orchestrator (no outline available)."""
         search_query = extract_search_term(request.message, intent="summary") or request.message

@@ -1,8 +1,10 @@
 """Exam Agent: generates multiple-choice exam questions.
 
-Two retrieval modes selected automatically:
-  - Pipeline mode: summary was provided directly → skip RAG, use summary as context
-  - RAG mode:      query is a topic/concept       → similarity search in ChromaDB
+Two generation paths, invoked explicitly by the caller:
+  - generate_from_summary(): used by the orchestration pipeline — the section
+    summary is passed in directly as context and no retrieval is performed.
+  - handle(): standalone path — retrieves context from ChromaDB for a topic
+    or source file and generates the exam from it.
 """
 
 import logging
@@ -15,9 +17,6 @@ from backend.clients.llm_client import chat_with_model
 from backend.utils import extract_search_term
 
 logger = logging.getLogger(__name__)
-
-# Marker used to distinguish pipeline mode (summary provided) from RAG mode
-SUMMARY_MARKER = "using the following summary context:"
 
 # System prompt shared by both question-generation methods
 _EXAM_SYSTEM_PROMPT = (
@@ -36,75 +35,85 @@ class ExamAgent(BaseAgent):
         self.num_questions = num_questions
         self.data_dir = data_dir
 
-    def can_handle(self, intent: str) -> bool:
-        return intent == "exam"
+    def generate_from_summary(self, section_title: str, summary: str) -> dict:
+        """Generate an exam directly from a section's summary, without retrieval.
 
-    def handle(self, request: StudentRequest) -> dict:
-        """Generate an exam, choosing the retrieval mode automatically.
-
-        - Pipeline mode: message contains SUMMARY_MARKER → use the provided summary as context.
-        - RAG mode: semantic search in ChromaDB.
+        This is the entry point used by the orchestration pipeline: the summary the
+        Summary agent has just produced is passed in as context, so the Exam agent
+        performs no retrieval of its own and the questions stay aligned with what
+        the student has just read.
 
         Returns a dict with content (raw text), questions (parsed list), mode and source info.
         """
-        # PIPELINE MODE: summary was provided, skip RAG retrieval
-        if SUMMARY_MARKER in request.message:
-            header, _, summary_text = request.message.partition(SUMMARY_MARKER)
-            term = extract_search_term(header.strip(), intent="exam") or header.strip()
-            context = summary_text.strip()
-            mode = "summary"
-            source_info = term
-            logger.debug("Mode: summary (section: %s)", term)
+        context = summary.strip()
+        if not context:
+            return {"agent": "exam", "error": f"Summary context is empty for '{section_title}'."}
 
-            if not context:
-                return {"agent": "exam", "error": f"Summary context is empty for '{term}'."}
+        raw_answer = self._generate_questions(context, section_title)
+        if raw_answer is None:
+            return {"agent": "exam", "error": f"Could not generate questions for '{section_title}'."}
 
-        # RAG MODE: search ChromaDB for relevant chunks
+        questions = self._parse_questions(raw_answer)
+        return {
+            "agent": "exam",
+            "content": raw_answer,
+            "questions": questions,
+            "num_questions": len(questions),
+            "retrieval_mode": "summary",
+            "source": section_title,
+        }
+
+    def handle(self, request: StudentRequest) -> dict:
+        """Generate an exam by retrieving context from ChromaDB for a topic or file.
+
+        This is the standalone retrieval path: the message names a topic or a
+        source file, the agent retrieves the relevant chunks itself, and generates
+        the exam from them. The orchestration pipeline does not use this path —
+        it calls generate_from_summary() with the already-produced summary instead.
+
+        Returns a dict with content (raw text), questions (parsed list), mode and source info.
+        """
+        term = extract_search_term(request.message, intent="exam")
+
+        if not term:
+            return {
+                "agent": "exam",
+                "error": (
+                    "No file or topic specified in the message. "
+                    "Examples: 'exam redes_neuronales', 'exam aprendizaje supervisado'."
+                ),
+            }
+
+        candidate_file = term if term.endswith(".txt") else term + ".txt"
+        known_files = self._list_known_files()
+
+        if candidate_file in known_files:
+            logger.debug("Mode: file (%s)", candidate_file)
+            docs = self.retriever.search_by_source(candidate_file)
+            mode = "file"
+            source_info = candidate_file
         else:
-            term = extract_search_term(request.message, intent="exam")
+            logger.debug("Mode: semantic (query: %s)", term)
+            docs = self.retriever.search(term, k=10)
+            mode = "semantic"
+            source_info = term
 
-            if not term:
-                return {
-                    "agent": "exam",
-                    "error": (
-                        "No file or topic specified in the message. "
-                        "Examples: 'exam redes_neuronales', 'exam aprendizaje supervisado'."
-                    ),
-                }
+        if not docs:
+            return {
+                "agent": "exam",
+                "error": (
+                    f"No information was found about '{term}'. "
+                    f"Available files: {', '.join(known_files)}"
+                ),
+            }
 
-            candidate_file = term if term.endswith(".txt") else term + ".txt"
-            known_files = self._list_known_files()
+        context = "\n\n".join(docs)
 
-            if candidate_file in known_files:
-                logger.debug("Mode: file (%s)", candidate_file)
-                docs = self.retriever.search_by_source(candidate_file)
-                mode = "file"
-                source_info = candidate_file
-            else:
-                logger.debug("Mode: semantic (query: %s)", term)
-                docs = self.retriever.search(term, k=10)
-                mode = "semantic"
-                source_info = term
-
-            if not docs:
-                return {
-                    "agent": "exam",
-                    "error": (
-                        f"No information was found about '{term}'. "
-                        f"Available files: {', '.join(known_files)}"
-                    ),
-                }
-
-            context = "\n\n".join(docs)
-
-        # Generate questions from the retrieved or provided context
         raw_answer = self._generate_questions(context, source_info)
-
         if raw_answer is None:
             return {"agent": "exam", "error": f"Could not generate questions for '{source_info}'."}
 
         questions = self._parse_questions(raw_answer)
-
         return {
             "agent": "exam",
             "content": raw_answer,

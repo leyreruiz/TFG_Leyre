@@ -30,7 +30,7 @@ from backend.models.schemas import (
     FinalExamGenerateRequest,
     FinalExamSubmitRequest,
 )
-from backend.agents.final_exam_agent import analyze_weak_points, generate_final_exam
+from backend.agents.final_exam_agent import FinalExamAgent
 from backend.mcp_client import MCPRetriever
 from backend.ingest_topics import ingest_file
 from backend.class_storage import (
@@ -60,6 +60,7 @@ _structurer = StructurerAgent(_retriever)
 _summary    = SummaryAgent(_retriever)
 _exam       = ExamAgent(_retriever, num_questions=2)
 _explainer  = ExplainerAgent()
+_final_exam = FinalExamAgent()
 
 
 def _sse(data: dict) -> str:
@@ -135,7 +136,7 @@ def _run_pipeline(document: str, suggestions: str = ""):
     Yielded SSE event types: 'structure', 'summary', 'exam', 'done', 'error'.
     """
     # 1. Structure — with or without user suggestions
-    req = StudentRequest(message=document, intent="structure")
+    req = StudentRequest(message=document)
     result = _structurer.handle(req, suggestions=suggestions)
     if "error" in result:
         yield _sse({"type": "error", "message": result["error"]})
@@ -174,11 +175,7 @@ def _run_pipeline(document: str, suggestions: str = ""):
         })
 
         # Generate exam questions using the freshly created summary as context
-        req = StudentRequest(
-            message=f"exam {section}\n\nusing the following summary context:\n{summary}",
-            intent="exam",
-        )
-        result    = _exam.handle(req)
+        result    = _exam.generate_from_summary(section, summary)
         questions = result.get("questions", [])
         update_section_questions(document, section, questions)
         yield _sse({
@@ -252,15 +249,15 @@ def _run_saved_pipeline(class_data: dict):
 async def ingest_and_prepare(file: UploadFile = File(...)):
     """Upload a file and ingest its content into ChromaDB.
 
-    Accepts .txt, .pdf, and .pptx files. The file is saved to backend/data/
+    Accepts .txt, .pdf, .pptx and .docx files. The file is saved to backend/data/
     and then chunked and embedded into a topic-specific ChromaDB collection.
     Returns the derived topic name (filename without extension) which the
     frontend uses as the document identifier for subsequent /start calls.
     """
     try:
         extension = os.path.splitext(file.filename)[1].lower()
-        if extension not in {".txt", ".pdf", ".pptx"}:
-            return {"error": "Unsupported file type. Use .txt, .pdf or .pptx"}
+        if extension not in {".txt", ".pdf", ".pptx", ".docx"}:
+            return {"error": "Unsupported file type. Use .txt, .pdf, .pptx or .docx"}
 
         contents = await file.read()
         data_dir  = os.path.join(os.path.dirname(__file__), "data")
@@ -325,7 +322,7 @@ def regenerate_summary(request: RegenerateSummaryRequest):
     _retriever.set_topic(request.topic)
 
     # Generate new summary
-    req    = StudentRequest(message=f"resume {request.section_title}", intent="summary")
+    req    = StudentRequest(message=f"resume {request.section_title}")
     result = _summary.handle(req)
     if "error" in result:
         return {"error": result["error"]}
@@ -333,11 +330,7 @@ def regenerate_summary(request: RegenerateSummaryRequest):
     summary = result["content"]
 
     # Generate new exam based on updated summary
-    req_exam = StudentRequest(
-        message=f"exam {request.section_title}\n\nusing the following summary context:\n{summary}",
-        intent="exam"
-    )
-    exam_result = _exam.handle(req_exam)
+    exam_result = _exam.generate_from_summary(request.section_title, summary)
     questions = exam_result.get("questions", [])
 
     # Persist both to JSON storage
@@ -382,14 +375,7 @@ def regenerate_exam(request: RegenerateExamRequest):
             .strip()
         )
 
-    req_exam = StudentRequest(
-        message=(
-            f"exam {request.section_title}\n\n"
-            f"using the following summary context:\n{summary_context}"
-        ),
-        intent="exam",
-    )
-    exam_result = _exam.handle(req_exam)
+    exam_result = _exam.generate_from_summary(request.section_title, summary_context)
     questions = exam_result.get("questions", [])
 
     questions_updated = update_section_questions(request.topic, request.section_title, questions)
@@ -478,7 +464,7 @@ def ask(request: AskRequest):
     db_context = "\n\n".join(db_chunks) if db_chunks else ""
     wikipedia_context = _retriever.search_wikipedia(request.question)
 
-    req    = StudentRequest(message=request.question, intent="explain")
+    req    = StudentRequest(message=request.question)
     result = _explainer.handle(
         req,
         section_context=request.section_summary,
@@ -519,14 +505,14 @@ def clear_conversation(request: AskRequest):
 def list_topics():
     """List all topics that have a source file in backend/data/.
 
-    Scans for .txt, .pdf, and .pptx files and returns their base names.
+    Scans for .txt, .pdf, .pptx and .docx files and returns their base names.
     Used by the frontend to populate the topic selector dropdown.
     """
     try:
         topics = []
         for f in os.listdir("backend/data"):
             base, ext = os.path.splitext(f)
-            if ext.lower() in {".txt", ".pdf", ".pptx"}:
+            if ext.lower() in {".txt", ".pdf", ".pptx", ".docx"}:
                 topics.append(base)
         return {"topics": sorted(set(topics))}
     except Exception:
@@ -562,7 +548,7 @@ def remove_class(topic: str):
     """Delete a saved class and its source file from disk.
 
     Removes the class JSON from backend/data/classes/ and the original
-    .txt/.pdf/.pptx file from backend/data/. Both the original and
+    .txt/.pdf/.pptx/.docx file from backend/data/. Both the original and
     normalised (lowercase, underscored) forms of the topic name are tried
     when looking for the source file.
     """
@@ -572,7 +558,7 @@ def remove_class(topic: str):
     data_dir = os.path.join(os.path.dirname(__file__), "data")
     source_deleted = False
     for candidate in {topic, normalized_topic}:
-        for extension in (".txt", ".pdf", ".pptx"):
+        for extension in (".txt", ".pdf", ".pptx", ".docx"):
             topic_file = os.path.join(data_dir, f"{candidate}{extension}")
             if os.path.exists(topic_file):
                 try:
@@ -598,7 +584,7 @@ def final_exam_analyze(topic: str):
     class_data = get_class(topic)
     if not class_data:
         return {"error": f"Class '{topic}' not found"}
-    analysis = analyze_weak_points(class_data)
+    analysis = _final_exam.analyze(class_data)
     return analysis
 
 
@@ -608,8 +594,20 @@ def final_exam_generate(request: FinalExamGenerateRequest):
     class_data = get_class(request.topic)
     if not class_data:
         return {"error": f"Class '{request.topic}' not found"}
-    analysis = analyze_weak_points(class_data)
-    questions = generate_final_exam(class_data, analysis)
+
+    # If a final exam already exists, return it instead of regenerating
+    existing = class_data.get("final_exam")
+    if existing and existing.get("questions"):
+        return {
+            "topic": request.topic,
+            "mode": existing.get("mode", request.mode),
+            "analysis": existing.get("analysis", {}),
+            "questions": existing["questions"],
+            "total": len(existing["questions"]),
+        }
+
+    analysis = _final_exam.analyze(class_data)
+    questions = _final_exam.generate(class_data, analysis)
     if not questions:
         return {"error": "Could not generate final exam questions"}
 

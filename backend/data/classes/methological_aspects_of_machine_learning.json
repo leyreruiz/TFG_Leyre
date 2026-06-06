@@ -39,7 +39,9 @@
             "All of the above"
           ],
           "correct_answer": "b",
-          "explanation": "The text describes numerization as a technique to convert nominal data into numerical data, with each nominal value represented by a binary feature."
+          "explanation": "The text describes numerization as a technique to convert nominal data into numerical data, with each nominal value represented by a binary feature.",
+          "user_answer": "a",
+          "user_correct": false
         },
         {
           "question": "Which data selection method involves choosing data points that are close to the class boundaries?",
@@ -50,7 +52,9 @@
             "Boosting"
           ],
           "correct_answer": "c",
-          "explanation": "The correct answer is \"c) In class borders\" because this method involves selecting data points that are close to the class boundaries, which is an important aspect of data selection."
+          "explanation": "The correct answer is \"c) In class borders\" because this method involves selecting data points that are close to the class boundaries, which is an important aspect of data selection.",
+          "user_answer": "c",
+          "user_correct": true
         },
         {
           "question": "Which data transformation technique involves converting continuous data into discrete data using unsupervised learning methods over one or several features?",
@@ -85,7 +89,9 @@
             "To estimate the accuracy of a machine learning model"
           ],
           "correct_answer": "b",
-          "explanation": "The t-test is used to compare the means of two groups and determine whether the differences between the predicted and actual outcomes are statistically significant."
+          "explanation": "The t-test is used to compare the means of two groups and determine whether the differences between the predicted and actual outcomes are statistically significant.",
+          "user_answer": "c",
+          "user_correct": false
         },
         {
           "question": "Which of the following techniques is used for feature evaluation to assess the relevance and importance of each feature in the dataset?",
@@ -96,7 +102,9 @@
             "All of the above"
           ],
           "correct_answer": "d",
-          "explanation": "Feature evaluation involves assessing the relevance and importance of each feature in the dataset, and various techniques such as correlation analysis, mutual information, and recursive feature elimination can be used for this purpose."
+          "explanation": "Feature evaluation involves assessing the relevance and importance of each feature in the dataset, and various techniques such as correlation analysis, mutual information, and recursive feature elimination can be used for this purpose.",
+          "user_answer": "a",
+          "user_correct": false
         }
       ]
     },
@@ -112,7 +120,9 @@
             "To perform mathematical operations on continuous features"
           ],
           "correct_answer": "b",
-          "explanation": "Dynamic generation of significant attributes involves comparing existing attributes of the same type to identify relevant features."
+          "explanation": "Dynamic generation of significant attributes involves comparing existing attributes of the same type to identify relevant features.",
+          "user_answer": "b",
+          "user_correct": true
         },
         {
           "question": "What type of operations can be performed on discrete attributes in feature combinations?",
@@ -123,7 +133,15 @@
             "Counting the number of true and false features"
           ],
           "correct_answer": "b",
-          "explanation": "Feature combinations involve creating new features by performing logical operations on discrete attributes, such as conjunction and disjunction."
+          "explanation": "Feature combinations involve creating new features by performing logical operations on discrete attributes, such as conjunction and disjunction.",
+          "user_answer": "b",
+          "user_correct": true
+        }
+      ],
+      "conversation": [
+        {
+          "question": "desarrolla la conjuncion",
+          "answer": "La conjunción es una operación lógica que se utiliza para combinar dos o más condiciones o atributos para obtener un resultado final. En el contexto de la generación de características, la conjunción se puede utilizar para crear nuevas características que capturan las relaciones entre atributos discretos.\n\nPor ejemplo, si tenemos dos atributos discretos A y B, con valores {A1, A2} y {B1, B2} respectivamente, la conjunción de estos dos atributos podría generar una nueva característica que tenga valores {A1B1, A1B2, A2B1, A2B2}. Esta nueva característica combina las relaciones entre los atributos A y B para obtener un resultado final.\n\nLa conjunción se puede utilizar en diferentes contextos, como en la creación de características binarias, donde se combina dos o más atributos para obtener un resultado final. Por ejemplo, si tenemos un atributo A que indica si un cliente tiene un préstamo pendiente y otro atributo B que indica si el cliente tiene un historial de pagos, la conjunción de estos dos atributos podría generar una nueva característica que indique si el cliente tiene un préstamo pendiente y un historial de pagos.\n\nEn resumen, la conjunción es una operación lógica que se utiliza para combinar atributos discretos para obtener un resultado final, y se puede utilizar en diferentes contextos para crear nuevas características que capturan las relaciones entre atributos."
         }
       ]
     },
@@ -139,7 +157,9 @@
             "Minimum Error"
           ],
           "correct_answer": "a",
-          "explanation": "This is a False Positive error, as the model incorrectly predicts a pass when the student actually fails."
+          "explanation": "This is a False Positive error, as the model incorrectly predicts a pass when the student actually fails.",
+          "user_answer": "b",
+          "user_correct": false
         },
         {
           "question": "Which of the following is a measure of feature relevance and importance used in decision making?",
@@ -150,24 +170,15 @@
             "Dimensionality Reduction"
           ],
           "correct_answer": "b",
-          "explanation": "Correlation is a measure of feature relevance and importance used in decision making to evaluate the relationship between features and the target variable."
+          "explanation": "Correlation is a measure of feature relevance and importance used in decision making to evaluate the relationship between features and the target variable.",
+          "user_answer": "b",
+          "user_correct": true
         }
       ]
     },
     "Errors in Samples": {
       "summary": "### 5. Errors in Samples\n\n#### False Negatives\n\nFalse negatives occur when a hypothesis fails to classify correctly an instance that follows a specific distribution. In other words, a **false negative** happens when the hypothesis predicts that an instance belongs to a certain class, but it actually belongs to another class. In the context of the given problem, a false negative would occur when the hypothesis predicts that a student is likely to pass the course (`A`), but the student actually fails.\n\n* A false negative is a type of **error in a hypothesis** that occurs when the hypothesis does not accurately classify an instance.\n* False negatives can be minimized by improving the accuracy of the hypothesis.\n\n#### False Positives\n\nFalse positives occur when a hypothesis incorrectly classifies an instance as belonging to a certain class. In other words, a **false positive** happens when the hypothesis predicts that an instance belongs to a certain class, but it actually belongs to another class. In the context of the given problem, a false positive would occur when the hypothesis predicts that a student is likely to fail the course (`~A`), but the student actually passes.\n\n* A false positive is a type of **error in a hypothesis** that occurs when the hypothesis incorrectly classifies an instance.\n* False positives can be minimized by improving the accuracy of the hypothesis.\n\n#### Minimal Error\n\nThe **minimal error** is the minimum value of the expected error `E(pi)` over all possible instances `pi`. It is calculated as the minimum of the sum of the probabilities of false negatives and false positives. In the context of the given problem, the minimal error is the minimum value of the expected error over all possible instances in the current course.\n\n* The minimal error is a measure of the overall accuracy of a hypothesis.\n* The minimal error can be calculated by minimizing the expected error over all possible instances.\n\n## Key Takeaway\nThe concept of errors in samples is crucial in machine learning, as it helps us understand the limitations of our hypotheses and how to improve their accuracy. By minimizing false negatives and false positives, we can reduce the overall error of our hypothesis and make more accurate predictions. The minimal error is a key measure of the accuracy of a hypothesis, and it can be used to compare the performance of different hypotheses.",
       "questions": [
-        {
-          "question": "What type of error occurs when a hypothesis incorrectly classifies an instance as belonging to a certain class?",
-          "options": [
-            "False Negative",
-            "False Positive",
-            "Error in a Hypothesis",
-            "Expected Error"
-          ],
-          "correct_answer": "b",
-          "explanation": "A false positive is an error in a hypothesis that occurs when the hypothesis incorrectly classifies an instance."
-        },
         {
           "question": "What is the minimal error calculated as?",
           "options": [
@@ -177,7 +188,59 @@
             "The difference between the probabilities of true positives and false negatives"
           ],
           "correct_answer": "b",
-          "explanation": "The minimal error is the minimum value of the expected error E(pi) over all possible instances pi, which is calculated as the minimum of the sum of the probabilities of false negatives and false positives."
+          "explanation": "The minimal error is the minimum value of the expected error E(pi) over all possible instances pi, which is calculated as the minimum of the sum of the probabilities of false negatives and false positives.",
+          "user_answer": "b",
+          "user_correct": true
+        },
+        {
+          "question": "What is a false negative in the context of hypothesis classification?",
+          "options": [
+            "A hypothesis predicts that an instance belongs to a certain class when it actually belongs to another class.",
+            "A hypothesis fails to classify correctly an instance that follows a specific distribution.",
+            "A hypothesis incorrectly classifies an instance as belonging to a certain class.",
+            "A hypothesis classifies an instance with perfect accuracy."
+          ],
+          "correct_answer": "b",
+          "explanation": "A false negative is when a hypothesis fails to classify correctly an instance that follows a specific distribution, which is described in the content summary."
+        },
+        {
+          "question": "By which method can false positives be minimized?",
+          "options": [
+            "By ignoring the accuracy of the hypothesis.",
+            "By improving the accuracy of the hypothesis.",
+            "By using a different type of hypothesis.",
+            "By not considering the probabilities of false positives."
+          ],
+          "correct_answer": "b",
+          "explanation": "According to the content summary, false positives can be minimized by improving the accuracy of the hypothesis."
+        },
+        {
+          "question": "What is the primary goal of minimizing false positives and false negatives in hypothesis classification?",
+          "options": [
+            "To increase the complexity of the hypothesis",
+            "To reduce the overall error of the hypothesis",
+            "To increase the number of instances classified",
+            "To ignore the accuracy of the hypothesis"
+          ],
+          "correct_answer": "b",
+          "explanation": "Minimizing false positives and false negatives helps to reduce the overall error of the hypothesis, leading to more accurate predictions."
+        },
+        {
+          "question": "Which of the following is a measure of the overall accuracy of a hypothesis?",
+          "options": [
+            "The probability of true positives",
+            "The probability of false negatives",
+            "The minimal error",
+            "The expected error"
+          ],
+          "correct_answer": "c",
+          "explanation": "The minimal error is a measure of the overall accuracy of a hypothesis, representing the minimum value of the expected error over all possible instances."
+        }
+      ],
+      "conversation": [
+        {
+          "question": "What ia a false negative?",
+          "answer": "A false negative is a type of error in a hypothesis that occurs when the hypothesis does not accurately classify an instance. In other words, a false negative happens when the hypothesis predicts that an instance belongs to a certain class, but it actually belongs to another class. In the context of the given problem, a false negative would occur when the hypothesis predicts that a student is likely to pass the course (`A`), but the student actually fails.\n\nThis type of error is particularly important in hypothesis evaluation, as it can lead to incorrect conclusions and decisions. For example, if a hypothesis predicts that a student will pass a course, but they actually fail, the hypothesis may not be able to identify the factors that led to the student's failure, and therefore may not be able to provide useful insights or recommendations for improvement."
         }
       ]
     },
@@ -194,17 +257,6 @@
           ],
           "correct_answer": "b",
           "explanation": "Feature selection aims to reduce the dimensionality of the data, making it easier to analyze and improve the performance of the machine learning model."
-        },
-        {
-          "question": "Which technique combines feature selection and model learning in one step?",
-          "options": [
-            "Feature ranking",
-            "Mutual Information",
-            "Wrapper Building as Search",
-            "Sub-set selection"
-          ],
-          "correct_answer": "c",
-          "explanation": "Wrapper Building as Search is a technique that uses a search algorithm to find the optimal subset of features, builds a model using the selected features, and evaluates the performance of the model."
         }
       ]
     },
@@ -220,7 +272,9 @@
             "To normalize the data"
           ],
           "correct_answer": "b",
-          "explanation": "Feature selection is a technique used to select the most informative features from a larger set of features, helping to improve the accuracy of the model."
+          "explanation": "Feature selection is a technique used to select the most informative features from a larger set of features, helping to improve the accuracy of the model.",
+          "user_answer": "c",
+          "user_correct": false
         },
         {
           "question": "Which technique is used to fill in missing values or estimate unknown data in the dataset?",
@@ -231,7 +285,9 @@
             "Filtering"
           ],
           "correct_answer": "c",
-          "explanation": "Imputation is a technique used to fill in missing values or estimate unknown data in the dataset, helping to improve the accuracy of the model."
+          "explanation": "Imputation is a technique used to fill in missing values or estimate unknown data in the dataset, helping to improve the accuracy of the model.",
+          "user_answer": "b",
+          "user_correct": false
         }
       ]
     },
@@ -247,7 +303,9 @@
             "To reduce the complexity of a model"
           ],
           "correct_answer": "b",
-          "explanation": "Dimensionality reduction aims to make large datasets more manageable by reducing the number of features, which improves model efficiency and prevents overfitting."
+          "explanation": "Dimensionality reduction aims to make large datasets more manageable by reducing the number of features, which improves model efficiency and prevents overfitting.",
+          "user_answer": "b",
+          "user_correct": true
         },
         {
           "question": "Which dimensionality reduction technique is characterized by preserving the topological relationships between data points?",
@@ -258,7 +316,9 @@
             "Data normalization"
           ],
           "correct_answer": "b",
-          "explanation": "Self-organizing maps are designed to preserve the topological relationships between data points, creating a lower-dimensional representation that maintains the relationships between the original data points."
+          "explanation": "Self-organizing maps are designed to preserve the topological relationships between data points, creating a lower-dimensional representation that maintains the relationships between the original data points.",
+          "user_answer": "b",
+          "user_correct": true
         }
       ],
       "conversation": []
@@ -275,7 +335,9 @@
             "To tune the hyperparameters of a model"
           ],
           "correct_answer": "b",
-          "explanation": "Hypothesis evaluation is used to assess the quality of a learned model by evaluating its performance on a given dataset."
+          "explanation": "Hypothesis evaluation is used to assess the quality of a learned model by evaluating its performance on a given dataset.",
+          "user_answer": "c",
+          "user_correct": false
         },
         {
           "question": "What is a challenge in hypothesis evaluation that occurs when a model is too complex and fits the noise in the training data?",
@@ -286,7 +348,9 @@
             "Model drift"
           ],
           "correct_answer": "b",
-          "explanation": "Overfitting occurs when a model is too complex and fits the noise in the training data, resulting in poor performance on future data."
+          "explanation": "Overfitting occurs when a model is too complex and fits the noise in the training data, resulting in poor performance on future data.",
+          "user_answer": "b",
+          "user_correct": true
         }
       ]
     },
@@ -302,7 +366,9 @@
             "All of the above"
           ],
           "correct_answer": "d",
-          "explanation": "This question requires selecting multiple correct methods for data selection. The correct answer is \"d) All of the above\" because all the options listed (following a distribution, weighting data proportionally to its classification error, selecting the most similar or different data points) are valid ways to select relevant data in data mining."
+          "explanation": "This question requires selecting multiple correct methods for data selection. The correct answer is \"d) All of the above\" because all the options listed (following a distribution, weighting data proportionally to its classification error, selecting the most similar or different data points) are valid ways to select relevant data in data mining.",
+          "user_answer": "b",
+          "user_correct": false
         },
         {
           "question": "Which statistical test is commonly used in hypothesis contrast to compare the means of two groups?",
@@ -313,13 +379,15 @@
             "Decision tree analysis"
           ],
           "correct_answer": "c",
-          "explanation": "The correct answer is \"c) t-test\" because it is specifically mentioned in the content that a t-test is used to compare the means of two groups in hypothesis contrast."
+          "explanation": "The correct answer is \"c) t-test\" because it is specifically mentioned in the content that a t-test is used to compare the means of two groups in hypothesis contrast.",
+          "user_answer": "b",
+          "user_correct": false
         }
       ]
     }
   },
   "created_at": "2026-04-10T10:13:25.046382",
-  "updated_at": "2026-04-17T12:18:45.079805",
+  "updated_at": "2026-04-28T19:26:22.015551",
   "final_exam": {
     "mode": "study",
     "analysis": {
@@ -761,22 +829,22 @@
       }
     ],
     "results": {
-      "correct": 7,
+      "correct": 6,
       "total": 26,
-      "percentage": 27,
+      "percentage": 23,
       "results": [
         {
           "question": "What is the primary goal of data selection in machine learning?",
-          "user_answer": "a",
+          "user_answer": "c",
           "correct_answer": "c",
-          "is_correct": false,
+          "is_correct": true,
           "explanation": "According to the content, data selection is about choosing the right data to train a model, making option c the correct answer.",
           "section": "Data Selection and Transformation",
           "difficulty": "easy"
         },
         {
           "question": "What can be a consequence of removing irrelevant features from a model?",
-          "user_answer": "c",
+          "user_answer": "d",
           "correct_answer": "b",
           "is_correct": false,
           "explanation": "By removing irrelevant features, the model's ability to overfit the data is reduced, leading to improved accuracy.",
@@ -785,7 +853,7 @@
         },
         {
           "question": "By what method can cluster several nominal values into a set of values to reduce the number of features?",
-          "user_answer": "d",
+          "user_answer": "c",
           "correct_answer": "b",
           "is_correct": false,
           "explanation": "According to the content, clustering nominal values is a method of dynamic generation that can be used to reduce the number of features.",
@@ -794,16 +862,16 @@
         },
         {
           "question": "What is the primary goal of the decision making process in machine learning, according to the key takeaway?",
-          "user_answer": "d",
+          "user_answer": "b",
           "correct_answer": "b",
-          "is_correct": false,
+          "is_correct": true,
           "explanation": "The key takeaway states that the decision making process involves evaluating hypotheses, selecting relevant features, and minimizing errors to make accurate predictions.",
           "section": "Decision Making",
           "difficulty": "easy"
         },
         {
           "question": "What is the main goal of minimizing false negatives and false positives?",
-          "user_answer": "d",
+          "user_answer": "c",
           "correct_answer": "b",
           "is_correct": false,
           "explanation": "Minimizing false negatives and false positives helps to improve the accuracy of a hypothesis, which is the main goal.",
@@ -821,7 +889,7 @@
         },
         {
           "question": "What is a characteristic of each fi in PCA?",
-          "user_answer": "d",
+          "user_answer": "b",
           "correct_answer": "c",
           "is_correct": false,
           "explanation": "According to the content, each fi in PCA has the characteristics of mutual independence and being ordered by relevance (information content).",
@@ -830,9 +898,9 @@
         },
         {
           "question": "What is the primary purpose of noise reduction in data transformation?",
-          "user_answer": "b",
+          "user_answer": "c",
           "correct_answer": "b",
-          "is_correct": true,
+          "is_correct": false,
           "explanation": "Noise reduction is the process of removing irrelevant or random data points, which is the primary purpose of this step in data transformation.",
           "section": "Data Mining Methodology",
           "difficulty": "easy"
@@ -848,9 +916,9 @@
         },
         {
           "question": "Which of the following techniques is an example of an embedded method for feature selection?",
-          "user_answer": "d",
+          "user_answer": "a",
           "correct_answer": "d",
-          "is_correct": true,
+          "is_correct": false,
           "explanation": "Lasso regression is an example of an embedded method for feature selection, as it incorporates feature selection into the model training process.",
           "section": "Hypothesis Evaluation",
           "difficulty": "medium"
@@ -866,9 +934,9 @@
         },
         {
           "question": "Which step in the decision making process involves collecting and preparing the relevant data?",
-          "user_answer": "d",
+          "user_answer": "c",
           "correct_answer": "d",
-          "is_correct": true,
+          "is_correct": false,
           "explanation": "According to the decision making process section, data selection and transformation is the step that involves collecting and preparing the relevant data.",
           "section": "Decision Making",
           "difficulty": "medium"
@@ -884,7 +952,7 @@
         },
         {
           "question": "What type of relationship measures the amount of information that one feature provides about another feature?",
-          "user_answer": "d",
+          "user_answer": "c",
           "correct_answer": "b",
           "is_correct": false,
           "explanation": "Mutual Information is a measure of the amount of information that one feature provides about another feature, making it a suitable choice for this question.",
@@ -893,25 +961,25 @@
         },
         {
           "question": "What is the main purpose of data normalization in the pre-processing stage of machine learning?",
-          "user_answer": "c",
+          "user_answer": "b",
           "correct_answer": "c",
-          "is_correct": true,
+          "is_correct": false,
           "explanation": "Data normalization is used to ensure that all features are on the same scale, which is essential for many machine learning algorithms that use distance or similarity metrics.",
           "section": "Pre-processing",
           "difficulty": "medium"
         },
         {
           "question": "What happens to the semantic of the features when a sub-set k of relevant features is selected using PCA?",
-          "user_answer": "b",
+          "user_answer": "c",
           "correct_answer": "c",
-          "is_correct": false,
+          "is_correct": true,
           "explanation": "According to the content, when PCA is used to select a sub-set of relevant features, the semantic of the features is lost.",
           "section": "Dimensionality Reduction",
           "difficulty": "medium"
         },
         {
           "question": "What is the term used to describe how well the model can make predictions or classify instances accurately?",
-          "user_answer": "d",
+          "user_answer": "c",
           "correct_answer": "b",
           "is_correct": false,
           "explanation": "Model quality refers to how well the model can make predictions or classify instances accurately, as stated in the content.",
@@ -920,25 +988,25 @@
         },
         {
           "question": "What is the consequence of using a low-quality model in real-world applications?",
-          "user_answer": "b",
+          "user_answer": "d",
           "correct_answer": "b",
-          "is_correct": true,
+          "is_correct": false,
           "explanation": "A low-quality model may lead to incorrect predictions or poor performance, which can have serious consequences in real-world applications, as mentioned in the content.",
           "section": "Introduction to Hypothesis Evaluation",
           "difficulty": "medium"
         },
         {
           "question": "Which of the following is a technique used to handle missing or incomplete data in data transformation?",
-          "user_answer": "c",
+          "user_answer": "b",
           "correct_answer": "c",
-          "is_correct": true,
+          "is_correct": false,
           "explanation": "Unknown data treatment is the process of handling missing or incomplete data, which is a key aspect of data transformation.",
           "section": "Data Mining Methodology",
           "difficulty": "medium"
         },
         {
           "question": "What is the name of the technique used in machine learning to reduce the impact of noisy data?",
-          "user_answer": "c",
+          "user_answer": "b",
           "correct_answer": "a",
           "is_correct": false,
           "explanation": "According to the content, boosting is a technique used in machine learning to reduce the impact of noisy data, making option a the correct answer.",
@@ -956,9 +1024,9 @@
         },
         {
           "question": "What is the result of counting the number of features that are true and/or false in a set of boolean features?",
-          "user_answer": "b",
+          "user_answer": "c",
           "correct_answer": "c",
-          "is_correct": false,
+          "is_correct": true,
           "explanation": "The content states that counting the number of true and/or false features in a set of boolean features results in a count, not a new feature that captures complex relationships or represents the average of the features.",
           "section": "Feature Generation",
           "difficulty": "hard"
@@ -974,7 +1042,7 @@
         },
         {
           "question": "What is the context in which a false negative would occur in the given problem?",
-          "user_answer": "d",
+          "user_answer": "c",
           "correct_answer": "b",
           "is_correct": false,
           "explanation": "A false negative occurs when a hypothesis predicts that an instance belongs to a certain class (in this case, passing the course) but it actually belongs to another class (failing the course).",
@@ -983,16 +1051,16 @@
         },
         {
           "question": "What is variance in the estimation in the context of hypothesis evaluation?",
-          "user_answer": "c",
+          "user_answer": "b",
           "correct_answer": "b",
-          "is_correct": false,
+          "is_correct": true,
           "explanation": "Variance in the estimation occurs when different test sets produce different results, making it challenging to evaluate the model's quality accurately, as stated in the content.",
           "section": "Introduction to Hypothesis Evaluation",
           "difficulty": "hard"
         },
         {
           "question": "What is the term for the proportion of true positives among all predicted positives?",
-          "user_answer": "c",
+          "user_answer": "b",
           "correct_answer": "a",
           "is_correct": false,
           "explanation": "Precision is the proportion of true positives among all predicted positives, which is an important metric in hypothesis evaluation.",
@@ -1003,21 +1071,21 @@
       "section_breakdown": [
         {
           "section": "Data Selection and Transformation",
-          "correct": 0,
+          "correct": 1,
           "total": 3,
-          "percentage": 0
+          "percentage": 33
         },
         {
           "section": "Hypothesis Evaluation",
-          "correct": 2,
+          "correct": 1,
           "total": 3,
-          "percentage": 67
+          "percentage": 33
         },
         {
           "section": "Feature Generation",
-          "correct": 0,
+          "correct": 1,
           "total": 3,
-          "percentage": 0
+          "percentage": 33
         },
         {
           "section": "Decision Making",
@@ -1039,21 +1107,21 @@
         },
         {
           "section": "Dimensionality Reduction",
-          "correct": 0,
+          "correct": 1,
           "total": 2,
-          "percentage": 0
+          "percentage": 50
         },
         {
           "section": "Data Mining Methodology",
-          "correct": 2,
+          "correct": 0,
           "total": 3,
-          "percentage": 67
+          "percentage": 0
         },
         {
           "section": "Pre-processing",
-          "correct": 1,
+          "correct": 0,
           "total": 1,
-          "percentage": 100
+          "percentage": 0
         },
         {
           "section": "Introduction to Hypothesis Evaluation",
@@ -1064,11 +1132,13 @@
       ],
       "review_sections": [
         "Data Selection and Transformation",
+        "Hypothesis Evaluation",
         "Feature Generation",
         "Decision Making",
         "Errors in Samples",
         "Feature Selection",
-        "Dimensionality Reduction",
+        "Data Mining Methodology",
+        "Pre-processing",
         "Introduction to Hypothesis Evaluation"
       ]
     }

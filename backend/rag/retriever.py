@@ -45,14 +45,3 @@ class ChromaDbRetriever:
         """
         target_topic = topic if topic is not None else self.active_topic
         return search_by_source(fuente, topic=target_topic)
-
-
-class DummyRetriever:
-    """Test retriever that returns fake documents."""
-
-    def search(self, query: str, k: int = 5) -> list[str]:
-        return [
-            "Test document 1: Introduction to the topic.",
-            "Test document 2: Development of the content.",
-            "Test document 3: Final conclusions.",
-        ]

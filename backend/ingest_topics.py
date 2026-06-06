@@ -19,6 +19,11 @@ try:
 except Exception:
     Presentation = None
 
+try:
+    from docx import Document as DocxDocument
+except Exception:
+    DocxDocument = None
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from backend.clients.bbdd_client import save_text_chroma, delete_collection
@@ -150,8 +155,39 @@ def ingest_file_pptx(file_path: str, metadata: dict | None = None) -> list[str]:
     return _ingest_chunks(text, file_path, metadata)
 
 
+def ingest_file_docx(file_path: str, metadata: dict | None = None) -> list[str]:
+    """Extract text from a .docx file and ingest it into ChromaDB."""
+    if DocxDocument is None:
+        logger.error("python-docx is not installed. Install 'python-docx' to ingest Word files.")
+        return []
+
+    if not os.path.exists(file_path):
+        logger.error("File not found: %s", file_path)
+        return []
+
+    try:
+        doc = DocxDocument(file_path)
+        text_parts = [p.text for p in doc.paragraphs if p.text]
+        # Also extract text from tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text:
+                        text_parts.append(cell.text)
+        text = "\n".join(text_parts)
+    except Exception as e:
+        logger.error("Error reading Word file: %s", e)
+        return []
+
+    if not text.strip():
+        logger.error("Word file has no extractable text: %s", file_path)
+        return []
+
+    return _ingest_chunks(text, file_path, metadata)
+
+
 def ingest_file(file_path: str, metadata: dict | None = None) -> list[str]:
-    """Ingest a supported file (.txt, .pdf or .pptx) into ChromaDB."""
+    """Ingest a supported file (.txt, .pdf, .pptx or .docx) into ChromaDB."""
     extension = os.path.splitext(file_path)[1].lower()
 
     if extension == ".txt":
@@ -160,8 +196,10 @@ def ingest_file(file_path: str, metadata: dict | None = None) -> list[str]:
         return ingest_file_pdf(file_path, metadata=metadata)
     if extension == ".pptx":
         return ingest_file_pptx(file_path, metadata=metadata)
+    if extension == ".docx":
+        return ingest_file_docx(file_path, metadata=metadata)
 
-    logger.error("Unsupported file type '%s'. Use .txt, .pdf or .pptx", extension)
+    logger.error("Unsupported file type '%s'. Use .txt, .pdf, .pptx or .docx", extension)
     return []
 
 

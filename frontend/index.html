@@ -620,8 +620,8 @@
         <div v-if="apiOk" class="upload-zone" @click="fileInput.click()">
           <div class="upload-zone-icon">📤</div>
           <div class="upload-zone-title">Upload your own topic</div>
-          <div class="upload-zone-sub">Supports .txt, .pdf and .pptx files.<br>Your material gets structured automatically.</div>
-          <input type="file" accept=".txt,.pdf,.pptx" ref="fileInput" class="upload-input" @change="onFileSelected" />
+          <div class="upload-zone-sub">Supports .txt, .pdf, .pptx and .docx files.<br>Your material gets structured automatically.</div>
+          <input type="file" accept=".txt,.pdf,.pptx,.docx" ref="fileInput" class="upload-input" @change="onFileSelected" />
           <button class="btn-upload" @click.stop="fileInput.click()">Choose file</button>
           <div :class="['upload-status', uploadStatusClass]" v-if="uploadStatus">{{ uploadStatus }}</div>
         </div>
@@ -1413,7 +1413,7 @@
       async function onFileSelected(event) {
         const file=event.target.files?.[0]; if(!file) return
         const ln=file.name.toLowerCase()
-        if(!(ln.endsWith('.txt')||ln.endsWith('.pdf')||ln.endsWith('.pptx'))){uploadStatus.value='Please select a .txt, .pdf or .pptx file';uploadStatusClass.value='error';return}
+        if(!(ln.endsWith('.txt')||ln.endsWith('.pdf')||ln.endsWith('.pptx')||ln.endsWith('.docx'))){uploadStatus.value='Please select a .txt, .pdf, .pptx or .docx file';uploadStatusClass.value='error';return}
         uploadStatus.value='Uploading…';uploadStatusClass.value='loading'
         try{
           const fd=new FormData();fd.append('file',file)

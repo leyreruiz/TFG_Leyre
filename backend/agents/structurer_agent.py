@@ -20,9 +20,6 @@ class StructurerAgent(BaseAgent):
         self.llm_model = llm_model
         self.data_dir = data_dir
 
-    def can_handle(self, intent: str) -> bool:
-        return intent == "structure"
-
     def handle(self, request: StudentRequest, suggestions: str = "") -> dict:
         """Generate the class outline, optionally incorporating user suggestions.
 
@@ -35,11 +32,11 @@ class StructurerAgent(BaseAgent):
         if not term:
             return {"agent": "structurer", "error": "No file specified."}
 
-        # Check if the term matches a known file; use full-file retrieval if so
-        candidate_file = term if term.endswith(".txt") else term + ".txt"
-        known_files = self._list_known_files()
+        # Resolve the term to a known source file (any supported format);
+        # use full-file retrieval if found, otherwise fall back to similarity search.
+        candidate_file = self._resolve_source_file(term)
 
-        if candidate_file in known_files:
+        if candidate_file:
             docs = self.retriever.search_by_source(candidate_file)
             source = candidate_file
         else:
@@ -50,7 +47,7 @@ class StructurerAgent(BaseAgent):
             return {
                 "agent": "structurer",
                 "error": f"No information found about '{term}'. "
-                         f"Available files: {', '.join(known_files)}",
+                         f"Available files: {', '.join(self._list_known_files())}",
             }
 
         context = "\n\n".join(docs)
@@ -61,12 +58,33 @@ class StructurerAgent(BaseAgent):
 
         return {"agent": "structurer", "content": structure, "source": source}
 
+    # Document formats that can be resolved to a source file for full-file retrieval
+    _SUPPORTED_EXTENSIONS = (".txt", ".pdf", ".pptx", ".docx")
+
     def _list_known_files(self) -> list[str]:
-        """Return the list of .txt filenames available in the data directory."""
+        """Return the list of supported source filenames available in the data directory."""
         try:
-            return [f for f in os.listdir(self.data_dir) if f.endswith(".txt")]
+            return [
+                f for f in os.listdir(self.data_dir)
+                if os.path.splitext(f)[1].lower() in self._SUPPORTED_EXTENSIONS
+            ]
         except Exception:
             return []
+
+    def _resolve_source_file(self, term: str) -> str | None:
+        """Find the source file matching a term, regardless of its format.
+
+        The term may already include an extension, or be the bare topic name
+        (e.g. 'neural_networks' → 'neural_networks.pdf'). Returns the matching
+        filename as stored in ChromaDB metadata, or None if no file matches.
+        """
+        known_files = self._list_known_files()
+        if term in known_files:
+            return term
+        for extension in self._SUPPORTED_EXTENSIONS:
+            if f"{term}{extension}" in known_files:
+                return f"{term}{extension}"
+        return None
 
     def _generate_structure(self, content: str, source: str, suggestions: str = "") -> str | None:
         """Call the LLM to produce a class outline from the document content."""

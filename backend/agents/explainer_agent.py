@@ -25,9 +25,6 @@ class ExplainerAgent(BaseAgent):
         # conversation_id → list of {"role": ..., "content": ...} messages
         self.histories: dict[str, list[dict[str, str]]] = {}
 
-    def can_handle(self, intent: str) -> bool:
-        return intent == "explain"
-
     def _prune_conversations(self) -> None:
         """Remove the oldest conversation if the limit is exceeded."""
         while len(self.histories) > self.max_conversations:
