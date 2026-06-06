@@ -2,13 +2,13 @@
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
-from backend.clients.llm_client import chat_with_model
+from backend.clients.llm_client import chat_with_model, MODEL
 from backend.utils import extract_search_term
 
 
 class SummaryAgent(BaseAgent):
 
-    def __init__(self, retriever, llm_model="llama-3.1-8b-instant"):
+    def __init__(self, retriever, llm_model=MODEL):
         self.retriever = retriever
         self.llm_model = llm_model
 

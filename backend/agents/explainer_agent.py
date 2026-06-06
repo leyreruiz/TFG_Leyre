@@ -10,14 +10,14 @@ from typing import Optional
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
-from backend.clients.llm_client import chat_with_model
+from backend.clients.llm_client import chat_with_model, MODEL
 
 logger = logging.getLogger(__name__)
 
 
 class ExplainerAgent(BaseAgent):
 
-    def __init__(self, llm_model="llama-3.1-8b-instant", max_history_turns: int = 6, max_conversations: int = 200):
+    def __init__(self, llm_model=MODEL, max_history_turns: int = 6, max_conversations: int = 200):
         self.llm_model = llm_model
         # Each turn = 1 user message + 1 assistant message → multiply by 2
         self.max_history_messages = max(2, max_history_turns * 2)

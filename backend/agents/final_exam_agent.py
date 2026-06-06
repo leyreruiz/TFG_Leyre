@@ -10,7 +10,7 @@ import re
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
-from backend.clients.llm_client import chat_with_model
+from backend.clients.llm_client import chat_with_model, MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ _SYSTEM_PROMPT = (
 class FinalExamAgent(BaseAgent):
     """Generates an adaptive final exam weighted by the student's weak points."""
 
-    def __init__(self, llm_model: str = "llama-3.1-8b-instant", target_total: int = 12):
+    def __init__(self, llm_model: str = MODEL, target_total: int = 12):
         self.llm_model = llm_model
         self.target_total = target_total
 

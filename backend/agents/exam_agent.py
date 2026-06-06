@@ -13,7 +13,7 @@ import re
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
-from backend.clients.llm_client import chat_with_model
+from backend.clients.llm_client import chat_with_model, MODEL
 from backend.utils import extract_search_term
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ _EXAM_SYSTEM_PROMPT = (
 class ExamAgent(BaseAgent):
     """Generates multiple-choice exam questions using ChromaDB as the only data source."""
 
-    def __init__(self, retriever, llm_model="llama-3.1-8b-instant", num_questions=3, data_dir="backend/data"):
+    def __init__(self, retriever, llm_model=MODEL, num_questions=3, data_dir="backend/data"):
         self.retriever = retriever
         self.llm_model = llm_model
         self.num_questions = num_questions

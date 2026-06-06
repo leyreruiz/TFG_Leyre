@@ -17,4 +17,5 @@ dependencies = [
     "mcp[cli]",
     "wikipedia-api",
     "python-docx",
+    "google-genai",
 ]

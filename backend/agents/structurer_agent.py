@@ -8,14 +8,14 @@ import os
 
 from backend.agents.base_agent import BaseAgent
 from backend.models.schemas import StudentRequest
-from backend.clients.llm_client import chat_with_model
+from backend.clients.llm_client import chat_with_model, MODEL
 from backend.utils import extract_search_term
 
 
 class StructurerAgent(BaseAgent):
     """Analyzes a document and produces a structured class outline."""
 
-    def __init__(self, retriever, llm_model="llama-3.1-8b-instant", data_dir="backend/data"):
+    def __init__(self, retriever, llm_model=MODEL, data_dir="backend/data"):
         self.retriever = retriever
         self.llm_model = llm_model
         self.data_dir = data_dir
