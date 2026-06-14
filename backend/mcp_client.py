@@ -106,11 +106,21 @@ class MCPRetriever:
     # ------------------------------------------------------------------
 
     def search_wikipedia(self, query: str, sentences: int = 4) -> str:
-        """Busca en Wikipedia via MCP y devuelve un fragmento del artículo."""
-        future = asyncio.run_coroutine_threadsafe(
-            self._async_wikipedia(query, sentences), self._loop
-        )
-        return future.result(timeout=30)
+        """Busca en Wikipedia via MCP y devuelve un fragmento del artículo.
+        
+        Si la búsqueda tarda más de 30 segundos, devuelve cadena vacía (Wikipedia es opcional).
+        """
+        try:
+            future = asyncio.run_coroutine_threadsafe(
+                self._async_wikipedia(query, sentences), self._loop
+            )
+            return future.result(timeout=30)
+        except TimeoutError:
+            logger.warning(f"Wikipedia search timed out for query: {query}")
+            return ""
+        except Exception as e:
+            logger.error(f"Error searching Wikipedia: {e}")
+            return ""
 
     async def _async_wikipedia(self, query: str, sentences: int) -> str:
         result = await self._session.call_tool(

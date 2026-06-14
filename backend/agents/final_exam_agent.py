@@ -46,14 +46,13 @@ class FinalExamAgent(BaseAgent):
             questions = data.get("questions", [])
             answered = [q for q in questions if "user_correct" in q]
             correct = sum(1 for q in answered if q.get("user_correct"))
-            total = len(answered)
+            total = len(questions)  # All questions in the section, not just answered ones
             conversations = len(data.get("conversation", []))
 
-            # Mastery: 70% accuracy + 30% (1 - conversation penalty)
             accuracy = (correct / total) if total > 0 else 0.0
             # Penalty saturates at 10 conversational turns about a section
             conversation_penalty = min(conversations / 10, 1.0)
-            score = round((accuracy * 0.7) + ((1 - conversation_penalty) * 0.3), 2)
+            score = max(round((accuracy - conversation_penalty * 0.2), 2), 0)
 
             if score >= 0.7:
                 level = "strong"
@@ -74,7 +73,7 @@ class FinalExamAgent(BaseAgent):
         weak = [s["title"] for s in sections_analysis if s["level"] == "weak"]
         medium = [s["title"] for s in sections_analysis if s["level"] == "medium"]
         strong = [s["title"] for s in sections_analysis if s["level"] == "strong"]
-
+        print(f"Section analysis: {sections_analysis}")
         return {
             "sections": sections_analysis,
             "weak": weak,

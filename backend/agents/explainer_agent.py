@@ -73,7 +73,7 @@ class ExplainerAgent(BaseAgent):
             "and end your response with exactly: [REFUSED] "
             "When the student uses vague references such as 'the examples', 'the theorem', 'that concept', 'explain it', etc., "
             "always interpret them as referring to the content of the current section summary provided below. "
-            "IMPORTANT: Always respond in the same language the student used in their question. "
+            "IMPORTANT: Always respond in the SAME LANGUAGE the student used in their question. "
             "When the question is relevant, explain in a conversational and flowing way, in natural paragraphs, "
             "as if speaking directly to the student. Avoid bullet points, numbered lists, and headers. "
             "Use analogies and plain language. Be thorough but don't over-explain. "

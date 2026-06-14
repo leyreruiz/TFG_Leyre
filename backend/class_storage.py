@@ -130,11 +130,33 @@ def update_section_summary(topic: str, section_title: str, new_summary: str) -> 
 
 
 def update_section_questions(topic: str, section_title: str, questions: list) -> bool:
-    """Update the questions of a specific section."""
+    """Update the questions of a specific section, preserving user response metadata.
+    
+    When questions are deleted/reordered, this function preserves any previous
+    user responses (user_correct, user_answer, etc.) by matching new questions
+    to old ones by their question text.
+    """
     try:
         topic_key, class_obj = _load_class_and_section(topic, section_title)
         if class_obj is None:
             return False
+        
+        # Get old questions for metadata preservation
+        old_questions = class_obj["sections_data"][section_title].get("questions", [])
+        
+        # Build a map of old questions by their text
+        old_map = {q.get("question", ""): q for q in old_questions}
+        
+        # For each new question, preserve user metadata if it existed before
+        for new_q in questions:
+            old_q = old_map.get(new_q.get("question", ""))
+            if old_q:
+                # Preserve user response metadata
+                if "user_correct" in old_q:
+                    new_q["user_correct"] = old_q["user_correct"]
+                if "user_answer" in old_q:
+                    new_q["user_answer"] = old_q["user_answer"]
+        
         class_obj["sections_data"][section_title]["questions"] = questions
         class_obj["updated_at"] = datetime.now().isoformat()
         if not _write_topic_file(topic_key, class_obj):
